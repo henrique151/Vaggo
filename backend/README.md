@@ -1,9 +1,3 @@
-Ficou excelente! Para finalizar, organizei o conteúdo que você enviou em um formato **Markdown profissional**, corrigindo identações, adicionando ícones estratégicos e garantindo que a hierarquia de informações esteja clara para quem ler o seu GitHub.
-
-Aqui está o arquivo `README.md` completo e reorganizado:
-
----
-
 # 🚀 Veggo - Backend
 
 Este diretório contém o core do projeto Veggo, uma API RESTful desenvolvida com foco em segurança, escalabilidade e performance, utilizando as melhores práticas de desenvolvimento Node.js.
