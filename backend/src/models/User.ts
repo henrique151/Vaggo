@@ -3,7 +3,7 @@ import { UserAttributes } from '../types/UserAttributes';
 import sequelize from '../database';
 
 class User extends Model<UserAttributes> implements UserAttributes {
-    public id!: string;
+    public id!: number;
     public username!: string;
     public email!: string;
     public firstName!: string;
@@ -17,8 +17,8 @@ class User extends Model<UserAttributes> implements UserAttributes {
 
 User.init({
     id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
     },
     username: {

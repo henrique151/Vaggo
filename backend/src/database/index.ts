@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
-import databaseConfig from '../config/database';
+import * as databaseConfig from '../config/database';
+
 
 const sequelize = new Sequelize(databaseConfig);
 

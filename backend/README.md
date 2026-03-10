@@ -4,14 +4,14 @@ Este diretório contém o core do projeto Veggo, uma API RESTful desenvolvida co
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **Runtime & Framework**: Node.js & Express.js
-* **Linguagem**: TypeScript
-* **Banco de Dados**: PostgreSQL & Supabase
-* **ORM**: Sequelize (com suporte a Migrations)
-* **Segurança**: Bcrypt (Hash) & JWT (Autenticação)
-* **Validação**: Zod
-* **Observabilidade**: Winston (Logging)
-* **Infraestrutura**: Docker (🚧 em progresso)
+- **Runtime & Framework**: Node.js & Express.js
+- **Linguagem**: TypeScript
+- **Banco de Dados**: PostgreSQL & Supabase
+- **ORM**: Sequelize (com suporte a Migrations)
+- **Segurança**: Bcrypt (Hash) & JWT (Autenticação)
+- **Validação**: Zod
+- **Observabilidade**: Winston (Logging)
+- **Infraestrutura**: Docker (🚧 em progresso)
 
 ---
 
@@ -45,30 +45,30 @@ backend/
 
 ### ✅ Implementado:
 
-* [x] Criação de usuário com hash de senha seguro.
-* [x] Autenticação com Token JWT (incluindo tempo de expiração).
-* [x] Listagem global de usuários com proteção de dados sensíveis.
-* [x] Remoção de usuários protegida por middleware de autenticação.
-* [x] Sistema de log profissional e tratamento de erros centralizado.
+- [x] Criação de usuário com hash de senha seguro.
+- [x] Autenticação com Token JWT (incluindo tempo de expiração).
+- [x] Listagem global de usuários com proteção de dados sensíveis.
+- [x] Remoção de usuários protegida por middleware de autenticação.
+- [x] Sistema de log profissional e tratamento de erros centralizado.
 
 ### 🚧 Próximas Etapas (Backlog):
 
-* [ ] Endpoint `GET /users/:id` (Consulta detalhada de perfil).
-* [ ] Endpoint `PUT /users/:id` (Atualização de dados cadastrais).
-* [ ] Finalização da orquestração Docker (Dockerfile e docker-compose).
+- [ ] Endpoint `GET /users/:id` (Consulta detalhada de perfil).
+- [ ] Endpoint `PUT /users/:id` (Atualização de dados cadastrais).
+- [ ] Finalização da orquestração Docker (Dockerfile e docker-compose).
 
 ---
 
 ## 🛠️ Endpoints da API
 
-| Método | Endpoint | Descrição | Autenticação |
-| --- | --- | --- | --- |
-| **POST** | `/users` | Cria um novo usuário | Não |
-| **POST** | `/users/login` | Login com retorno de Token JWT | Não |
-| **GET** | `/users` | Lista todos os usuários | Não |
-| **GET** | `/users/:id` | Consulta um único usuário | **🚧 Backlog** |
-| **PUT** | `/users/:id` | Atualiza dados do usuário | **🚧 Backlog** |
-| **DELETE** | `/users/:id` | Remove um usuário | **Sim (Bearer)** |
+| Método     | Endpoint       | Descrição                      | Autenticação     |
+| ---------- | -------------- | ------------------------------ | ---------------- |
+| **POST**   | `/users`       | Cria um novo usuário           | Não              |
+| **POST**   | `/users/login` | Login com retorno de Token JWT | Não              |
+| **GET**    | `/users`       | Lista todos os usuários        | Não              |
+| **GET**    | `/users/:id`   | Consulta um único usuário      | **🚧 Backlog**   |
+| **PUT**    | `/users/:id`   | Atualiza dados do usuário      | **🚧 Backlog**   |
+| **DELETE** | `/users/:id`   | Remove um usuário              | **Sim (Bearer)** |
 
 ---
 
@@ -76,8 +76,8 @@ backend/
 
 ### 1. Pré-requisitos
 
-* Node.js (v18+)
-* Instância PostgreSQL (Local ou Supabase)
+- Node.js (v18+)
+- Instância PostgreSQL (Local ou Supabase)
 
 ### 2. Configuração
 
@@ -109,6 +109,31 @@ npm run dev
 
 ```
 
+```bash
+docker-compose up --build: Constrói e liga. Ele compila seu código (TypeScript → JS), cria as imagens e sobe o banco e a API juntos.
+
+docker-compose down: Desliga e limpa. Para os containers e remove as redes criadas. Útil para resetar erros.
+
+docker-compose up --build: Reconstrói as imagens (usa quando alterar o Dockerfile ou package.json) e sobe tudo.
+
+docker ps: Status. Mostra se os containers estão rodando (Up) ou se caíram (Exited).
+
+docker-compose stop: Para os containers, mas mantém os recursos criados.
+
+docker-compose down: Para tudo e remove os containers e redes (limpeza total).
+
+docker-compose logs -f: Mostra os logs em tempo real (útil se você usou o -d).
+
+docker ps: Lista os containers que estão rodando agora.
+
+docker ps -a: Lista todos os containers (até os que deram erro ou pararam).
+
+npx sequelize-cli migration:generate --name nome-da-migration: Gerar nova migration: Cria um arquivo base na pasta migrations.
+
+docker exec -it veggo_api npx sequelize-cli db:migrate --migrations-path src/database/migrations:
+
+```
+
 ---
 
 ## 🌿 Fluxo de Contribuição
@@ -127,9 +152,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](https://www.goog
 
 ---
 
-**Desenvolvido por [Henrique]** *Conecte-se comigo no [LinkedIn*](https://www.google.com/search?q=https://www.linkedin.com/in/seu-perfil/)
+**Desenvolvido por [Henrique]** _Conecte-se comigo no [LinkedIn_](https://www.google.com/search?q=https://www.linkedin.com/in/seu-perfil/)
 
 ---
-
-
-
