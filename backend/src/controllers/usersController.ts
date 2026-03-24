@@ -4,18 +4,24 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AuthRequest } from '../middlewares/authMiddleware';
+import { UserService } from '../services/UserService';
 
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
-    const { password, ...rest } = req.body;
+    const {
+        name, cpf, gender, phone, birthDate, // <- Person Data
+        email, password, type, permissionLevel // <- User Data
+    } = req.body;
 
-    const saltRounds = 10
-    const hashedPaword = await bcrypt.hash(password, saltRounds);
+    const personData = { name, cpf, gender, phone, birthDate };
+    const userData = { email, password, type, permissionLevel };
 
-    const user = await User.create({ ...rest, password: hashedPaword });
+    const createdUser = await UserService.createAccount(personData, userData);
 
-    const userRepponse = user.toJSON();
-
-    res.status(201).json({ success: true, message: 'Usuário criado', data: userRepponse })
+    res.status(201).json({
+        success: true,
+        message: 'Usuário criado com sucesso',
+        data: createdUser
+    });
 });
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
@@ -49,40 +55,26 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     const id = Number(req.params.id);
-    const { password, ...updateData } = req.body;
-
-    const user = await User.findByPk(id);
-
-    if (!user) {
-        return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
-    }
-
     const authReq = req as AuthRequest;
 
     if (Number(authReq.user?.id) !== id) {
-        return res.status(403).json({
-            success: false,
-            message: 'Você não tem permissão para editar este usuário'
+        return res.status(403).json({ success: false, message: 'Sem permissão' });
+    }
+
+    try {
+        const updatedUser = await UserService.updateAccount(id, req.body);
+
+        res.status(200).json({
+            success: true,
+            message: 'Atualizado com sucesso',
+            data: updatedUser
         });
+    } catch (error: any) {
+        if (error.message === 'USER_NOT_FOUND') {
+            return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+        }
+        throw error;
     }
-
-    if (password) {
-        const saltRounds = 10;
-        updateData.password = await bcrypt.hash(password, saltRounds);
-    }
-
-    await user.update(updateData);
-
-    // Retorna o usuário atualizado (recomendo excluir a senha aqui também)
-    const updatedUser = await User.findByPk(id, {
-        attributes: { exclude: ['password'] }
-    });
-
-    res.status(200).json({
-        success: true,
-        message: 'Usuário atualizado com sucesso',
-        data: updatedUser
-    });
 });
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
@@ -100,7 +92,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
     }
 
-    // Gerando o Token JWT
     const expiresIn = 3600;
     const secret = process.env.JWT_SECRET || 'super-segredo';
     const token = jwt.sign({ id: user.id }, secret, { expiresIn })

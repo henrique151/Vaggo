@@ -2,12 +2,12 @@ services:
   # Container do Banco de Dados
   db:
     image: postgres:18-alpine
-    container_name: veggo_postgres
+    container_name: vaggo_postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: veggodb
+      POSTGRES_DB: vaggo
     ports:
       - "5432:5432"
     volumes:
@@ -16,7 +16,7 @@ services:
   # Container da sua API Node.js
   api:
     build: .
-    container_name: veggo_api
+    container_name: vaggo_api
     restart: always
     ports:
       - "3000:3000"
@@ -25,7 +25,7 @@ services:
       - DB_HOST=db
       - DB_USER=postgres
       - DB_PASSWORD=12345
-      - DB_NAME=veggodb
+      - DB_NAME=vaggo
       - DB_PORT=5432
       - JWT_SECRET=4f92b7c1d8e3a5b6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c
     depends_on:

@@ -1,11 +1,11 @@
 export interface UserAttributes {
     id: number;
-    username: string;
     email: string;
-    firstName: string;
-    lastName: string;
-    age: number;
     password: string;
-    created_at?: Date;
-    updated_at?: Date;
+    type: string;
+    lastLogin: Date;
+    isBlocked: boolean;
+    isAdmin: boolean;
+    permissionLevel: '1' | '2' | '3';
+    personId: number;
 }

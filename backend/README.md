@@ -1,6 +1,6 @@
-# 🚀 Veggo - Backend
+# 🚀 Vaggo - Backend
 
-Este diretório contém o core do projeto Veggo, uma API RESTful desenvolvida com foco em segurança, escalabilidade e performance, utilizando as melhores práticas de desenvolvimento Node.js.
+Este diretório contém o core do projeto Vaggo, uma API RESTful desenvolvida com foco em segurança, escalabilidade e performance, utilizando as melhores práticas de desenvolvimento Node.js.
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -83,7 +83,7 @@ backend/
 
 ```bash
 # Clone o repositório
-git clone https://github.com/henrique151/veggo.git
+git clone https://github.com/henrique151/Vaggo.git
 
 # Acesse a pasta
 cd backend
@@ -130,7 +130,7 @@ docker ps -a: Lista todos os containers (até os que deram erro ou pararam).
 
 npx sequelize-cli migration:generate --name nome-da-migration: Gerar nova migration: Cria um arquivo base na pasta migrations.
 
-docker exec -it veggo_api npx sequelize-cli db:migrate --migrations-path src/database/migrations:
+docker exec -it Vaggo_api npx sequelize-cli db:migrate --migrations-path src/database/migrations:
 
 ```
 

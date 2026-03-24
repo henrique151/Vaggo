@@ -1,18 +1,18 @@
-import { DataTypes, Model } from 'sequelize';
-import { UserAttributes } from '../types/UserAttributes';
+import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../database';
+import { UserAttributes } from '../types/UserAttributes';
 
-class User extends Model<UserAttributes> implements UserAttributes {
+export interface UserCreationAttributes extends Optional<UserAttributes, 'id'> { }
+class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     public id!: number;
-    public username!: string;
     public email!: string;
-    public firstName!: string;
-    public lastName!: string;
-    public age!: number;
     public password!: string;
-
-    public readonly created_at!: Date;
-    public readonly updated_at!: Date;
+    public type!: string;
+    public lastLogin!: Date;
+    public isBlocked!: boolean;
+    public isAdmin!: boolean;
+    public permissionLevel!: '1' | '2' | '3';
+    public personId!: number;
 }
 
 User.init({
@@ -20,40 +20,53 @@ User.init({
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-    },
-    username: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        field: 'USU_INT_ID'
     },
     email: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(70),
         allowNull: false,
-        unique: true,
-    },
-    firstName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        field: 'firstName'
-    },
-    lastName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        field: 'lastName'
-    },
-    age: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+        field: 'USU_STR_EMAIL'
     },
     password: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(70),
         allowNull: false,
+        field: 'USU_STR_SENHA'
+    },
+    type: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        field: 'USU_STR_TIPO'
+    },
+    lastLogin: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        field: 'USU_DATE_ULTIMO_LOGIN'
+    },
+    isBlocked: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        field: 'USU_BOL_BLOQUEADO'
+    },
+    isAdmin: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        field: 'USU_BOL_ADMINISTRADOR'
+    },
+    permissionLevel: {
+        type: DataTypes.ENUM('1', '2', '3'),
+        allowNull: false,
+        field: 'USU_STATUS_NIVELPERM'
+    },
+    personId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        unique: true,
+        field: 'PES_INT_ID'
     },
 }, {
     sequelize,
     tableName: 'users',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    timestamps: false
 });
 
 export default User;
