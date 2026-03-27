@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { UserService } from '../services/UserService';
-import { CreateUserInput } from '../schemas/userSchema';
+import { CreateUserInput } from '../schemas/usersSchema';
 
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, cpf, gender, phone, birthDate, email, password, permissionLevel } =

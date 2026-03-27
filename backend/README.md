@@ -11,7 +11,7 @@ Este diretório contém o core do projeto Vaggo, uma API RESTful desenvolvida co
 - **Segurança**: Bcrypt (Hash) & JWT (Autenticação)
 - **Validação**: Zod
 - **Observabilidade**: Winston (Logging)
-- **Infraestrutura**: Docker ✅
+- **Infraestrutura**: Docker
 
 ---
 
@@ -139,6 +139,9 @@ npm install
 cp .env.example .env
 # Edite o .env com suas credenciais do banco e JWT_SECRET
 
+# Criação da tabela 
+npx sequelize-cli migration:generate --name create-users
+
 # Sincronize o banco
 npx sequelize-cli db:migrate
 
@@ -158,6 +161,43 @@ Seguimos o padrão **Git Flow** para organização:
 1. **Branch**: `git checkout -b feat/nome-da-feature`
 2. **Commit**: Siga o [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`)
 3. **PR**: Abra um Pull Request detalhando as mudanças para revisão.
+
+Seguimos o padrão **Git Flow Avançado** para organização:
+
+main: O código que está "em produção" (perfeito, sem erros).
+
+develop: O código onde as funcionalidades se encontram antes de irem para a main.
+
+feature/nome-da-tarefa: Onde você trabalha no dia a dia.
+
+1. **Passo a Passo para você fazer agora**:
+   Sair da main e ir para a develop (se ainda não tiver):
+
+```bash
+git checkout -b develop
+```
+
+2. **Criar a branch da sua tarefa (Feature)**:
+
+```bash
+git checkout -b feature/refactor-user-service
+```
+
+3. **Salvar suas alterações**:
+
+```bash
+git add .
+git commit -m "feat(service): implement full UserService and refactor controllers"
+```
+
+4. **Enviar para o GitHub**:
+   git push origin feature/refactor-user-service
+
+5. **Abrir o PR**:
+   No site do GitHub, você vai ver um botão "Compare & Pull Request". Você deve pedir para unir a sua feature/refactor-user-service DENTRO da develop.
+
+6. **Finalizar**:
+   Após você mesmo aprovar, você faz o "Merge". No final do semestre, você faz um PR da develop para a main para entregar a "Versão Final".
 
 ---
 

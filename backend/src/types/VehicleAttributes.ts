@@ -4,7 +4,7 @@ export interface VehicleAttributes {
     model: string;
     color: string;
     licensePlate: string;
-    manufactureYear: Date;
+    manufactureYear: string;
     isActive: boolean;
     userId: number;
 }

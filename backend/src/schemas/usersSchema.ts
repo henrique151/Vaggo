@@ -39,7 +39,7 @@ const passwordSchema = z
     .max(RULES.PASSWORD_MAX, `Senha não pode exceder ${RULES.PASSWORD_MAX} caracteres`)
     .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
     .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
-    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, 'Senha deve conter pelo menos um caractere especial');
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.\/?]/, 'Senha deve conter pelo menos um caractere especial');
 
 const phoneSchema = z
     .string({ error: 'Telefone é obrigatório' })

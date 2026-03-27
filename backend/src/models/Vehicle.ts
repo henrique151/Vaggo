@@ -10,7 +10,7 @@ class Vehicle extends Model<VehicleAttributes, VehicleCreationAttributes> implem
     public model!: string;
     public color!: string;
     public licensePlate!: string;
-    public manufactureYear!: Date;
+    public manufactureYear!: string;
     public isActive!: boolean;
     public userId!: number;
 }

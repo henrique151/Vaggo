@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import sequelize from '../database';
 import User from '../models/User';
 import Person from '../models/Person';
-import { CreateUserInput, UpdateUserInput } from '../schemas/userSchema';
+import { CreateUserInput, UpdateUserInput } from '../schemas/usersSchema';
 
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-segredo';
@@ -77,7 +77,7 @@ export class UserService {
             const user = await User.findByPk(id);
             if (!user) throw new Error('USER_NOT_FOUND');
 
-          
+
             const { email, password, permissionLevel, ...personFields } = updateData;
 
             if (password) {
