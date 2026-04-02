@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import sequelize from '../database';
 import User from '../models/User';
 import Person from '../models/Person';
+import Vehicle from '../models/Vehicle';
 import { CreateUserInput, UpdateUserInput } from '../schemas/usersSchema';
 
 const SALT_ROUNDS = 10;
@@ -58,13 +59,13 @@ export class UserService {
 
     static async getAllUsers() {
         return User.findAll({
-            attributes: { exclude: ['password'] },
+            attributes: { exclude: ['PES_INT_ID'] },
             include: [{ model: Person, as: 'person' }],
         });
     }
     static async getUserById(id: number) {
         const user = await User.findByPk(id, {
-            attributes: { exclude: ['password'] },
+            attributes: { exclude: ['PES_INT_ID'] },
             include: [{ model: Person, as: 'person' }],
         });
         if (!user) throw new Error('USER_NOT_FOUND');
@@ -112,6 +113,7 @@ export class UserService {
             const user = await User.findByPk(id);
             if (!user) throw new Error('USER_NOT_FOUND');
 
+            await Vehicle.destroy({ where: { userId: id }, transaction })
             await User.destroy({ where: { id }, transaction });
             await Person.destroy({ where: { id: user.personId }, transaction });
 
@@ -129,6 +131,8 @@ export class UserService {
         if (!user || !(await bcrypt.compare(password, user.password))) {
             throw new Error('INVALID_CREDENTIALS');
         }
+
+        await user.update({ lastLogin: new Date() });
 
         const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 

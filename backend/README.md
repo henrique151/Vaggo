@@ -57,17 +57,17 @@ backend/
 - [x] Sistema de log profissional (Winston) e tratamento de erros centralizado.
 - [x] Infraestrutura Docker finalizada (Dockerfile + docker-compose).
 
-### 🚧 Próximas Etapas (Backlog):
-
 **Veículos**
 
-- [ ] Endpoint `POST /vehicles` — Cadastro de veículo vinculado ao usuário autenticado.
-- [ ] Endpoint `GET /vehicles` — Listagem de todos os veículos.
-- [ ] Endpoint `GET /vehicles/:id` — Consulta detalhada de um veículo.
-- [ ] Endpoint `PUT /vehicles/:id` — Atualização de dados do veículo.
-- [ ] Endpoint `DELETE /vehicles/:id` — Remoção de veículo.
-- [ ] Validação de placa duplicada (`LICENSE_PLATE_ALREADY_EXISTS` → 409).
-- [ ] Schema Zod para veículos (`createVehicleSchema`, `updateVehicleSchema`).
+- [x] Endpoint `POST /vehicles` — Cadastro de veículo vinculado ao usuário autenticado.
+- [x] Endpoint `GET /vehicles` — Listagem de todos os veículos.
+- [x] Endpoint `GET /vehicles/:id` — Consulta detalhada de um veículo.
+- [x] Endpoint `PUT /vehicles/:id` — Atualização de dados do veículo.
+- [x] Endpoint `DELETE /vehicles/:id` — Remoção de veículo.
+- [x] Validação de placa duplicada (`LICENSE_PLATE_ALREADY_EXISTS` → 409).
+- [x] Schema Zod para veículos (`createVehicleSchema`, `updateVehicleSchema`).
+
+### 🚧 Próximas Etapas (Backlog):
 
 ---
 
@@ -84,7 +84,7 @@ backend/
 | **PUT**    | `/users/:id`   | Atualiza dados do usuário      | **Sim (Bearer)** |
 | **DELETE** | `/users/:id`   | Remove um usuário              | **Sim (Bearer)** |
 
-### Veículos `/vehicles` 🚧
+### Veículos `/vehicles`
 
 | Método     | Endpoint        | Descrição                 | Autenticação     |
 | ---------- | --------------- | ------------------------- | ---------------- |
@@ -139,7 +139,7 @@ npm install
 cp .env.example .env
 # Edite o .env com suas credenciais do banco e JWT_SECRET
 
-# Criação da tabela 
+# Criação da tabela
 npx sequelize-cli migration:generate --name create-users
 
 # Sincronize o banco
