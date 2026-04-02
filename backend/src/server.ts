@@ -4,12 +4,14 @@ import usersRoutes from './routes/usersRoutes'
 import vehiclesRoutes from './routes/vehiclesRoutes'
 import { errorHandler } from "./middlewares/errorHandler";
 import setupAssociantos from './models/Associations';
+import cors from "cors";
 
 setupAssociantos();
 
 const app = express();
 
 app.use(express.json())
+app.use(cors())
 
 app.use('/users', usersRoutes)
 app.use('/vehicles', vehiclesRoutes)
