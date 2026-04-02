@@ -14,9 +14,16 @@ export const getAllVehicles = asyncHandler(async (req: AuthRequest, res: Respons
     res.status(200).json({ success: true, data });
 });
 
+export const getMyVehicles = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const authUserId = Number(req.user?.id);
+    const data = await VehicleService.getUserVehicles(authUserId);
+    res.status(200).json({ success: true, data });
+});
+
 export const getVehicleById = asyncHandler(async (req: AuthRequest, res: Response) => {
     const id = Number(req.params.id);
-    const data = await VehicleService.getVehicleById(id);
+    const authUserId = Number(req.user?.id);
+    const data = await VehicleService.getVehicleById(id, authUserId);
     res.status(200).json({ success: true, data });
 });
 
@@ -31,5 +38,5 @@ export const deleteVehicle = asyncHandler(async (req: AuthRequest, res: Response
     const id = Number(req.params.id);
     const userId = Number(req.user?.id);
     await VehicleService.deleteVehicle(id, userId);
-    res.status(200).json({ success: true, message: 'Veículo removido' });
+    res.status(200).json({ success: true, message: 'Veículo removido com sucesso' });
 });

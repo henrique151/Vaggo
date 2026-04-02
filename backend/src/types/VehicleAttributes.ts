@@ -5,6 +5,8 @@ export interface VehicleAttributes {
     color: string;
     licensePlate: string;
     manufactureYear: string;
+    type: 'CARRO' | 'MOTO';
+    size: 'PEQUENO' | 'MEDIO' | 'GRANDE';
     isActive: boolean;
     userId: number;
 }

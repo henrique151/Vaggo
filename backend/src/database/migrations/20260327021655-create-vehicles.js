@@ -30,6 +30,14 @@ module.exports = {
         type: Sequelize.DATEONLY,
         allowNull: false,
       },
+      VEI_STR_TIPO_VEICULO: {
+        type: Sequelize.ENUM("CARRO", "MOTO"),
+        allowNull: false,
+      },
+      VEI_STR_TAMANHO: {
+        type: Sequelize.ENUM("PEQUENO", "MEDIO", "GRANDE"),
+        allowNull: false,
+      },
       VEI_BOL_ATIVO: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

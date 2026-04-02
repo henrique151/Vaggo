@@ -2,7 +2,7 @@ import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../database';
 import { VehicleAttributes } from '../types/VehicleAttributes';
 
-export interface VehicleCreationAttributes extends Optional<VehicleAttributes, 'id'> { }
+export interface VehicleCreationAttributes extends Optional<VehicleAttributes, 'id' | 'isActive'> { }
 
 class Vehicle extends Model<VehicleAttributes, VehicleCreationAttributes> implements VehicleAttributes {
     public id!: number;
@@ -11,6 +11,8 @@ class Vehicle extends Model<VehicleAttributes, VehicleCreationAttributes> implem
     public color!: string;
     public licensePlate!: string;
     public manufactureYear!: string;
+    public type!: 'CARRO' | 'MOTO';
+    public size!: 'PEQUENO' | 'MEDIO' | 'GRANDE';
     public isActive!: boolean;
     public userId!: number;
 }
@@ -48,9 +50,20 @@ Vehicle.init({
         allowNull: false,
         field: 'VEI_DATE_ANOFABRICACAO'
     },
+    type: {
+        type: DataTypes.ENUM('CARRO', 'MOTO'),
+        allowNull: false,
+        field: 'VEI_STR_TIPO_VEICULO'
+    },
+    size: {
+        type: DataTypes.ENUM('PEQUENO', 'MEDIO', 'GRANDE'),
+        allowNull: false,
+        field: 'VEI_STR_TAMANHO'
+    },
     isActive: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
+        defaultValue: true,
         field: 'VEI_BOL_ATIVO'
     },
     userId: {
