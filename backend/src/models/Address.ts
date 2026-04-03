@@ -41,7 +41,7 @@ Address.init({
     },
 }, {
     sequelize,
-    tableName: "address",
+    tableName: "addresses",
     timestamps: false
 });
 

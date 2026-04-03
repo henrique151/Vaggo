@@ -7,10 +7,8 @@ import { CreateUserInput } from '../schemas/usersSchema';
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, cpf, gender, phone, birthDate, email, password, permissionLevel } =
         req.body as CreateUserInput;
-
     const personData = { name, cpf, gender, phone, birthDate };
     const userData = { email, password, permissionLevel };
-
     const data = await UserService.createAccount(personData, userData);
     res.status(201).json({ success: true, message: 'Usuário criado com sucesso', data });
 });
@@ -34,11 +32,9 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const authReq = req as AuthRequest;
-
     if (Number(authReq.user?.id) !== id) {
         return res.status(403).json({ success: false, message: 'Sem permissão' });
     }
-
     const data = await UserService.updateAccount(id, req.body);
     res.status(200).json({ success: true, message: 'Atualizado com sucesso', data });
 });

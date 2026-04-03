@@ -2,6 +2,7 @@ import express from "express";
 import sequelize from './database';
 import usersRoutes from './routes/usersRoutes'
 import vehiclesRoutes from './routes/vehiclesRoutes'
+import locationsRoutes from './routes/locationsRoutes'
 import { errorHandler } from "./middlewares/errorHandler";
 import setupAssociantos from './models/Associations';
 import cors from "cors";
@@ -15,6 +16,7 @@ app.use(cors())
 
 app.use('/users', usersRoutes)
 app.use('/vehicles', vehiclesRoutes)
+app.use('/locations', locationsRoutes)
 
 app.use(errorHandler);
 

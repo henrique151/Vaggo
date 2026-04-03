@@ -61,7 +61,8 @@ backend/
 
 - [x] Endpoint `POST /vehicles` — Cadastro de veículo vinculado ao usuário autenticado.
 - [x] Endpoint `GET /vehicles` — Listagem de todos os veículos.
-- [x] Endpoint `GET /vehicles/:id` — Consulta detalhada de um veículo.
+- [x] Endpoint `GET /vehicles/my-vehicles` — Consulta vários veículos do usuário
+- [x] Endpoint `GET /vehicles/:userId/:id` — Consulta detalhada de um veículo.
 - [x] Endpoint `PUT /vehicles/:id` — Atualização de dados do veículo.
 - [x] Endpoint `DELETE /vehicles/:id` — Remoção de veículo.
 - [x] Validação de placa duplicada (`LICENSE_PLATE_ALREADY_EXISTS` → 409).
@@ -69,7 +70,22 @@ backend/
 
 ### 🚧 Próximas Etapas (Backlog):
 
----
+#### Propriedades `/properties`
+
+| Método   | Endpoint          | Descrição                            | Autenticação |
+| :------- | :---------------- | :----------------------------------- | :----------- |
+| **POST** | `/properties`     | Cadastra um novo estacionamento      | **Admin**    |
+| **GET**  | `/properties`     | Lista todos os estacionamentos       | **Sim**      |
+| **GET**  | `/properties/:id` | Detalhes da propriedade e suas vagas | **Sim**      |
+| **PUT**  | `/properties/:id` | Atualiza dados (Endereço, Nome, etc) | **Dono**     |
+
+#### Vagas `/spots`
+
+| Método    | Endpoint                    | Descrição                                   | Autenticação     |
+| :-------- | :-------------------------- | :------------------------------------------ | :--------------- |
+| **POST**  | `/properties/:propId/spots` | Gera vagas para uma propriedade             | **Dono/Gerente** |
+| **GET**   | `/properties/:propId/spots` | Lista vagas de um estacionamento específico | **Sim**          |
+| **PATCH** | `/spots/:id/status`         | Altera status da vaga (Ocupar/Liberar)      | **Funcionário**  |
 
 ## 🛠️ Endpoints da API
 
@@ -86,13 +102,14 @@ backend/
 
 ### Veículos `/vehicles`
 
-| Método     | Endpoint        | Descrição                 | Autenticação     |
-| ---------- | --------------- | ------------------------- | ---------------- |
-| **POST**   | `/vehicles`     | Cadastra um veículo       | **Sim (Bearer)** |
-| **GET**    | `/vehicles`     | Lista todos os veículos   | **Sim (Bearer)** |
-| **GET**    | `/vehicles/:id` | Consulta um único veículo | **Sim (Bearer)** |
-| **PUT**    | `/vehicles/:id` | Atualiza dados do veículo | **Sim (Bearer)** |
-| **DELETE** | `/vehicles/:id` | Remove um veículo         | **Sim (Bearer)** |
+| Método     | Endpoint                | Descrição                           | Autenticação     |
+| ---------- | ----------------------- | ----------------------------------- | ---------------- |
+| **POST**   | `/vehicles`             | Cadastra um veículo                 | **Sim (Bearer)** |
+| **GET**    | `/vehicles`             | Lista todos os veículos             | **Sim (Bearer)** |
+| **GET**    | `/vehicles/my-vehicles` | Consulta vários veículos do usuário | **Sim (Bearer)** |
+| **GET**    | `/vehicles/:userId/:id` | Consulta um único veículo           | **Sim (Bearer)** |
+| **PUT**    | `/vehicles/:id`         | Atualiza dados do veículo           | **Sim (Bearer)** |
+| **DELETE** | `/vehicles/:id`         | Remove um veículo                   | **Sim (Bearer)** |
 
 ---
 
@@ -113,6 +130,9 @@ docker-compose up -d
 
 # Rodar as migrations dentro do container
 docker exec -it vaggo_api npx sequelize-cli db:migrate --migrations-path src/database/migrations
+
+# Rodar o seed no Docker
+docker exec -it vaggo_api npx sequelize-cli db:seed:all
 ```
 
 ### Comandos úteis Docker
@@ -148,6 +168,14 @@ npx sequelize-cli db:migrate
 # Deleta o banco
 npx sequelize-cli db:drop
 
+# Para rodar o seeder
+npx sequelize-cli db:seed:all
+
+# Gera o arquivo de seed
+npx sequelize-cli seed:generate --name seed-states-cities
+
+# Resetar o Banco:
+npx sequelize-cli db:migrate:undo:all
 # Inicie em modo desenvolvimento
 npm run dev
 ```

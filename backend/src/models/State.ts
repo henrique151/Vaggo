@@ -6,6 +6,7 @@ export interface StateCreationAttributes extends Optional<StateAttributes, 'id'>
 
 class State extends Model<StateAttributes, StateCreationAttributes> implements StateAttributes {
     public id!: number;
+    public name!: string;
     public acronymState!: string;
 }
 
@@ -15,6 +16,11 @@ State.init({
         autoIncrement: true,
         primaryKey: true,
         field: 'EST_INT_ID'
+    },
+    name: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        field: 'EST_STR_NOME'
     },
     acronymState: {
         type: DataTypes.CHAR(2),

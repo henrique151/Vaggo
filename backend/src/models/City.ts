@@ -15,6 +15,7 @@ City.init({
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+        allowNull: false,
         field: 'CID_INT_ID'
     },
     name: {
@@ -29,7 +30,7 @@ City.init({
     }
 }, {
     sequelize,
-    tableName: 'citys',
+    tableName: 'cities',
     timestamps: false
 });
 
