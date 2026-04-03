@@ -75,7 +75,6 @@ export class VehicleService {
             const vehicle = await Vehicle.findByPk(id, { transaction });
             if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
 
-            // Segurança: Só o dono do veículo pode editar
             if (vehicle.userId !== authUserId) throw new Error('FORBIDDEN');
 
             if (updateData.licensePlate && updateData.licensePlate !== vehicle.licensePlate) {

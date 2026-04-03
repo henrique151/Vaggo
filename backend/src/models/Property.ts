@@ -53,7 +53,7 @@ Property.init({
     }
 }, {
     sequelize,
-    tableName: 'propertys',
+    tableName: 'properties',
     timestamps: false
 });
 

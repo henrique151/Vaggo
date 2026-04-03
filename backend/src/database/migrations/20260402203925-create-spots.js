@@ -14,9 +14,10 @@ module.exports = {
         type: Sequelize.DECIMAL(5, 2),
         allowNull: false,
       },
-      VAG_BOL_OCUPADA: {
-        type: Sequelize.ENUM("DISPONÍVEL", "INDISPONÍVEL", "OCUPADA"),
+      VAG_STR_OCUPADA: {
+        type: Sequelize.ENUM("DISPONIVEL", "INDISPONIVEL", "OCUPADA"),
         allowNull: false,
+        defaultValue: "DISPONIVEL",
       },
       VAG_STR_IDENTIFICADOR: {
         type: Sequelize.STRING(70),

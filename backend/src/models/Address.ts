@@ -10,6 +10,7 @@ class Address extends Model<AddressAttributes, AddressCreationAttributes> implem
     public neighborhood!: string;
     public zipCode!: string;
     public cityId!: number;
+    public number!: string;
 }
 
 Address.init({
@@ -28,6 +29,11 @@ Address.init({
         type: DataTypes.STRING(70),
         allowNull: false,
         field: "END_STR_BAIRRO",
+    },
+    number: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        field: "END_STR_NUMERO"
     },
     zipCode: {
         type: DataTypes.CHAR(8),

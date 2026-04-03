@@ -1,7 +1,7 @@
 export interface SpotAttributes {
     id: number;
     size: number;
-    status: 'DISPONÍVEL' | 'INDISPONÍVEL' | 'OCUPADA';
+    status: 'DISPONIVEL' | 'INDISPONIVEL' | 'OCUPADA';
     identifier: string;
     isCovered: boolean;
     isActive: boolean;

@@ -7,7 +7,7 @@ export interface SpotCreationAttributes extends Optional<SpotAttributes, 'id'> {
 class Spot extends Model<SpotAttributes, SpotCreationAttributes> implements SpotAttributes {
     public id!: number;
     public size!: number;
-    public status!: 'DISPONÍVEL' | 'INDISPONÍVEL' | 'OCUPADA';
+    public status!: 'DISPONIVEL' | 'INDISPONIVEL' | 'OCUPADA';
     public identifier!: string;
     public isCovered!: boolean;
     public isActive!: boolean;
@@ -27,9 +27,9 @@ Spot.init({
         field: 'VAG_DEC_TAMANHO'
     },
     status: {
-        type: DataTypes.ENUM('DISPONÍVEL', 'INDISPONÍVEL', 'OCUPADA'),
+        type: DataTypes.ENUM('DISPONIVEL', 'INDISPONIVEL', 'OCUPADA'),
         allowNull: false,
-        field: 'VAG_BOL_OCUPADA'
+        field: 'VAG_STR_OCUPADA'
     },
     identifier: {
         type: DataTypes.STRING(70),

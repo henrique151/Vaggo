@@ -87,6 +87,14 @@ backend/
 | **GET**   | `/properties/:propId/spots` | Lista vagas de um estacionamento específico | **Sim**          |
 | **PATCH** | `/spots/:id/status`         | Altera status da vaga (Ocupar/Liberar)      | **Funcionário**  |
 
+POST   /properties
+GET    /properties
+GET    /properties/:id
+PUT    /properties/:id
+POST   /properties/:propId/spots
+GET    /properties/:propId/spots
+PATCH  /spots/:id/status
+
 ## 🛠️ Endpoints da API
 
 ### Usuários `/users`

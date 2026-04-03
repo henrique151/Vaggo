@@ -4,4 +4,5 @@ export interface AddressAttributes {
     neighborhood: string;
     zipCode: string;
     cityId: number;
+    number: string;
 }
