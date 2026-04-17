@@ -19,7 +19,7 @@ const BUSINESS_ERRORS: Record<string, number> = {
     USER_ALREADY_MEMBER: 409,
     SPOT_ALREADY_EXISTS: 409,
     EXTERNAL_API_FAILURE: 409,
-
+    SPOT_NOT_APPROVED: 422,
 };
 
 export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
@@ -49,7 +49,8 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         VEHICLE_NOT_FOUND: 'Veículo não encontrado.',
         USER_ALREADY_MEMBER: 'Usuário já vinculado à propriedade',
         SPOT_ALREADY_EXISTS: 'Vaga duplicada na mesma propriedade',
-        EXTERNAL_API_FAILURE: 'Erro no cep.'
+        EXTERNAL_API_FAILURE: 'Erro no cep.',
+        SPOT_NOT_APPROVED: 'A vaga precisa estar com status APROVADA para alterar sua disponibilidade',
     };
 
     const message = messageMap[err.message] ?? (status === 500 ? 'Erro interno do servidor' : err.message);
