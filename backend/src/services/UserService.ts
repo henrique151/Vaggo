@@ -5,6 +5,7 @@ import User from '../models/User';
 import Person from '../models/Person';
 import Vehicle from '../models/Vehicle';
 import { CreateUserInput, UpdateUserInput } from '../schemas/usersSchema';
+import { FileData, ImageService } from './ImageService';
 
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-segredo';
@@ -15,10 +16,13 @@ type PersonData = Pick<CreateUserInput, 'name' | 'cpf' | 'gender' | 'phone' | 'b
 type UserData = Pick<CreateUserInput, 'email' | 'password' | 'permissionLevel'>;
 
 export class UserService {
-    static async createAccount(personData: PersonData, userData: UserData) {
+    static async createAccount(personData: PersonData, userData: UserData, avatarFile?: FileData) {
+        if (!avatarFile) throw new Error('PROFILE_IMAGE_REQUIRED');
         const transaction = await sequelize.transaction();
-        try {
 
+        let uploadedPublicId: string | null = null;
+
+        try {
             const existingCpf = await Person.findOne({ where: { cpf: personData.cpf } });
             if (existingCpf)
                 throw new Error('CPF_ALREADY_EXISTS');
@@ -43,16 +47,24 @@ export class UserService {
                     isBlocked: false,
                     isAdmin: false,
                     permissionLevel: userData.permissionLevel ?? '1',
+                    avatarUrl: 'pending',
                 },
                 { transaction }
             );
 
+            // Agora fazer upload do arquivo (o user.id já existe)
+            const uploadResult = await ImageService.uploadUserAvatar(avatarFile, user.id);
+            uploadedPublicId = uploadResult.public_id;
+
+            // Atualizar com a URL final do avatar
+            await user.update({ avatarUrl: uploadResult.secure_url }, { transaction });
             await transaction.commit();
 
             const { password: _, ...userResponse } = user.toJSON();
             return userResponse;
         } catch (error) {
             await transaction.rollback();
+            if (uploadedPublicId) await ImageService.deleteImage(uploadedPublicId).catch(console.error);
             throw error;
         }
     }
@@ -72,12 +84,19 @@ export class UserService {
         return user;
     }
 
-    static async updateAccount(id: number, updateData: UpdateUserInput) {
+    static async updateAccount(id: number, updateData: UpdateUserInput, fileData: { buffer: Buffer; mimetype: string }) {
         const transaction = await sequelize.transaction();
+        let newAvatarPublicId: string | null = null;
         try {
             const user = await User.findByPk(id);
             if (!user) throw new Error('USER_NOT_FOUND');
 
+            if (fileData) {
+                const upload = await ImageService.uploadUserAvatar(fileData, id);
+                newAvatarPublicId = upload.public_id;
+
+                await user.update({ avatarUrl: upload.secure_url }, { transaction });
+            }
 
             const { email, password, permissionLevel, ...personFields } = updateData;
 
@@ -103,6 +122,7 @@ export class UserService {
             return this.getUserById(id);
         } catch (error) {
             await transaction.rollback();
+            if (newAvatarPublicId) await ImageService.deleteImage(newAvatarPublicId).catch(console.error);
             throw error;
         }
     }
@@ -118,6 +138,9 @@ export class UserService {
             await Person.destroy({ where: { id: user.personId }, transaction });
 
             await transaction.commit();
+
+            await ImageService.deleteFolder(`vaggo/users/user_${id}`).catch(console.error);
+
             return true;
         } catch (error) {
             await transaction.rollback();

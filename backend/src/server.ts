@@ -8,7 +8,7 @@ import propertiesRoutes from './routes/propertiesRoutes'
 import spotsRoutes from './routes/spotsRoutes'
 import setupAssociantos from './models/Associations';
 import cors from "cors";
-
+import { globalLimiter } from "./middlewares/rateLimiter";
 
 setupAssociantos();
 
@@ -16,6 +16,9 @@ const app = express();
 
 app.use(express.json())
 app.use(cors())
+
+
+app.use(globalLimiter);
 
 app.use('/users', usersRoutes)
 app.use('/vehicles', vehiclesRoutes)
@@ -25,8 +28,10 @@ app.use('/spots', spotsRoutes)
 
 app.use(errorHandler);
 
+
 sequelize
     .authenticate()
+
     .then(() => {
         console.log('Banco conectado');
 

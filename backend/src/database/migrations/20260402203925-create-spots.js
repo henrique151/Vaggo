@@ -36,6 +36,11 @@ module.exports = {
         type: Sequelize.STRING(70),
         allowNull: false,
       },
+      VAG_DEC_PRECO: {
+        type: Sequelize.DECIMAL(8, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
       VAG_BOL_COBERTA: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -43,6 +48,10 @@ module.exports = {
       VAG_BOL_ATIVA: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
+      },
+      VAG_STR_IMAGEM_URL: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       PRO_INT_ID: {
         type: Sequelize.INTEGER,

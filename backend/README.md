@@ -56,14 +56,14 @@ backend/
 
 ### Veículos `/vehicles`
 
-| Método     | Endpoint                | Descrição                           | Autenticação     |
-| :--------- | :---------------------- | :---------------------------------- | :--------------- |
-| **POST**   | `/vehicles`             | Cadastra um veículo                 | **Sim (Bearer)** |
-| **GET**    | `/vehicles`             | Lista todos os veículos             | **Sim (Bearer)** |
-| **GET**    | `/vehicles/my-vehicles` | Consulta veículos do usuário        | **Sim (Bearer)** |
-| **GET**    | `/vehicles/:userId/:id` | Consulta um único veículo           | **Sim (Bearer)** |
-| **PUT**    | `/vehicles/:id`         | Atualiza dados do veículo           | **Sim (Bearer)** |
-| **DELETE** | `/vehicles/:id`         | Remove um veículo                   | **Sim (Bearer)** |
+| Método     | Endpoint                | Descrição                    | Autenticação     |
+| :--------- | :---------------------- | :--------------------------- | :--------------- |
+| **POST**   | `/vehicles`             | Cadastra um veículo          | **Sim (Bearer)** |
+| **GET**    | `/vehicles`             | Lista todos os veículos      | **Sim (Bearer)** |
+| **GET**    | `/vehicles/my-vehicles` | Consulta veículos do usuário | **Sim (Bearer)** |
+| **GET**    | `/vehicles/:userId/:id` | Consulta um único veículo    | **Sim (Bearer)** |
+| **PUT**    | `/vehicles/:id`         | Atualiza dados do veículo    | **Sim (Bearer)** |
+| **DELETE** | `/vehicles/:id`         | Remove um veículo            | **Sim (Bearer)** |
 
 ### Localização
 
@@ -85,11 +85,14 @@ backend/
 
 ### Vagas `/spots`
 
-| Método    | Endpoint                    | Descrição                                   | Autenticação     |
-| :-------- | :-------------------------- | :------------------------------------------ | :--------------- |
-| **POST**  | `/properties/:propId/spots` | Gera vagas para uma propriedade             | **Dono**         |
-| **GET**   | `/properties/:propId/spots` | Lista vagas de um estacionamento específico | **Sim (Bearer)** |
-| **PATCH** | `/spots/:id/status`         | Altera status da vaga (Ocupar/Liberar)      | **Sim (Bearer)** |
+| Método     | Endpoint                        | Descrição                                   | Autenticação     |
+| :--------- | :------------------------------ | :------------------------------------------ | :--------------- |
+| **POST**   | `/properties/:propId/spots`     | Gera vagas para uma propriedade             | **Dono**         |
+| **GET**    | `/properties/:propId/spots`     | Lista vagas de um estacionamento específico | **Sim (Bearer)** |
+| **PUT**    | `/properties/:propId/spots/:id` | Atualiza dados da vaga (cobertura, tamanho) | **Dono**         |
+| **DELETE** | `/properties/:propId/spots/:id` | Remove uma vaga da propriedade              | **Dono**         |
+| **PATCH**  | `/spots/:id/status`             | Altera status da vaga (Ocupar/Liberar)      | **Sim (Bearer)** |
+| **PATCH**  | `/spots/:id/evaluate`           | Aprova ou recusa uma vaga                   | **Sim (Bearer)** |
 
 ---
 

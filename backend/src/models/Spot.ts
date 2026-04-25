@@ -6,15 +6,17 @@ export interface SpotCreationAttributes extends Optional<SpotAttributes, 'id'> {
 
 class Spot extends Model<SpotAttributes, SpotCreationAttributes> implements SpotAttributes {
     public id!: number;
+    public price!: number;
     public size!: number;
     public status!: 'DISPONIVEL' | 'INDISPONIVEL' | 'OCUPADA';
     public identifier!: string;
     public isCovered!: boolean;
     public approvalStatus!: 'PENDENTE' | 'APROVADA' | 'RECUSADA';
-    public allowedVehicles!: string;
-    public operatingHours !: string;
+    public allowedVehicles!: ('CARRO' | 'MOTO')[];
+    public operatingHours!: Record<string, { start: string; end: string }> | null;
     public isActive!: boolean;
     public propertyId!: number;
+    public imageUrl!: string;
 }
 
 Spot.init({
@@ -23,6 +25,12 @@ Spot.init({
         autoIncrement: true,
         primaryKey: true,
         field: 'VAG_INT_ID'
+    },
+    price: {
+        type: DataTypes.DECIMAL(8, 2),
+        allowNull: false,
+        defaultValue: 0,
+        field: 'VAG_DEC_PRECO'
     },
     size: {
         type: DataTypes.DECIMAL(5, 2),
@@ -64,6 +72,11 @@ Spot.init({
         type: DataTypes.BOOLEAN,
         allowNull: false,
         field: 'VAG_BOL_ATIVA'
+    },
+    imageUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: 'VAG_STR_IMAGEM_URL'
     },
     propertyId: {
         type: DataTypes.INTEGER,
