@@ -146,7 +146,6 @@ export class PropertyService {
 
             await transaction.commit();
 
-            // Deletar pasta de propriedades do usuário se houver
             if (userId) {
                 await ImageService.deleteFolder(`vaggo/users/user_${userId}/properties`);
             }
@@ -165,7 +164,6 @@ export class PropertyService {
             const property = await Property.findByPk(id, { transaction });
             if (!property) throw new Error('PROPERTY_NOT_FOUND');
 
-            // Buscar userId via PropertyUser
             const propertyUser = await PropertyUser.findOne({
                 where: { propertyId: id },
                 transaction
@@ -182,7 +180,6 @@ export class PropertyService {
             if ((currentImages.length + newFiles.length) < 1) throw new Error('PROPERTY_REQUIRES_AT_LEAST_ONE_IMAGE');
             if ((currentImages.length + newFiles.length) > 3) throw new Error('PROPERTY_IMAGE_LIMIT');
 
-            // Upload das novas
             const newImageUrls: string[] = [];
             for (let i = 0; i < newFiles.length; i++) {
                 const result = await ImageService.uploadPropertyImage(newFiles[i], userId, property.id, currentImages.length + i);

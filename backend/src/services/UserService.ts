@@ -9,7 +9,7 @@ import { FileData, ImageService } from './ImageService';
 
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-segredo';
-const JWT_EXPIRES_IN = 3600;
+const JWT_EXPIRES_IN = 10800;
 
 // Pick é um utilitário do TypeScript que extrai apenas os campos que você quer de uma interface/tipo existente, sem precisar redeclarar tudo.
 type PersonData = Pick<CreateUserInput, 'name' | 'cpf' | 'gender' | 'phone' | 'birthDate'>;
@@ -52,11 +52,10 @@ export class UserService {
                 { transaction }
             );
 
-            // Agora fazer upload do arquivo (o user.id já existe)
+   
             const uploadResult = await ImageService.uploadUserAvatar(avatarFile, user.id);
             uploadedPublicId = uploadResult.public_id;
-
-            // Atualizar com a URL final do avatar
+            
             await user.update({ avatarUrl: uploadResult.secure_url }, { transaction });
             await transaction.commit();
 
