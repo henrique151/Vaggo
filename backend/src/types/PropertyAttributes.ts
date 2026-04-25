@@ -6,4 +6,5 @@ export interface PropertyAttributes {
     isActive: boolean;
     totalCapacity: number;
     addressId: number;
+    images: string[];
 }

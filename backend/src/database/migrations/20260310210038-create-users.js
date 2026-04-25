@@ -37,6 +37,10 @@ module.exports = {
         type: Sequelize.ENUM("1", "2", "3"),
         allowNull: false,
       },
+      USU_STR_AVATAR_URL: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
       PES_INT_ID: {
         type: Sequelize.INTEGER,
         allowNull: false,

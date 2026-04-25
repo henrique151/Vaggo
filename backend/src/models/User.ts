@@ -11,6 +11,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public isBlocked!: boolean;
     public isAdmin!: boolean;
     public permissionLevel!: '1' | '2' | '3';
+    public avatarUrl!: string;
     public personId!: number;
 }
 
@@ -50,6 +51,11 @@ User.init({
         type: DataTypes.ENUM('1', '2', '3'),
         allowNull: false,
         field: 'USU_STATUS_NIVELPERM'
+    },
+    avatarUrl: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        field: 'USU_STR_AVATAR_URL'
     },
     personId: {
         type: DataTypes.INTEGER,

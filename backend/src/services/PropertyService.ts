@@ -6,6 +6,7 @@ import City from "../models/City";
 import { ExternalAddressService } from "./ExternalAddressService";
 import User from "../models/User";
 import PropertyUser from "../models/PropertyUser";
+import { FileData, ImageService } from "./ImageService";
 export class PropertyService {
     private static get defaultInclude() {
         return [
@@ -25,8 +26,14 @@ export class PropertyService {
         ];
     }
 
-    static async createProperty(propertyData: CreatePropertyInput, userId: number) {
+    static async createProperty(propertyData: CreatePropertyInput, userId: number, files: FileData[]) {
+        if (!files || files.length === 0) throw new Error('PROPERTY_REQUIRES_AT_LEAST_ONE_IMAGE');
+        if (files.length > 3) throw new Error('PROPERTY_IMAGE_LIMIT');
+
         const transaction = await sequelize.transaction();
+
+        let uploadedPublicIds: string[] = [];
+
         try {
             const externalData = await ExternalAddressService.getAddressByCep(propertyData.zipCode);
             if (!externalData) throw new Error('EXTERNAL_API_FAILURE');
@@ -49,18 +56,27 @@ export class PropertyService {
                 addressId: address.id
             }, { transaction });
 
-            // ← vincula o criador como DONO automaticamente
             await PropertyUser.create({
                 userId,
                 propertyId: property.id,
                 role: 'DONO'
             }, { transaction });
 
+            const imageUrls: string[] = [];
+            for (let i = 0; i < files.length; i++) {
+                const uploadResult = await ImageService.uploadPropertyImage(files[i], userId, property.id, i);
+                uploadedPublicIds.push(uploadResult.public_id);
+                imageUrls.push(uploadResult.secure_url);
+            }
+
+            await property.update({ images: imageUrls }, { transaction });
+
             await transaction.commit();
             return this.getPropertyById(property.id);
 
         } catch (error) {
             await transaction.rollback();
+            uploadedPublicIds.forEach(id => ImageService.deleteImage(id).catch(console.error));
             throw error;
         }
     }
@@ -117,10 +133,23 @@ export class PropertyService {
             // await property.update({ isActive: false });
 
             const addressId = property.addressId;
+
+            // Buscar userId via PropertyUser
+            const propertyUser = await PropertyUser.findOne({
+                where: { propertyId: id },
+                transaction
+            });
+            const userId = propertyUser?.userId;
+
             await property.destroy({ transaction });
             await Address.destroy({ where: { id: addressId }, transaction });
 
             await transaction.commit();
+
+            // Deletar pasta de propriedades do usuário se houver
+            if (userId) {
+                await ImageService.deleteFolder(`vaggo/users/user_${userId}/properties`);
+            }
             return true;
         } catch (error) {
             await transaction.rollback();
@@ -128,15 +157,44 @@ export class PropertyService {
         }
     }
 
-    static async updateProperty(id: number, propertyData: CreatePropertyInput) {
+    static async updateProperty(id: number, propertyData: CreatePropertyInput, newFiles: FileData[], imagesToRemove: string[] = []) {
         const transaction = await sequelize.transaction();
+        let uploadedPublicIds: string[] = [];
 
         try {
             const property = await Property.findByPk(id, { transaction });
             if (!property) throw new Error('PROPERTY_NOT_FOUND');
 
+            // Buscar userId via PropertyUser
+            const propertyUser = await PropertyUser.findOne({
+                where: { propertyId: id },
+                transaction
+            });
+            const userId = propertyUser?.userId;
+            if (!userId) throw new Error('PROPERTY_OWNER_NOT_FOUND');
+
+            let currentImages = property.images || [];
+          
+            const toRemove = imagesToRemove.map(url => url.trim());
+
+            currentImages = currentImages.filter(url => !toRemove.includes(url));
+
+            if ((currentImages.length + newFiles.length) < 1) throw new Error('PROPERTY_REQUIRES_AT_LEAST_ONE_IMAGE');
+            if ((currentImages.length + newFiles.length) > 3) throw new Error('PROPERTY_IMAGE_LIMIT');
+
+            // Upload das novas
+            const newImageUrls: string[] = [];
+            for (let i = 0; i < newFiles.length; i++) {
+                const result = await ImageService.uploadPropertyImage(newFiles[i], userId, property.id, currentImages.length + i);
+                uploadedPublicIds.push(result.public_id);
+                newImageUrls.push(result.secure_url);
+            }
+
+            const finalImages = [...currentImages, ...newImageUrls];
+
             await property.update({
-                ...propertyData
+                ...propertyData,
+                images: finalImages
             }, { transaction })
 
             await Address.update({
@@ -151,9 +209,16 @@ export class PropertyService {
             })
 
             await transaction.commit();
+
+            imagesToRemove.forEach(url => {
+                const publicId = ImageService.extractPublicId(url);
+                if (publicId) ImageService.deleteImage(publicId).catch(console.error);
+            });
             return this.getPropertyById(id);
+
         } catch (error) {
             await transaction.rollback();
+            uploadedPublicIds.forEach(id => ImageService.deleteImage(id).catch(console.error));
             throw error;
         }
     }

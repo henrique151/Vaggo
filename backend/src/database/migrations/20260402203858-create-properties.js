@@ -30,6 +30,11 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      PRO_JSON_IMAGENS: {
+        type: Sequelize.JSON,
+        allowNull: false,
+        defaultValue: [],
+      },
       END_INT_ID: {
         type: Sequelize.INTEGER,
         allowNull: false,

@@ -6,5 +6,6 @@ export interface UserAttributes {
     isBlocked: boolean;
     isAdmin: boolean;
     permissionLevel: '1' | '2' | '3';
+    avatarUrl: string;
     personId: number;
 }

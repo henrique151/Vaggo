@@ -8,7 +8,7 @@ const RULES = {
 
 const allowedVehiclesSchema = z.array(
     z.enum(['CARRO', 'MOTO'], {
-        error: 'Tipo de veiculo invalido. Use: CARRO ou MOTO, ou ambos'
+        error: 'Tipo de veiculo invalido. Use: CARRO ou MOTO, ou ambosy'
     })
 ).min(1, 'A vaga deve permitir pelo menos um tipo de veiculo');
 

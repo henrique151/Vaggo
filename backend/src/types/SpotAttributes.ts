@@ -10,4 +10,5 @@ export interface SpotAttributes {
     isCovered: boolean;
     isActive: boolean;
     propertyId: number;
+    imageUrl: string;
 }
