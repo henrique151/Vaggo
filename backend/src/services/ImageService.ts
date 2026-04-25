@@ -91,4 +91,12 @@ export class ImageService {
         const match = url.match(/\/v\d+\/(.+?)\.\w+$/);
         return match ? match[1] : null;
     }
+
+    static extractFolderPath(url: string): string | null {
+        const publicId = this.extractPublicId(url);
+        if (!publicId) return null;
+
+        const lastSlashIndex = publicId.lastIndexOf('/');
+        return lastSlashIndex > 0 ? publicId.slice(0, lastSlashIndex) : null;
+    }
 }
