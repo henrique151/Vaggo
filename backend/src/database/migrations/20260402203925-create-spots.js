@@ -49,6 +49,10 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false,
       },
+      VAG_STR_IMAGEM_URL: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       PRO_INT_ID: {
         type: Sequelize.INTEGER,
         allowNull: false,

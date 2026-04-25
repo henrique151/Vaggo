@@ -9,7 +9,10 @@ export const createProperty = asyncHandler(async (req: Request, res: Response) =
     const userId = Number(authReq.user?.id);
     const data = req.body as CreatePropertyInput;
 
-    const result = await PropertyService.createProperty(data, userId);
+    const files = req.files as Express.Multer.File[];
+    const fileDataList = files?.map(f => ({ buffer: f.buffer, mimetype: f.mimetype })) || [];
+
+    const result = await PropertyService.createProperty(data, userId, fileDataList);
 
     res.status(201).json({
         success: true,
@@ -49,7 +52,16 @@ export const updateProperty = asyncHandler(async (req: Request, res: Response) =
     const id = Number(req.params.id);
     const data = req.body;
 
-    const result = await PropertyService.updateProperty(id, data);
+    const files = req.files as Express.Multer.File[];
+    const newFiles = files ? files.map(f => ({ buffer: f.buffer, mimetype: f.mimetype })) : [];
+
+    const imagesToRemove = Array.isArray(data.imagesToRemove)
+        ? data.imagesToRemove
+        : data.imagesToRemove
+            ? JSON.parse(data.imagesToRemove)
+            : undefined;
+
+    const result = await PropertyService.updateProperty(id, data, newFiles, imagesToRemove);
 
     res.status(200).json({
         success: true,

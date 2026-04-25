@@ -16,6 +16,7 @@ class Spot extends Model<SpotAttributes, SpotCreationAttributes> implements Spot
     public operatingHours!: Record<string, { start: string; end: string }> | null;
     public isActive!: boolean;
     public propertyId!: number;
+    public imageUrl!: string;
 }
 
 Spot.init({
@@ -71,6 +72,11 @@ Spot.init({
         type: DataTypes.BOOLEAN,
         allowNull: false,
         field: 'VAG_BOL_ATIVA'
+    },
+    imageUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: 'VAG_STR_IMAGEM_URL'
     },
     propertyId: {
         type: DataTypes.INTEGER,

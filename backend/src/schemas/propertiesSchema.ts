@@ -21,10 +21,12 @@ const descriptionSchema = z
     .string()
     .max(RULES.DESC_MAX, `Descrição não pode exceder ${RULES.DESC_MAX} caracteres`)
     .trim()
-    .optional(); 
+    .optional();
 
 const capacitySchema = z
-    .number({ error: 'Capacidade deve ser um número' })
+    .coerce.number({
+        error: 'Capacidade deve ser um número'
+    })
     .int()
     .min(RULES.CAPACITY_MIN, `Capacidade mínima é de ${RULES.CAPACITY_MIN} vaga`);
 
@@ -38,7 +40,7 @@ const addressStringSchema = (label: string, max: number) => z
     .min(2, `${label} muito curto`)
     .max(max, `${label} muito longo`)
     .trim()
-    .optional(); 
+    .optional();
 
 export const createPropertySchema = z.object({
     name: propertyNameSchema,
@@ -55,6 +57,10 @@ export const createPropertySchema = z.object({
     zipCode: zipCodeSchema,
 
     cityId: z.number().positive().optional()
+}).strict();
+
+export const updatePropertySchema = createPropertySchema.extend({
+    imagesToRemove: z.union([z.string(), z.array(z.string())]).optional()
 }).strict();
 
 export type CreatePropertyInput = z.infer<typeof createPropertySchema>;

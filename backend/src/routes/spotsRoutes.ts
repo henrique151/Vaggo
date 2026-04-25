@@ -1,16 +1,20 @@
 import { Router } from "express";
-import { generateSports, listByProperty, evaluateSpots, updateSpot, deleteSpot, updateSpotData } from '../controllers/spotController';
+import { listByProperty, evaluateSpots, updateSpot, deleteSpot, updateSpotData, generateSpots } from '../controllers/spotsController';
 import { validateBody } from "../middlewares/validateBody";
-import { evaluateSpotSchema, generateSpotsSchema, updateSpotSchema, updateSpotStatusSchema } from '../schemas/sportsSchema';
+import { evaluateSpotSchema, generateSpotsSchema, updateSpotSchema, updateSpotStatusSchema } from '../schemas/spotsSchema';
 import { authMiddleware } from "../middlewares/authMiddleware";
+import { uploadMultiple, uploadSingle } from "../middlewares/upload";
+import { uploadLimiter } from "../middlewares/rateLimiter";
 
 const router = Router();
 
 router.post(
     '/properties/:propId/spots',
     authMiddleware,
+    uploadLimiter,
+    uploadMultiple,
     validateBody(generateSpotsSchema),
-    generateSports
+    generateSpots
 );
 
 router.get(
@@ -34,14 +38,16 @@ router.patch(
 );
 
 router.put(
-    '/properties/:propId/spots/:id',  
+    '/properties/:propId/spots/:id',
     authMiddleware,
+    uploadLimiter,
+    uploadSingle,
     validateBody(updateSpotSchema),
     updateSpotData
 );
 
 router.delete(
-    '/properties/:propId/spots/:id',  
+    '/properties/:propId/spots/:id',
     authMiddleware,
     deleteSpot
 );

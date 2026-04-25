@@ -11,6 +11,7 @@ class Property extends Model<PropertyAttributes, PropertyCreationAttributes> imp
     public description!: string;
     public isActive!: boolean;
     public totalCapacity!: number;
+    public images!: string[];
     public addressId!: number;
 }
 
@@ -45,6 +46,12 @@ Property.init({
         type: DataTypes.INTEGER,
         allowNull: false,
         field: 'PRO_INT_CAPACIDADE_TOTAL'
+    },
+    images: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        field: 'PRO_JSON_IMAGENS'
     },
     addressId: {
         type: DataTypes.INTEGER,
