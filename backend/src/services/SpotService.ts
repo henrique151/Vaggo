@@ -125,18 +125,31 @@ export class SpotService {
     }
 
     static async deleteSpot(spotId: number, propId: number) {
-        const spot = await Spot.findOne({ where: { id: spotId, propertyId: propId } });
-        if (!spot) throw new Error('SPOT_NOT_FOUND');
+        const transaction = await sequelize.transaction();
 
-        const publicId = spot.imageUrl ? ImageService.extractPublicId(spot.imageUrl) : null;
+        try {
+            const spot = await Spot.findOne({
+                where: { id: spotId, propertyId: propId },
+                transaction
+            });
+            if (!spot) throw new Error('SPOT_NOT_FOUND');
 
-        await spot.destroy();
+            const folderPath = spot.imageUrl
+                ? ImageService.extractFolderPath(spot.imageUrl)
+                : null;
 
-        if (publicId) {
-            await ImageService.deleteImage(publicId).catch(console.error);
+            await spot.destroy({ transaction });
+            await transaction.commit();
+
+            if (folderPath) {
+                await ImageService.deleteFolder(folderPath).catch(console.error);
+            }
+
+            return true;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
         }
-        return true;
-
     }
 
     static async updateSpot(spotId: number, updateData: { status: 'DISPONIVEL' | 'INDISPONIVEL' | 'OCUPADA' }) {
