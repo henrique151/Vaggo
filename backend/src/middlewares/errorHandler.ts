@@ -2,6 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 
 const BUSINESS_ERRORS: Record<string, number> = {
+    INVALID_IMAGE_FORMAT: 415,
+    INVALID_UPLOAD_FIELD: 400,
+    PROPERTY_IMAGE_LIMIT: 400,
+    PROPERTY_REQUIRES_AT_LEAST_ONE_IMAGE: 400,
+    SPOT_IMAGE_REQUIRED: 400,
+    SPOT_IMAGE_LIMIT: 400,
     INVALID_CREDENTIALS: 401,
     FORBIDDEN: 403,
     MAX_VEHICLES_REACHED: 403,
@@ -30,9 +36,22 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         method: req.method,
     });
 
+    if (err?.original?.code === '22003' || err?.parent?.code === '22003') {
+        return res.status(400).json({
+            success: false,
+            message: 'Valor numerico fora do limite permitido para este campo.'
+        });
+    }
+
     const status = BUSINESS_ERRORS[err.message] ?? err.status ?? 500;
 
     const messageMap: Record<string, string> = {
+        INVALID_IMAGE_FORMAT: 'Formato de imagem invalido. Use JPEG, PNG ou WEBP.',
+        INVALID_UPLOAD_FIELD: 'Campo de upload invalido para esta rota.',
+        PROPERTY_IMAGE_LIMIT: 'Limite de imagens excedido.',
+        PROPERTY_REQUIRES_AT_LEAST_ONE_IMAGE: 'Envie pelo menos uma imagem da propriedade.',
+        SPOT_IMAGE_REQUIRED: 'Envie ao menos uma imagem para cada vaga gerada.',
+        SPOT_IMAGE_LIMIT: 'Envie no maximo uma imagem para atualizar a vaga.',
         INVALID_CREDENTIALS: 'E-mail ou senha incorretos.',
         FORBIDDEN: 'Sem permissão para realizar esta ação.',
         MAX_VEHICLES_REACHED: 'Você atingiu o limite máximo de 3 veículos por conta.',

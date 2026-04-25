@@ -3,37 +3,130 @@ import { z } from 'zod';
 const RULES = {
     COUNT_MIN: 1,
     PREFIX_MAX: 10,
-    IDENTIFIER_MAX: 70
+    IDENTIFIER_MAX: 70,
+    SIZE_MAX: 999.99,
+    PRICE_MAX: 999999.99
 } as const;
 
-const allowedVehiclesSchema = z.array(
-    z.enum(['CARRO', 'MOTO'], {
-        error: 'Tipo de veiculo invalido. Use: CARRO ou MOTO, ou ambosy'
-    })
-).min(1, 'A vaga deve permitir pelo menos um tipo de veiculo');
+const parseNumberInput = (value: unknown) => {
+    if (typeof value !== 'string') {
+        return value;
+    }
 
-const hoursSchema = z.record(
-    z.string(),
-    z.object({
-        start: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Hora inicial invalida (HH:MM)'),
-        end: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Hora final invalida (HH:MM)')
-    })
-).optional();
+    const trimmed = value.trim();
+    if (!trimmed) {
+        return value;
+    }
+
+    const parsed = Number(trimmed.replace(',', '.'));
+    return Number.isNaN(parsed) ? value : parsed;
+};
+
+const parseBooleanInput = (value: unknown) => {
+    if (typeof value !== 'string') {
+        return value;
+    }
+
+    const normalized = value.trim().toLowerCase();
+
+    if (normalized === 'true' || normalized === '1') {
+        return true;
+    }
+
+    if (normalized === 'false' || normalized === '0') {
+        return false;
+    }
+
+    return value;
+};
+
+const parseJsonInput = (value: unknown) => {
+    if (typeof value !== 'string') {
+        return value;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+        return value;
+    }
+
+    try {
+        return JSON.parse(trimmed);
+    } catch {
+        return value;
+    }
+};
+
+const parseAllowedVehiclesInput = (value: unknown) => {
+    const parsedValue = parseJsonInput(value);
+
+    if (typeof parsedValue !== 'string') {
+        return parsedValue;
+    }
+
+    const normalized = parsedValue.trim();
+    if (!normalized) {
+        return value;
+    }
+
+    if (normalized.includes(',')) {
+        return normalized
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    return [normalized];
+};
+
+const allowedVehiclesSchema = z.preprocess(
+    parseAllowedVehiclesInput,
+    z.array(
+        z.enum(['CARRO', 'MOTO'], {
+            error: 'Tipo de veiculo invalido. Use: CARRO ou MOTO, ou ambos'
+        })
+    ).min(1, 'A vaga deve permitir pelo menos um tipo de veiculo')
+);
+
+const hoursSchema = z.preprocess(
+    parseJsonInput,
+    z.record(
+        z.string(),
+        z.object({
+            start: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Hora inicial invalida (HH:MM)'),
+            end: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Hora final invalida (HH:MM)')
+        })
+    ).optional()
+);
 
 const countSchema = z
-    .number({ message: 'A quantidade deve ser um numero' })
-    .int()
-    .min(RULES.COUNT_MIN, { message: `E necessario gerar ao menos ${RULES.COUNT_MIN} vaga` });
+    .preprocess(
+        parseNumberInput,
+        z
+            .number({ message: 'A quantidade deve ser um numero' })
+            .int()
+            .min(RULES.COUNT_MIN, { message: `E necessario gerar ao menos ${RULES.COUNT_MIN} vaga` })
+    );
 
 const sizeSchema = z
-    .number({ error: 'O tamanho deve ser um numero' })
-    .positive('O tamanho da vaga deve ser maior que zero')
-    .optional()
-    .default(12.5);
+    .preprocess(
+        parseNumberInput,
+        z
+            .number({ error: 'O tamanho deve ser um numero' })
+            .positive('O tamanho da vaga deve ser maior que zero')
+            .max(RULES.SIZE_MAX, `O tamanho da vaga nao pode ser maior que ${RULES.SIZE_MAX}`)
+            .optional()
+            .default(12.5)
+    );
 
 const priceSchema = z
-    .number({ error: 'O preco deve ser um numero' })
-    .nonnegative('O preco da vaga nao pode ser negativo');
+    .preprocess(
+        parseNumberInput,
+        z
+            .number({ error: 'O preco deve ser um numero' })
+            .nonnegative('O preco da vaga nao pode ser negativo')
+            .max(RULES.PRICE_MAX, `O preco da vaga nao pode ser maior que ${RULES.PRICE_MAX}`)
+    );
 
 const prefixSchema = z
     .string()
@@ -45,7 +138,7 @@ export const generateSpotsSchema = z.object({
     count: countSchema.default(1),
     price: priceSchema.optional().default(0),
     size: sizeSchema,
-    isCovered: z.boolean().optional().default(true),
+    isCovered: z.preprocess(parseBooleanInput, z.boolean().optional().default(true)),
     prefix: prefixSchema,
     allowedVehicles: allowedVehiclesSchema,
     operatingHours: hoursSchema
@@ -73,9 +166,16 @@ export const spotIdParamSchema = z.object({
 });
 
 export const updateSpotSchema = z.object({
-    isCovered: z.boolean().optional(),
+    isCovered: z.preprocess(parseBooleanInput, z.boolean().optional()),
     price: priceSchema.optional(),
-    size: z.number().positive('Tamanho deve ser maior que zero').optional(),
+    size: z.preprocess(
+        parseNumberInput,
+        z
+            .number({ error: 'O tamanho deve ser um numero' })
+            .positive('Tamanho deve ser maior que zero')
+            .max(RULES.SIZE_MAX, `O tamanho da vaga nao pode ser maior que ${RULES.SIZE_MAX}`)
+            .optional()
+    ),
     allowedVehicles: allowedVehiclesSchema.optional(),
     operatingHours: hoursSchema.optional(),
     identifier: z.string().max(RULES.IDENTIFIER_MAX).optional(),
