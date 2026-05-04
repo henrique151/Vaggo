@@ -24,14 +24,14 @@ router.get(
 );
 
 router.patch(
-    '/:id/evaluate',
+    '/spots/:id/evaluate',
     authMiddleware,
     validateBody(evaluateSpotSchema),
     evaluateSpots
 );
 
 router.patch(
-    '/:id/status',
+    '/spots/:id/status',
     authMiddleware,
     validateBody(updateSpotStatusSchema),
     updateSpot

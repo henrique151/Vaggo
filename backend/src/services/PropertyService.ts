@@ -7,6 +7,7 @@ import { ExternalAddressService } from "./ExternalAddressService";
 import User from "../models/User";
 import PropertyUser from "../models/PropertyUser";
 import { FileData, ImageService } from "./ImageService";
+
 export class PropertyService {
     private static get defaultInclude() {
         return [
@@ -20,8 +21,7 @@ export class PropertyService {
                         as: 'city',
                         attributes: { exclude: ["EST_INT_ID"] }
                     }
-                ],
-
+                ]
             }
         ];
     }
@@ -31,8 +31,7 @@ export class PropertyService {
         if (files.length > 3) throw new Error('PROPERTY_IMAGE_LIMIT');
 
         const transaction = await sequelize.transaction();
-
-        let uploadedPublicIds: string[] = [];
+        const uploadedPublicIds: string[] = [];
 
         try {
             const externalData = await ExternalAddressService.getAddressByCep(propertyData.zipCode);
@@ -64,21 +63,27 @@ export class PropertyService {
                 role: 'DONO'
             }, { transaction });
 
-            const imageUrls: string[] = [];
-            for (let i = 0; i < files.length; i++) {
-                const uploadResult = await ImageService.uploadPropertyImage(files[i], userId, property.id, i);
-                uploadedPublicIds.push(uploadResult.public_id);
-                imageUrls.push(uploadResult.secure_url);
-            }
+            const uploadedImages = await Promise.all(
+                files.map((file, index) =>
+                    ImageService.uploadPropertyImage(file, userId, property.id, index)
+                )
+            );
 
-            await property.update({ images: imageUrls }, { transaction });
+            uploadedPublicIds.push(...uploadedImages.map((image) => image.public_id));
+
+            await property.update({
+                images: uploadedImages.map((image) => image.secure_url)
+            }, { transaction });
 
             await transaction.commit();
             return this.getPropertyById(property.id);
-
         } catch (error) {
             await transaction.rollback();
-            uploadedPublicIds.forEach(id => ImageService.deleteImage(id).catch(console.error));
+            await Promise.all(
+                uploadedPublicIds.map((publicId) =>
+                    ImageService.deleteImage(publicId).catch(console.error)
+                )
+            );
             throw error;
         }
     }
@@ -94,7 +99,7 @@ export class PropertyService {
     static async getPropertyById(id: number, userId?: number) {
         const property = await Property.findByPk(id, {
             attributes: { exclude: ['END_INT_ID'] },
-            include: this.defaultInclude,
+            include: this.defaultInclude
         });
 
         if (!property) throw new Error('PROPERTY_NOT_FOUND');
@@ -103,6 +108,7 @@ export class PropertyService {
             const membership = await PropertyUser.findOne({
                 where: { propertyId: id, userId }
             });
+
             if (!membership) throw new Error('PROPERTY_ACCESS_DENIED');
         }
 
@@ -118,12 +124,13 @@ export class PropertyService {
                     model: User,
                     as: 'residentsAndOwners',
                     where: { id: userId },
-                    attributes: [],        // não retorna dados do user, só filtra
-                    through: { attributes: [] }, // esconde a tabela pivô PropertyUser
+                    attributes: [],
+                    through: { attributes: [] }
                 }
-            ],
+            ]
         });
     }
+
     static async deleteProperty(id: number) {
         const transaction = await sequelize.transaction();
 
@@ -131,27 +138,23 @@ export class PropertyService {
             const property = await Property.findByPk(id, { transaction });
             if (!property) throw new Error('PROPERTY_NOT_FOUND');
 
-            // Opção A: Soft Delete (Recomendado para manter histórico)
-            // await property.update({ isActive: false });
-
-            const addressId = property.addressId;
-
-            // Buscar userId via PropertyUser
             const propertyUser = await PropertyUser.findOne({
                 where: { propertyId: id },
                 transaction
             });
-            const userId = propertyUser?.userId;
 
             await property.destroy({ transaction });
-            await Address.destroy({ where: { id: addressId }, transaction });
+            await Address.destroy({
+                where: { id: property.addressId },
+                transaction
+            });
 
             await transaction.commit();
 
-            // Deletar pasta de propriedades do usuário se houver
-            if (userId) {
-                await ImageService.deleteFolder(`vaggo/users/user_${userId}/properties`);
+            if (propertyUser?.userId) {
+                ImageService.deleteFolderAsync(`vaggo/users/user_${propertyUser.userId}/properties`).catch(console.error);
             }
+
             return true;
         } catch (error) {
             await transaction.rollback();
@@ -161,7 +164,7 @@ export class PropertyService {
 
     static async updateProperty(id: number, propertyData: CreatePropertyInput, newFiles: FileData[], imagesToRemove: string[] = []) {
         const transaction = await sequelize.transaction();
-        let uploadedPublicIds: string[] = [];
+        const uploadedPublicIds: string[] = [];
 
         try {
             const property = await Property.findByPk(id, { transaction });
@@ -173,39 +176,35 @@ export class PropertyService {
             const city = await City.findByPk(externalData.cityIbgeCode, { transaction });
             if (!city) throw new Error('CITY_NOT_FOUND');
 
-            // Buscar userId via PropertyUser
             const propertyUser = await PropertyUser.findOne({
                 where: { propertyId: id },
                 transaction
             });
+
             const userId = propertyUser?.userId;
             if (!userId) throw new Error('PROPERTY_OWNER_NOT_FOUND');
 
-            let currentImages = property.images || [];
-          
-            const toRemove = imagesToRemove.map(url => url.trim());
-
-            currentImages = currentImages.filter(url => !toRemove.includes(url));
+            const currentImages = (property.images || []).filter(
+                (url) => !imagesToRemove.map((image) => image.trim()).includes(url)
+            );
 
             if ((currentImages.length + newFiles.length) < 1) throw new Error('PROPERTY_REQUIRES_AT_LEAST_ONE_IMAGE');
             if ((currentImages.length + newFiles.length) > 3) throw new Error('PROPERTY_IMAGE_LIMIT');
 
-            // Upload das novas
-            const newImageUrls: string[] = [];
-            for (let i = 0; i < newFiles.length; i++) {
-                const result = await ImageService.uploadPropertyImage(newFiles[i], userId, property.id, currentImages.length + i);
-                uploadedPublicIds.push(result.public_id);
-                newImageUrls.push(result.secure_url);
-            }
+            const uploadedImages = await Promise.all(
+                newFiles.map((file, index) =>
+                    ImageService.uploadPropertyImage(file, userId, property.id, currentImages.length + index)
+                )
+            );
 
-            const finalImages = [...currentImages, ...newImageUrls];
+            uploadedPublicIds.push(...uploadedImages.map((image) => image.public_id));
 
             await property.update({
                 ...propertyData,
-                images: finalImages,
+                images: [...currentImages, ...uploadedImages.map((image) => image.secure_url)],
                 latitude: externalData.latitude,
                 longitude: externalData.longitude
-            }, { transaction })
+            }, { transaction });
 
             await Address.update({
                 street: externalData.street || propertyData.street,
@@ -217,21 +216,28 @@ export class PropertyService {
             }, {
                 where: { id: property.addressId },
                 transaction
-            })
+            });
 
             await transaction.commit();
 
-            imagesToRemove.forEach(url => {
-                const publicId = ImageService.extractPublicId(url);
-                if (publicId) ImageService.deleteImage(publicId).catch(console.error);
-            });
-            return this.getPropertyById(id);
+            await Promise.all(
+                imagesToRemove.map((url) => {
+                    const publicId = ImageService.extractPublicId(url);
+                    return publicId
+                        ? ImageService.deleteImage(publicId).catch(console.error)
+                        : Promise.resolve();
+                })
+            );
 
+            return this.getPropertyById(id);
         } catch (error) {
             await transaction.rollback();
-            uploadedPublicIds.forEach(id => ImageService.deleteImage(id).catch(console.error));
+            await Promise.all(
+                uploadedPublicIds.map((publicId) =>
+                    ImageService.deleteImage(publicId).catch(console.error)
+                )
+            );
             throw error;
         }
     }
-
 }

@@ -52,7 +52,7 @@ export const createPropertySchema = z.object({
 
     street: addressStringSchema('Rua', 70),
     number: z.string({ error: 'Número é obrigatório' }).max(20).trim(),
-    complement: z.string().max(100, 'Complemento muito longo').trim().optional(), // ADICIONADO
+    complement: z.string().max(100, 'Complemento muito longo').trim().optional(),
     neighborhood: addressStringSchema('Bairro', 70),
     zipCode: zipCodeSchema,
 

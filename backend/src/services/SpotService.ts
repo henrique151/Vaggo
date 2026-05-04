@@ -15,68 +15,88 @@ import {
 import { FileData, ImageService } from './ImageService';
 
 export class SpotService {
+    private static readonly defaultInclude = [
+        { model: SpotAvailability, as: 'availability', required: false }
+    ];
+
     static async generateSpots(propId: number, spotData: GenerateSpotsInput, files?: FileData[]) {
         const transaction = await sequelize.transaction();
         const uploadedPublicIds: string[] = [];
-        const createdSpotIds: number[] = [];
 
         try {
             const property = await Property.findByPk(propId, { transaction });
             if (!property) throw new Error('PROPERTY_NOT_FOUND');
 
-            const ownerUserId = await this.getOwnerUserId(propId, transaction);
-
             if (!files || files.length < spotData.count) {
                 throw new Error('SPOT_IMAGE_REQUIRED');
             }
 
-            const currentCount = await Spot.count({
-                where: { propertyId: propId, isActive: true },
-                transaction
-            });
-            
+            const [ownerUserId, currentCount] = await Promise.all([
+                this.getOwnerUserId(propId, transaction),
+                Spot.count({
+                    where: { propertyId: propId, isActive: true },
+                    transaction
+                })
+            ]);
+
             if (currentCount + spotData.count > property.totalCapacity) {
                 throw new Error('PROPERTY_CAPACITY_EXCEEDED');
             }
 
-            for (let i = 0; i < spotData.count; i++) {
-                const spot = await Spot.create({
+            const createdSpots = await Spot.bulkCreate(
+                Array.from({ length: spotData.count }, (_, index) => ({
                     price: spotData.price,
                     size: spotData.size,
-                    status: 'INDISPONIVEL',
-                    approvalStatus: 'PENDENTE',
-                    identifier: `${spotData.prefix}${i + 1}`,
+                    status: 'INDISPONIVEL' as const,
+                    approvalStatus: 'PENDENTE' as const,
+                    identifier: `${spotData.prefix}${currentCount + index + 1}`,
                     allowedVehicles: spotData.allowedVehicles || ['CARRO'],
                     isCovered: spotData.isCovered,
                     isActive: true,
                     propertyId: propId
-                }, { transaction });
+                })),
+                {
+                    transaction,
+                    returning: true
+                }
+            );
 
-                createdSpotIds.push(spot.id);
-
-                await SpotAvailability.create({
+            await SpotAvailability.bulkCreate(
+                createdSpots.map((spot) => ({
                     spotId: spot.id,
                     ...spotData.availability
-                }, { transaction });
+                })),
+                { transaction }
+            );
 
-                const upload = await ImageService.uploadSpotImage(files[i], ownerUserId, spot.id);
-                uploadedPublicIds.push(upload.public_id);
+            const uploads = await Promise.all(
+                createdSpots.map((spot, index) =>
+                    ImageService.uploadSpotImage(files[index], ownerUserId, spot.id)
+                )
+            );
 
-                await spot.update({ imageUrl: upload.secure_url }, { transaction });
-            }
+            uploadedPublicIds.push(...uploads.map((upload) => upload.public_id));
+
+            await Promise.all(
+                createdSpots.map((spot, index) =>
+                    spot.update({ imageUrl: uploads[index].secure_url }, { transaction })
+                )
+            );
 
             await transaction.commit();
 
             return Spot.findAll({
-                where: { id: createdSpotIds },
-                include: [{ model: SpotAvailability, as: 'availability' }],
-                order: [['id', 'ASC']],
+                where: { id: createdSpots.map((spot) => spot.id) },
+                include: this.defaultInclude,
+                order: [['id', 'ASC']]
             });
         } catch (error) {
             await transaction.rollback();
-            for (const pid of uploadedPublicIds) {
-                await ImageService.deleteImage(pid).catch(console.error);
-            }
+            await Promise.all(
+                uploadedPublicIds.map((publicId) =>
+                    ImageService.deleteImage(publicId).catch(console.error)
+                )
+            );
             throw error;
         }
     }
@@ -99,8 +119,8 @@ export class SpotService {
         return Spot.findAll({
             where: { propertyId: propId, isActive: true },
             attributes: { exclude: ['PRO_INT_ID'] },
-            include: [{ model: SpotAvailability, as: 'availability', required: false }],
-            order: [['id', 'ASC']],
+            include: this.defaultInclude,
+            order: [['id', 'ASC']]
         });
     }
 
@@ -109,14 +129,16 @@ export class SpotService {
         let newPublicId: string | null = null;
 
         try {
-            const spot = await Spot.findByPk(spotId, { transaction });
+            const spot = await Spot.findByPk(spotId, {
+                transaction,
+                include: this.defaultInclude
+            });
             if (!spot) throw new Error('SPOT_NOT_FOUND');
 
             const { availability, ...spotUpdateData } = updateData;
 
             if (file) {
                 const ownerUserId = await this.getOwnerUserId(spot.propertyId, transaction);
-
                 const upload = await ImageService.uploadSpotImage(file, ownerUserId, spot.id);
                 newPublicId = upload.public_id;
 
@@ -131,7 +153,7 @@ export class SpotService {
             }
 
             if (availability) {
-                await this.upsertAvailability(spot.id, availability, transaction);
+                await this.upsertAvailability(spot, availability, transaction);
             }
 
             await transaction.commit();
@@ -174,7 +196,7 @@ export class SpotService {
     static async updateSpot(spotId: number, updateData: { status: 'DISPONIVEL' | 'INDISPONIVEL' | 'OCUPADA' }) {
         const spot = await Spot.findOne({
             where: { id: spotId },
-            attributes: { exclude: ['PRO_INT_ID'] },
+            attributes: { exclude: ['PRO_INT_ID'] }
         });
         if (!spot) throw new Error('SPOT_NOT_FOUND');
 
@@ -199,12 +221,12 @@ export class SpotService {
     }
 
     private static async upsertAvailability(
-        spotId: number,
+        spot: Spot,
         availabilityPatch: SpotAvailabilityPatchInput,
         transaction: Transaction
     ) {
-        const currentAvailability = await SpotAvailability.findOne({
-            where: { spotId },
+        const currentAvailability = spot.availability ?? await SpotAvailability.findOne({
+            where: { spotId: spot.id },
             transaction
         });
 
@@ -223,14 +245,14 @@ export class SpotService {
         }
 
         return SpotAvailability.create({
-            spotId,
+            spotId: spot.id,
             ...mergedAvailability
         }, { transaction });
     }
 
     private static async getSpotWithAvailability(spotId: number) {
         return Spot.findByPk(spotId, {
-            include: [{ model: SpotAvailability, as: 'availability', required: false }]
+            include: this.defaultInclude
         });
     }
 }
