@@ -23,7 +23,7 @@ app.use('/users', usersRoutes);
 app.use('/vehicles', vehiclesRoutes);
 app.use('/locations', locationsRoutes);
 app.use('/properties', propertiesRoutes);
-app.use('/', spotsRoutes);
+app.use('/spots', spotsRoutes);
 app.use('/reservations', reservationsRoutes);
 
 app.use(errorHandler);

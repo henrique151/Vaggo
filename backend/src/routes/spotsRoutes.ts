@@ -9,7 +9,7 @@ import { uploadLimiter } from "../middlewares/rateLimiter";
 const router = Router();
 
 router.post(
-    '/properties/:propId/spots',
+    '/properties/:propId',
     authMiddleware,
     uploadLimiter,
     uploadMultiple,
@@ -18,27 +18,27 @@ router.post(
 );
 
 router.get(
-    '/properties/:propId/spots',
+    '/properties/:propId',
     authMiddleware,
     listByProperty
 );
 
 router.patch(
-    '/spots/:id/evaluate',
+    '/:id/evaluate',
     authMiddleware,
     validateBody(evaluateSpotSchema),
     evaluateSpots
 );
 
 router.patch(
-    '/spots/:id/status',
+    '/:id/status',
     authMiddleware,
     validateBody(updateSpotStatusSchema),
     updateSpot
 );
 
 router.put(
-    '/properties/:propId/spots/:id',
+    '/properties/:propId/:id',
     authMiddleware,
     uploadLimiter,
     uploadSpotSingle,
@@ -47,7 +47,7 @@ router.put(
 );
 
 router.delete(
-    '/properties/:propId/spots/:id',
+    '/properties/:propId/:id',
     authMiddleware,
     deleteSpot
 );
