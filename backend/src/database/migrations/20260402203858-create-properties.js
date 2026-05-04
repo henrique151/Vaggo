@@ -35,14 +35,34 @@ module.exports = {
         allowNull: false,
         defaultValue: [],
       },
+      PRO_DEC_LATITUDE: {
+        type: Sequelize.DECIMAL(10, 7),
+        allowNull: true,
+      },
+      PRO_DEC_LONGITUDE: {
+        type: Sequelize.DECIMAL(10, 7),
+        allowNull: true,
+      },
       END_INT_ID: {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
     });
+    await queryInterface.addIndex(
+      "properties",
+      ["PRO_DEC_LATITUDE", "PRO_DEC_LONGITUDE"],
+      {
+        name: "idx_properties_lat_lng",
+      },
+    );
   },
 
   async down(queryInterface) {
     await queryInterface.dropTable({ tableName: "properties" });
+           await queryInterface.removeIndex(
+             "properties",
+             "idx_properties_lat_lng",
+           );
+
   },
 };

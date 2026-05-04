@@ -10,6 +10,7 @@ import Spot from "./Spot";
 import Reservation from "./Reservation";
 import Review from "./Review";
 import Report from "./Report";
+import SpotAvailability from './SpotAvailabilities';
 
 const setupAssociantos = () => {
     // 1. Location Relationship (State -> City -> Address)
@@ -48,13 +49,21 @@ const setupAssociantos = () => {
     // 6. User and Vehicle (1:N)
     User.hasMany(Vehicle, { foreignKey: 'USU_INT_ID', as: 'vehicles' });
     Vehicle.belongsTo(User, { foreignKey: 'USU_INT_ID', as: 'user' });
+ 
+    // Spot 1:1 SpotAvailability
+    Spot.hasOne(SpotAvailability, { foreignKey: 'VAG_INT_ID', as: 'availability' });
+    SpotAvailability.belongsTo(Spot, { foreignKey: 'VAG_INT_ID', as: 'spot' });
 
     // 7. Reservation Relationships (Vehicle and Spot)
-    Vehicle.hasMany(Reservation, { foreignKey: 'VEI_INT_ID', as: 'reservations' });
-    Reservation.belongsTo(Vehicle, { foreignKey: 'VEI_INT_ID', as: 'vehicle' });
 
     Spot.hasMany(Reservation, { foreignKey: 'VAG_INT_ID', as: 'reservations' });
     Reservation.belongsTo(Spot, { foreignKey: 'VAG_INT_ID', as: 'spot' });
+
+    Vehicle.hasMany(Reservation, { foreignKey: 'VEI_INT_ID', as: 'reservations' });
+    Reservation.belongsTo(Vehicle, { foreignKey: 'VEI_INT_ID', as: 'vehicle' });
+
+    User.hasMany(Reservation, { foreignKey: 'USU_INT_ID', as: 'reservations' });
+    Reservation.belongsTo(User, { foreignKey: 'USU_INT_ID', as: 'user' });
 
     // 8. Reviews (User and Property)
     User.hasMany(Review, { foreignKey: 'USU_INT_ID', as: 'reviews' });

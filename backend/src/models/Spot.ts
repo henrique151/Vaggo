@@ -1,6 +1,8 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../database';
 import { SpotAttributes } from '../types/SpotAttributes';
+import type Property from './Property';
+import type SpotAvailability from './SpotAvailabilities';
 
 export interface SpotCreationAttributes extends Optional<SpotAttributes, 'id'> { }
 
@@ -13,10 +15,11 @@ class Spot extends Model<SpotAttributes, SpotCreationAttributes> implements Spot
     public isCovered!: boolean;
     public approvalStatus!: 'PENDENTE' | 'APROVADA' | 'RECUSADA';
     public allowedVehicles!: ('CARRO' | 'MOTO')[];
-    public operatingHours!: Record<string, { start: string; end: string }> | null;
     public isActive!: boolean;
     public propertyId!: number;
     public imageUrl!: string;
+    public property?: Property;
+    public availability?: SpotAvailability;
 }
 
 Spot.init({
@@ -62,11 +65,6 @@ Spot.init({
         type: DataTypes.JSON,
         allowNull: true,
         field: 'VAG_JSN_VEICULOS_PERMITIDOS'
-    },
-    operatingHours: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        field: 'VAG_JSN_HORARIOS_FUNCIONAMENTO'
     },
     isActive: {
         type: DataTypes.BOOLEAN,

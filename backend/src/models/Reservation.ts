@@ -1,68 +1,69 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../database';
 import { ReservationAttributes } from '../types/ReservationAttributes';
+import type Spot from './Spot';
+import type Vehicle from './Vehicle';
+import type User from './User';
 
 export interface ReservationCreationAttributes extends Optional<ReservationAttributes, 'id'> { }
-
 class Reservation extends Model<ReservationAttributes, ReservationCreationAttributes> implements ReservationAttributes {
     public id!: number;
-    public status!: 'AGENDADA' | 'EM ANDAMENTO' | 'CONCLUIDA' | 'DESCONHECIDO';
-    public startDate!: Date;
-    public endDate!: Date;
-    public totalValue!: number;
-    public createdAtDate!: Date;
-    public confirmationCode!: string;
-    public vehicleId!: number;
     public spotId!: number;
+    public vehicleId!: number;
+    public userId!: number;
+    public startDate!: string;
+    public endDate!: string;
+    public status!: 'PENDENTE' | 'APROVADA' | 'RECUSADA' | 'CANCELADA';
+    public code!: string;
+    public spot?: Spot;
+    public vehicle?: Vehicle;
+    public user?: User;
 }
 
 Reservation.init({
     id: {
         type: DataTypes.INTEGER,
-        autoIncrement: true,
         primaryKey: true,
+        autoIncrement: true,
         field: 'RES_INT_ID'
     },
-    status: {
-        type: DataTypes.ENUM('AGENDADA', 'EM ANDAMENTO', 'CONCLUIDA', 'DESCONHECIDO'),
+    spotId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        field: 'RES_STATUS'
-    },
-    startDate: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        field: 'RES_DATA_INICIO'
-    },
-    endDate: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        field: 'RES_DATA_FIM'
-    },
-    totalValue: {
-        type: DataTypes.DECIMAL(8, 2),
-        allowNull: false,
-        field: 'RES_DEC_VALOR_TOTAL'
-    },
-    createdAtDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-        field: 'RES_DATR_CRIACAO'
-    },
-    confirmationCode: {
-        type: DataTypes.STRING(70),
-        allowNull: false,
-        field: 'RES_STR_CODIGO_CONFIRM'
+        field: 'VAG_INT_ID'
     },
     vehicleId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         field: 'VEI_INT_ID'
     },
-    spotId: {
+    userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        field: 'VAG_INT_ID'
-    }
+        field: 'USU_INT_ID'
+    },
+    startDate: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+        field: 'RES_DATE_START'
+    },
+    endDate: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+        field: 'RES_DATE_END'
+    },
+    status: {
+        type: DataTypes.ENUM('PENDENTE', 'APROVADA', 'RECUSADA', 'CANCELADA'),
+        allowNull: false,
+        defaultValue: 'PENDENTE',
+        field: 'RES_STR_STATUS'
+    },
+    code: {
+        type: DataTypes.STRING(8),
+        allowNull: false,
+        unique: true,
+        field: 'RES_STR_CODE'
+    },
 }, {
     sequelize,
     tableName: 'reservations',

@@ -53,7 +53,9 @@ export class PropertyService {
             const property = await Property.create({
                 ...propertyData,
                 description: propertyData.description || '',
-                addressId: address.id
+                addressId: address.id,
+                latitude: externalData.latitude,
+                longitude: externalData.longitude
             }, { transaction });
 
             await PropertyUser.create({
@@ -165,6 +167,12 @@ export class PropertyService {
             const property = await Property.findByPk(id, { transaction });
             if (!property) throw new Error('PROPERTY_NOT_FOUND');
 
+            const externalData = await ExternalAddressService.getAddressByCep(propertyData.zipCode);
+            if (!externalData) throw new Error('EXTERNAL_API_FAILURE');
+
+            const city = await City.findByPk(externalData.cityIbgeCode, { transaction });
+            if (!city) throw new Error('CITY_NOT_FOUND');
+
             // Buscar userId via PropertyUser
             const propertyUser = await PropertyUser.findOne({
                 where: { propertyId: id },
@@ -194,15 +202,18 @@ export class PropertyService {
 
             await property.update({
                 ...propertyData,
-                images: finalImages
+                images: finalImages,
+                latitude: externalData.latitude,
+                longitude: externalData.longitude
             }, { transaction })
 
             await Address.update({
-                street: propertyData.street,
+                street: externalData.street || propertyData.street,
                 number: propertyData.number,
-                neighborhood: propertyData.neighborhood,
+                complement: propertyData.complement,
+                neighborhood: externalData.neighborhood || propertyData.neighborhood,
                 zipCode: propertyData.zipCode,
-                cityId: propertyData.cityId
+                cityId: externalData.cityIbgeCode
             }, {
                 where: { id: property.addressId },
                 transaction

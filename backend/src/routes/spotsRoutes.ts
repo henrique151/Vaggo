@@ -52,4 +52,6 @@ router.delete(
     deleteSpot
 );
 
+
+
 export default router;
