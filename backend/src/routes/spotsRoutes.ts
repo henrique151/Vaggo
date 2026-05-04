@@ -5,11 +5,10 @@ import { evaluateSpotSchema, generateSpotsSchema, updateSpotSchema, updateSpotSt
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { uploadMultiple, uploadSpotSingle } from "../middlewares/upload";
 import { uploadLimiter } from "../middlewares/rateLimiter";
-
 const router = Router();
 
 router.post(
-    '/properties/:propId',
+    '/properties/:propId/spots',
     authMiddleware,
     uploadLimiter,
     uploadMultiple,
@@ -18,7 +17,7 @@ router.post(
 );
 
 router.get(
-    '/properties/:propId',
+    '/properties/:propId/spots',
     authMiddleware,
     listByProperty
 );
@@ -38,7 +37,7 @@ router.patch(
 );
 
 router.put(
-    '/properties/:propId/:id',
+    '/properties/:propId/spots/:id',
     authMiddleware,
     uploadLimiter,
     uploadSpotSingle,
@@ -47,7 +46,7 @@ router.put(
 );
 
 router.delete(
-    '/properties/:propId/:id',
+    '/properties/:propId/spots/:id',
     authMiddleware,
     deleteSpot
 );
