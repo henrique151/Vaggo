@@ -7,4 +7,6 @@ export interface PropertyAttributes {
     totalCapacity: number;
     addressId: number;
     images: string[];
+    latitude: number | null;
+    longitude: number | null;
 }

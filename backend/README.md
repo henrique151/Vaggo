@@ -65,7 +65,7 @@ backend/
 | **PUT**    | `/vehicles/:id`         | Atualiza dados do veículo    | **Sim (Bearer)** |
 | **DELETE** | `/vehicles/:id`         | Remove um veículo            | **Sim (Bearer)** |
 
-### Localização
+### Localização `/states`
 
 | Método  | Endpoint             | Descrição                  | Autenticação |
 | :------ | :------------------- | :------------------------- | :----------- |
@@ -94,18 +94,21 @@ backend/
 | **PATCH**  | `/spots/:id/status`             | Altera status da vaga (Ocupar/Liberar)      | **Sim (Bearer)** |
 | **PATCH**  | `/spots/:id/evaluate`           | Aprova ou recusa uma vaga                   | **Sim (Bearer)** |
 
+### Reservas `/reservations`
+
+| Método    | Endpoint                                | Descrição                 | Autenticação     |
+| :-------- | :-------------------------------------- | :------------------------ | :--------------- |
+| **GET**   | `/reservations/search/(address ou cep)` | Buscar uma vaga           | **Sim (Bearer)** |
+| **PATCH** | `/reservations::id/reject`              | Rejectar a reserva        | **Dono**         |
+| **PATCH** | `/reservations/:id/cancel`              | Cancela uma reserva       | **Dono**         |
+| **PATCH** | `/reservations/:id/approve`             | Aprova a reserva          | **Dono**         |
+| **GET**   | `/reservations`                         | Lista reservas do usuário | **Sim (Bearer)** |
+| **GET**   | `/reservations/owner`                   | Lista reservas do dono    | **Dono**         |
+| **POST**  | `/reservations`                         | Reserva uma vaga          | **Sim (Bearer)** |
+
 ---
 
 ## 📌 Próximas Etapas (Backlog)
-
-### Reservas `/reservations`
-
-| Método    | Endpoint                   | Descrição                 | Autenticação     |
-| :-------- | :------------------------- | :------------------------ | :--------------- |
-| **POST**  | `/reservations`            | Reserva uma vaga          | **Sim (Bearer)** |
-| **GET**   | `/reservations`            | Lista reservas do usuário | **Sim (Bearer)** |
-| **GET**   | `/reservations/:id`        | Detalhe da reserva        | **Sim (Bearer)** |
-| **PATCH** | `/reservations/:id/cancel` | Cancela uma reserva       | **Sim (Bearer)** |
 
 ### Avaliações `/reviews`
 

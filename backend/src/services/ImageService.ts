@@ -46,7 +46,7 @@ export class ImageService {
         return this.uploadStream(sanitized, {
             folder: `vaggo/users/user_${userId}/avatarUrl`,
             public_id: `avatar_${userId}`,
-            overwrite: true, // Garante que atualizações sobrescrevam o antigo no Cloudinary
+            overwrite: true, 
             transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }, { quality: 'auto', fetch_format: 'auto' }]
         });
     }
@@ -86,7 +86,6 @@ export class ImageService {
         }
     }
 
-    // Extrai o public_id a partir de uma URL segura do Cloudinary
     static extractPublicId(url: string): string | null {
         const match = url.match(/\/v\d+\/(.+?)\.\w+$/);
         return match ? match[1] : null;

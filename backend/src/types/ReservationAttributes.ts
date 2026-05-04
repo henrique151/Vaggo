@@ -1,11 +1,10 @@
 export interface ReservationAttributes {
     id: number;
-    status: 'AGENDADA' | 'EM ANDAMENTO' | 'CONCLUIDA' | 'DESCONHECIDO';
-    startDate: Date;
-    endDate: Date;
-    totalValue: number;
-    createdAtDate: Date;
-    confirmationCode: string;
-    vehicleId: number;
     spotId: number;
+    vehicleId: number;
+    userId: number;
+    startDate: string;
+    endDate: string;
+    status: 'PENDENTE' | 'APROVADA' | 'RECUSADA' | 'CANCELADA';
+    code: string;
 }

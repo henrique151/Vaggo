@@ -6,6 +6,7 @@ import vehiclesRoutes from './routes/vehiclesRoutes'
 import locationsRoutes from './routes/locationsRoutes'
 import propertiesRoutes from './routes/propertiesRoutes'
 import spotsRoutes from './routes/spotsRoutes'
+import reservationsRoutes from './routes/reservationsRoutes'
 import setupAssociantos from './models/Associations';
 import cors from "cors";
 import { globalLimiter } from "./middlewares/rateLimiter";
@@ -25,6 +26,7 @@ app.use('/vehicles', vehiclesRoutes)
 app.use('/locations', locationsRoutes)
 app.use('/properties', propertiesRoutes)
 app.use('/spots', spotsRoutes)
+app.use('/reservations', reservationsRoutes)
 
 app.use(errorHandler);
 

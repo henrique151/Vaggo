@@ -13,6 +13,8 @@ class Property extends Model<PropertyAttributes, PropertyCreationAttributes> imp
     public totalCapacity!: number;
     public images!: string[];
     public addressId!: number;
+    public longitude!: number | null;
+    public latitude!: number | null;
 }
 
 Property.init({
@@ -52,6 +54,16 @@ Property.init({
         allowNull: false,
         defaultValue: [],
         field: 'PRO_JSON_IMAGENS'
+    },
+    latitude: {
+        type: DataTypes.DECIMAL(10, 7),
+        allowNull: true,
+        field: 'PRO_DEC_LATITUDE'
+    },
+    longitude: {
+        type: DataTypes.DECIMAL(10, 7),
+        allowNull: true,
+        field: 'PRO_DEC_LONGITUDE'
     },
     addressId: {
         type: DataTypes.INTEGER,
