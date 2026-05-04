@@ -5,7 +5,6 @@ import { evaluateSpotSchema, generateSpotsSchema, updateSpotSchema, updateSpotSt
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { uploadMultiple, uploadSpotSingle } from "../middlewares/upload";
 import { uploadLimiter } from "../middlewares/rateLimiter";
-
 const router = Router();
 
 router.post(

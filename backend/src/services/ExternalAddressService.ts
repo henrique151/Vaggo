@@ -10,9 +10,37 @@ type ViaCepResponse = {
     uf?: string;
 };
 
+interface CacheEntry {
+    data: any;
+    expiresAt: number;
+}
+
+const CEP_CACHE = new Map<string, CacheEntry>();
+const CACHE_TTL = 5 * 60 * 1000;
+
 export class ExternalAddressService {
+    private static getCachedAddress(cep: string) {
+        const cached = CEP_CACHE.get(cep);
+        if (cached && Date.now() < cached.expiresAt) {
+            return cached.data;
+        }
+
+        return null;
+    }
+
+    private static setCacheAddress(cep: string, data: any) {
+        CEP_CACHE.set(cep, {
+            data,
+            expiresAt: Date.now() + CACHE_TTL
+        });
+    }
+
     static async getAddressByCep(cep: string) {
         const cleanCep = cep.replace(/\D/g, '');
+        const cached = this.getCachedAddress(cleanCep);
+        if (cached) {
+            return cached;
+        }
 
         try {
             const { data } = await axios.get<ViaCepResponse>(`https://viacep.com.br/ws/${cleanCep}/json/`);
@@ -22,8 +50,7 @@ export class ExternalAddressService {
             }
 
             const coordinates = await this.getCoordinatesFromCep(cleanCep, data);
-
-            return {
+            const result = {
                 street: data.logradouro || '',
                 neighborhood: data.bairro || '',
                 cityName: data.localidade,
@@ -32,6 +59,9 @@ export class ExternalAddressService {
                 latitude: coordinates.lat,
                 longitude: coordinates.lng
             };
+
+            this.setCacheAddress(cleanCep, result);
+            return result;
         } catch (error) {
             if (error instanceof Error && ['CEP_NOT_FOUND', 'GEOCODING_FAILED'].includes(error.message)) {
                 throw error;

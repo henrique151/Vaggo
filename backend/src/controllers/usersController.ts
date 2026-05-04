@@ -8,10 +8,9 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, cpf, gender, phone, birthDate, email, password, permissionLevel } = req.body as CreateUserInput;
     const personData = { name, cpf, gender, phone, birthDate };
     const userData = { email, password, permissionLevel };
-
     const fileData = req.file ? { buffer: req.file.buffer, mimetype: req.file.mimetype } : undefined;
-
     const data = await UserService.createAccount(personData, userData, fileData);
+
     res.status(201).json({ success: true, message: 'Usuário criado com sucesso', data });
 });
 
@@ -20,7 +19,8 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     await UserService.deleteAccount(id);
     res.status(200).json({ success: true, message: 'Usuário removido' });
 });
-export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
+
+export const getAllUsers = asyncHandler(async (_req: Request, res: Response) => {
     const data = await UserService.getAllUsers();
     res.status(200).json({ success: true, data });
 });
@@ -37,7 +37,6 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     if (Number(authReq.user?.id) !== id) return res.status(403).json({ success: false, message: 'Sem permissão' });
 
     const fileData = req.file ? { buffer: req.file.buffer, mimetype: req.file.mimetype } : undefined;
-
     const data = await UserService.updateAccount(id, req.body, fileData);
     res.status(200).json({ success: true, message: 'Atualizado com sucesso', data });
 });
