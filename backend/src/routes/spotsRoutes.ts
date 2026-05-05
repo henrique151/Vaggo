@@ -3,9 +3,8 @@ import { listByProperty, evaluateSpots, updateSpot, deleteSpot, updateSpotData, 
 import { validateBody } from "../middlewares/validateBody";
 import { evaluateSpotSchema, generateSpotsSchema, updateSpotSchema, updateSpotStatusSchema } from '../schemas/spotsSchema';
 import { authMiddleware } from "../middlewares/authMiddleware";
-import { uploadMultiple, uploadSingle } from "../middlewares/upload";
+import { uploadMultiple, uploadSpotSingle } from "../middlewares/upload";
 import { uploadLimiter } from "../middlewares/rateLimiter";
-
 const router = Router();
 
 router.post(
@@ -41,7 +40,7 @@ router.put(
     '/properties/:propId/spots/:id',
     authMiddleware,
     uploadLimiter,
-    uploadSingle,
+    uploadSpotSingle,
     validateBody(updateSpotSchema),
     updateSpotData
 );
@@ -51,5 +50,7 @@ router.delete(
     authMiddleware,
     deleteSpot
 );
+
+
 
 export default router;

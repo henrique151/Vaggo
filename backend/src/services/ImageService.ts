@@ -3,7 +3,7 @@ import { UploadApiResponse } from 'cloudinary';
 import sharp from 'sharp';
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 const FILE_SIGNATURES: Record<string, Buffer[]> = {
     'image/jpeg': [Buffer.from([0xff, 0xd8, 0xff])],
@@ -27,7 +27,14 @@ export class ImageService {
     }
 
     private static async sanitizeImage(buffer: Buffer): Promise<Buffer> {
-        return sharp(buffer).rotate().toBuffer(); // Remove metadados EXIF
+        return sharp(buffer).rotate().toBuffer();
+    }
+
+    private static async compressImage(buffer: Buffer, width: number, height: number, quality: number = 80): Promise<Buffer> {
+        return sharp(buffer)
+            .resize(width, height, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality, progressive: true })
+            .toBuffer();
     }
 
     private static uploadStream(buffer: Buffer, options: any): Promise<UploadApiResponse> {
@@ -43,10 +50,12 @@ export class ImageService {
     static async uploadUserAvatar(file: FileData, userId: number): Promise<UploadApiResponse> {
         this.validateFile(file);
         const sanitized = await this.sanitizeImage(file.buffer);
-        return this.uploadStream(sanitized, {
+        const compressed = await this.compressImage(sanitized, 400, 400, 80);
+
+        return this.uploadStream(compressed, {
             folder: `vaggo/users/user_${userId}/avatarUrl`,
             public_id: `avatar_${userId}`,
-            overwrite: true, // Garante que atualizações sobrescrevam o antigo no Cloudinary
+            overwrite: true,
             transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }, { quality: 'auto', fetch_format: 'auto' }]
         });
     }
@@ -54,9 +63,11 @@ export class ImageService {
     static async uploadPropertyImage(file: FileData, userId: number, propertyId: number, index: number): Promise<UploadApiResponse> {
         this.validateFile(file);
         const sanitized = await this.sanitizeImage(file.buffer);
-        return this.uploadStream(sanitized, {
+        const compressed = await this.compressImage(sanitized, 1280, 720, 75);
+
+        return this.uploadStream(compressed, {
             folder: `vaggo/users/user_${userId}/properties`,
-            public_id: `property_${propertyId}_img_${index}_${Date.now()}`, // Usando Date.now para evitar cache agressivo no update
+            public_id: `property_${propertyId}_img_${index}_${Date.now()}`,
             transformation: [{ width: 1280, height: 720, crop: 'limit' }, { quality: 'auto', fetch_format: 'auto' }]
         });
     }
@@ -64,7 +75,9 @@ export class ImageService {
     static async uploadSpotImage(file: FileData, userId: number, spotId: number): Promise<UploadApiResponse> {
         this.validateFile(file);
         const sanitized = await this.sanitizeImage(file.buffer);
-        return this.uploadStream(sanitized, {
+        const compressed = await this.compressImage(sanitized, 800, 600, 75);
+
+        return this.uploadStream(compressed, {
             folder: `vaggo/users/user_${userId}/spots/spot_${spotId}`,
             public_id: `spot_${spotId}_img_${Date.now()}`,
             overwrite: true,
@@ -77,6 +90,17 @@ export class ImageService {
         await cloudinary.uploader.destroy(publicId);
     }
 
+    static async deleteFolderAsync(folderPath: string): Promise<void> {
+        setImmediate(async () => {
+            try {
+                await cloudinary.api.delete_resources_by_prefix(folderPath);
+                await cloudinary.api.delete_folder(folderPath);
+            } catch (error) {
+                console.error(`[DELETE-FOLDER] Falha ao deletar: ${folderPath}`, error);
+            }
+        });
+    }
+
     static async deleteFolder(folderPath: string): Promise<void> {
         try {
             await cloudinary.api.delete_resources_by_prefix(folderPath);
@@ -86,9 +110,16 @@ export class ImageService {
         }
     }
 
-    // Extrai o public_id a partir de uma URL segura do Cloudinary
     static extractPublicId(url: string): string | null {
         const match = url.match(/\/v\d+\/(.+?)\.\w+$/);
         return match ? match[1] : null;
+    }
+
+    static extractFolderPath(url: string): string | null {
+        const publicId = this.extractPublicId(url);
+        if (!publicId) return null;
+
+        const lastSlashIndex = publicId.lastIndexOf('/');
+        return lastSlashIndex > 0 ? publicId.slice(0, lastSlashIndex) : null;
     }
 }
