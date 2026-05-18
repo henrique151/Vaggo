@@ -29,19 +29,27 @@ export class SpotSearchService {
             fallbackToNearest = results.length > 0;
         }
 
-        const enriched = results.map((property) => ({
-            id: property.userId,
-            name: property.ownerName,
-            phone: property.ownerPhone,
-            avatarUrl: property.avatarUrl,
-            distanceKm: Number(property.distanceKm),
-            property: {
-                name: property.propertyName,
-                image: Array.isArray(property.propertyImages) && property.propertyImages.length > 0
-                    ? property.propertyImages[0]
-                    : null
-            }
-        }));
+        const enriched = results
+            .reduce((acc: any[], property) => {
+                const exists = acc.find(p => p.property.id === property.propertyId);
+                if (!exists) {
+                    acc.push({
+                        id: property.userId,
+                        name: property.ownerName,
+                        phone: property.ownerPhone,
+                        avatarUrl: property.avatarUrl,
+                        distanceKm: Number(property.distanceKm),
+                        property: {
+                            id: property.propertyId,
+                            name: property.propertyName,
+                            image: Array.isArray(property.propertyImages) && property.propertyImages.length > 0
+                                ? property.propertyImages[0]
+                                : null
+                        }
+                    });
+                }
+                return acc;
+            }, []);
 
         return {
             data: enriched
@@ -91,7 +99,7 @@ export class SpotSearchService {
             : '';
 
         return sequelize.query<any>(`
-            SELECT DISTINCT
+            SELECT
                 p."PRO_INT_ID" AS "propertyId",
                 p."PRO_STR_NOME" AS "propertyName",
                 p."PRO_JSON_IMAGENS" AS "propertyImages",
@@ -111,7 +119,7 @@ export class SpotSearchService {
                 AND p."PRO_DEC_LATITUDE" IS NOT NULL
                 AND p."PRO_DEC_LONGITUDE" IS NOT NULL
                 ${radiusClause}
-            ORDER BY "distanceKm" ASC
+            ORDER BY "distanceKm" ASC, p."PRO_INT_ID" ASC
             LIMIT :limit
         `, {
             replacements: {
