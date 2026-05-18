@@ -43,8 +43,13 @@ export type SpotSearchRow = {
     currentStatus: string;
     propertyId: number;
     propertyName: string;
+    propertyImages: string[];
     propertyLat: number;
     propertyLng: number;
+    userId: number;
+    avatarUrl: string;
+    ownerName: string;
+    ownerPhone: string;
     weekdaysBitmask: number;
     availableFrom: string | null;
     availableUntil: string | null;

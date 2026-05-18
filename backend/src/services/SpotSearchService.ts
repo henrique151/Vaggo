@@ -55,9 +55,17 @@ export class SpotSearchService {
                 );
 
                 return {
-                    ...spot,
-                    distanceKm: Number(spot.distanceKm),
-                    weekdays: decodeWeekdays(Number(spot.weekdaysBitmask)),
+                    id: spot.userId,
+                    name: spot.ownerName,
+                    telefone: spot.ownerPhone,
+                    avatar_url: spot.avatarUrl,
+                    distancia_km: Number(spot.distanceKm),
+                    data_propriedade: {
+                        nome_propriedade: spot.propertyName,
+                        imagem_propriedade: Array.isArray(spot.propertyImages) && spot.propertyImages.length > 0
+                            ? spot.propertyImages[0]
+                            : ''
+                    },
                     route: route || null,
                     withinRequestedRadius: !fallbackToNearest,
                 };
@@ -140,8 +148,13 @@ export class SpotSearchService {
                 s."VAG_STR_OCUPADA" AS "currentStatus",
                 p."PRO_INT_ID" AS "propertyId",
                 p."PRO_STR_NOME" AS "propertyName",
+                p."PRO_JSON_IMAGENS" AS "propertyImages",
                 p."PRO_DEC_LATITUDE" AS "propertyLat",
                 p."PRO_DEC_LONGITUDE" AS "propertyLng",
+                u."USU_INT_ID" AS "userId",
+                u."USU_STR_AVATAR_URL" AS "avatarUrl",
+                per."PES_STR_NOME" AS "ownerName",
+                per."PES_STR_PHONE" AS "ownerPhone",
                 sa."SAV_INT_WEEKDAYS" AS "weekdaysBitmask",
                 sa."SAV_DATE_START" AS "availableFrom",
                 sa."SAV_DATE_END" AS "availableUntil",
@@ -151,6 +164,9 @@ export class SpotSearchService {
             FROM spots s
             INNER JOIN properties p ON s."PRO_INT_ID" = p."PRO_INT_ID"
             INNER JOIN spot_availabilities sa ON sa."VAG_INT_ID" = s."VAG_INT_ID"
+            LEFT JOIN properties_users pu ON p."PRO_INT_ID" = pu."PRO_INT_ID"
+            LEFT JOIN users u ON pu."USU_INT_ID" = u."USU_INT_ID"
+            LEFT JOIN persons per ON u."PES_INT_ID" = per."PES_INT_ID"
             WHERE
                 s."VAG_STR_STATUS_APROVACAO" = 'APROVADA'
                 AND s."VAG_BOL_ATIVA" = true
