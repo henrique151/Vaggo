@@ -14,6 +14,6 @@ export const searchByAddress = asyncHandler(async (req: Request, res: Response) 
         requestedPeriod: result.requestedPeriod,
         fallbackToNearest: result.fallbackToNearest,
         total: result.results.length,
-        data: result.results,
+        results: result.results,
     });
 });
