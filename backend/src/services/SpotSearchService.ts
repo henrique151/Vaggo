@@ -55,16 +55,33 @@ export class SpotSearchService {
                 );
 
                 return {
-                    id: spot.userId,
-                    name: spot.ownerName,
-                    telefone: spot.ownerPhone,
-                    avatar_url: spot.avatarUrl,
-                    distancia_km: Number(spot.distanceKm),
-                    data_propriedade: {
-                        nome_propriedade: spot.propertyName,
-                        imagem_propriedade: Array.isArray(spot.propertyImages) && spot.propertyImages.length > 0
+                    spotId: spot.spotId,
+                    identifier: spot.identifier,
+                    size: spot.size,
+                    isCovered: spot.isCovered,
+                    price: spot.price,
+                    allowedVehicles: spot.allowedVehicles,
+                    currentStatus: spot.currentStatus,
+                    propertyId: spot.propertyId,
+                    propertyLat: spot.propertyLat,
+                    propertyLng: spot.propertyLng,
+                    distanceKm: Number(spot.distanceKm),
+                    weekdays: decodeWeekdays(Number(spot.weekdaysBitmask)),
+                    availableFrom: spot.availableFrom,
+                    availableUntil: spot.availableUntil,
+                    timeStart: spot.timeStart,
+                    timeEnd: spot.timeEnd,
+                    owner: {
+                        id: spot.userId,
+                        name: spot.ownerName,
+                        phone: spot.ownerPhone,
+                        avatarUrl: spot.avatarUrl,
+                    },
+                    property: {
+                        name: spot.propertyName,
+                        image: Array.isArray(spot.propertyImages) && spot.propertyImages.length > 0
                             ? spot.propertyImages[0]
-                            : ''
+                            : null
                     },
                     route: route || null,
                     withinRequestedRadius: !fallbackToNearest,
