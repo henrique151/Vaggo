@@ -82,22 +82,9 @@ export class SpotSearchService {
         );
 
         const groupedByProperty = enriched.reduce((acc: any[], spot) => {
-            const existingProperty = acc.find(p => p.property.name === spot.propertyName);
+            const existingProperty = acc.find(p => p.property.id === spot.propertyId);
 
-            if (existingProperty) {
-                existingProperty.spots.push({
-                    id: spot.spotId,
-                    size: spot.size,
-                    price: spot.price,
-                    allowedVehicles: spot.allowedVehicles,
-                    currentStatus: spot.currentStatus,
-                    weekdays: spot.weekdays,
-                    availableFrom: spot.availableFrom,
-                    availableUntil: spot.availableUntil,
-                    timeStart: spot.timeStart,
-                    timeEnd: spot.timeEnd
-                });
-            } else {
+            if (!existingProperty) {
                 acc.push({
                     owner: {
                         id: spot.userId,
@@ -106,6 +93,7 @@ export class SpotSearchService {
                         avatarUrl: spot.avatarUrl,
                     },
                     property: {
+                        id: spot.propertyId,
                         name: spot.propertyName,
                         image: Array.isArray(spot.propertyImages) && spot.propertyImages.length > 0
                             ? spot.propertyImages[0]
@@ -114,7 +102,7 @@ export class SpotSearchService {
                     distanceKm: spot.distanceKm,
                     route: spot.route,
                     withinRequestedRadius: spot.withinRequestedRadius,
-                    spots: [{
+                    spot: {
                         id: spot.spotId,
                         size: spot.size,
                         price: spot.price,
@@ -125,7 +113,7 @@ export class SpotSearchService {
                         availableUntil: spot.availableUntil,
                         timeStart: spot.timeStart,
                         timeEnd: spot.timeEnd
-                    }]
+                    }
                 });
             }
             return acc;
@@ -200,8 +188,13 @@ export class SpotSearchService {
 
         return sequelize.query<any>(`
             SELECT
+                s."VAG_INT_ID" AS "spotId",
+                s."VAG_STR_IDENTIFICADOR" AS "identifier",
                 s."VAG_DEC_TAMANHO" AS "size",
                 s."VAG_DEC_PRECO" AS "price",
+                p."PRO_INT_ID" AS "propertyId",
+                p."PRO_DEC_LATITUDE" AS "propertyLat",
+                p."PRO_DEC_LONGITUDE" AS "propertyLng",
                 s."VAG_JSN_VEICULOS_PERMITIDOS" AS "allowedVehicles",
                 s."VAG_STR_OCUPADA" AS "currentStatus",
                 p."PRO_STR_NOME" AS "propertyName",
