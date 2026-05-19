@@ -1,6 +1,12 @@
 export interface ReportAttributes {
     id: number;
-    comment: string;
+    description: string;
+    reason: string | null;
+    status: 'PENDENTE' | 'EM_ANALISE' | 'RESOLVIDA' | 'RECUSADA' | 'REANALISE';
+    adminNote: string | null;
     userId: number;
-    propertyId: number;
+    spotId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    reviewedAt: Date | null;
 }

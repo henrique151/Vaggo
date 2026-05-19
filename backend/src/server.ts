@@ -7,6 +7,8 @@ import locationsRoutes from './routes/locationsRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
 import spotsRoutes from './routes/spotsRoutes';
 import reservationsRoutes from './routes/reservationsRoutes';
+import reportsRoutes from './routes/reportsRoutes';
+import reviewsRoutes from './routes/reviewsRoutes';
 import setupAssociantos from './models/Associations';
 import cors from "cors";
 import { globalLimiter } from "./middlewares/rateLimiter";
@@ -25,6 +27,8 @@ app.use('/locations', locationsRoutes);
 app.use('/properties', propertiesRoutes);
 app.use('/spots', spotsRoutes);
 app.use('/reservations', reservationsRoutes);
+app.use('/reports', reportsRoutes);
+app.use('/reviews', reviewsRoutes);
 
 app.use(errorHandler);
 

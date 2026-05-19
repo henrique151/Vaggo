@@ -13,6 +13,8 @@ const BUSINESS_ERRORS: Record<string, number> = {
     SPOT_PERIOD_CONFLICT: 409,
     VEHICLE_TYPE_NOT_ALLOWED: 422,
     RESERVATION_NOT_FOUND: 404,
+    REPORT_NOT_FOUND: 404,
+    REVIEW_NOT_FOUND: 404,
     SPOT_IMAGE_REQUIRED: 400,
     SPOT_IMAGE_LIMIT: 400,
     INVALID_CREDENTIALS: 401,
@@ -39,6 +41,8 @@ const BUSINESS_ERRORS: Record<string, number> = {
     PROPERTY_CAPACITY_EXCEEDED: 422,
     SPOT_AVAILABILITY_NOT_CONFIGURED: 422,
     RESERVATION_OUTSIDE_AVAILABILITY: 422,
+    RESERVATION_NOT_COMPLETED: 422,
+    REPORT_REANALYSIS_NOT_ALLOWED: 422,
 };
 
 export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
@@ -94,8 +98,12 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         SPOT_PERIOD_CONFLICT: 'Ja existe uma reserva neste periodo.',
         VEHICLE_TYPE_NOT_ALLOWED: 'Tipo de veiculo nao permitido nesta vaga.',
         RESERVATION_NOT_FOUND: 'Reserva nao encontrada.',
+        REPORT_NOT_FOUND: 'Denuncia nao encontrada.',
+        REVIEW_NOT_FOUND: 'Avaliacao nao encontrada.',
         SPOT_AVAILABILITY_NOT_CONFIGURED: 'A vaga nao possui disponibilidade configurada.',
         RESERVATION_OUTSIDE_AVAILABILITY: 'O periodo solicitado esta fora da disponibilidade da vaga.',
+        RESERVATION_NOT_COMPLETED: 'A reserva precisa estar aprovada e finalizada para receber avaliacao.',
+        REPORT_REANALYSIS_NOT_ALLOWED: 'A reanalise so pode ser solicitada para denuncias resolvidas ou recusadas.',
     };
 
     const message = messageMap[err.message] ?? (status === 500 ? 'Erro interno do servidor' : err.message);
