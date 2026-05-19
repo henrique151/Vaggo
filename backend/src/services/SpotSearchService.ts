@@ -6,8 +6,7 @@ import {
     HAVERSINE_SQL,
     RESERVATION_PERIOD_CONFLICT_SQL,
     SearchOrigin,
-    SearchParams,
-    SpotSearchRow
+    SearchParams
 } from '../types/SpotSearch';
 import { buildWeekdayMask, getCurrentDateString } from '../utils/dateRange';
 
@@ -55,16 +54,73 @@ export class SpotSearchService {
                 );
 
                 return {
-                    ...spot,
+                    spotId: spot.spotId,
+                    identifier: spot.identifier,
+                    size: spot.size,
+                    price: spot.price,
+                    allowedVehicles: spot.allowedVehicles,
+                    currentStatus: spot.currentStatus,
+                    propertyId: spot.propertyId,
+                    propertyLat: spot.propertyLat,
+                    propertyLng: spot.propertyLng,
                     distanceKm: Number(spot.distanceKm),
                     weekdays: decodeWeekdays(Number(spot.weekdaysBitmask)),
+                    availableFrom: spot.availableFrom,
+                    availableUntil: spot.availableUntil,
+                    timeStart: spot.timeStart,
+                    timeEnd: spot.timeEnd,
+                    userId: spot.userId,
+                    ownerName: spot.ownerName,
+                    ownerPhone: spot.ownerPhone,
+                    avatarUrl: spot.avatarUrl,
+                    propertyName: spot.propertyName,
+                    propertyImages: spot.propertyImages,
                     route: route || null,
                     withinRequestedRadius: !fallbackToNearest,
                 };
             })
         );
 
+        const groupedByProperty = enriched.reduce((acc: any[], spot) => {
+            const existingProperty = acc.find(p => p.property.id === spot.propertyId);
+
+            if (!existingProperty) {
+                acc.push({
+                    owner: {
+                        id: spot.userId,
+                        name: spot.ownerName,
+                        phone: spot.ownerPhone,
+                        avatarUrl: spot.avatarUrl,
+                    },
+                    property: {
+                        id: spot.propertyId,
+                        name: spot.propertyName,
+                        image: Array.isArray(spot.propertyImages) && spot.propertyImages.length > 0
+                            ? spot.propertyImages[0]
+                            : null
+                    },
+                    distanceKm: spot.distanceKm,
+                    route: spot.route,
+                    withinRequestedRadius: spot.withinRequestedRadius,
+                    spot: {
+                        id: spot.spotId,
+                        size: spot.size,
+                        price: spot.price,
+                        allowedVehicles: spot.allowedVehicles,
+                        currentStatus: spot.currentStatus,
+                        weekdays: spot.weekdays,
+                        availableFrom: spot.availableFrom,
+                        availableUntil: spot.availableUntil,
+                        timeStart: spot.timeStart,
+                        timeEnd: spot.timeEnd
+                    }
+                });
+            }
+            return acc;
+        }, []);
+
         return {
+            success: true,
             searchOrigin: {
                 lat: searchOrigin.lat,
                 lng: searchOrigin.lng,
@@ -80,7 +136,8 @@ export class SpotSearchService {
                     }
                     : null,
             fallbackToNearest,
-            results: enriched
+            total: groupedByProperty.length,
+            data: groupedByProperty
         };
     }
 
@@ -129,19 +186,23 @@ export class SpotSearchService {
             ? `AND ${HAVERSINE_SQL} <= :radius`
             : '';
 
-        return sequelize.query<SpotSearchRow>(`
+        return sequelize.query<any>(`
             SELECT
                 s."VAG_INT_ID" AS "spotId",
                 s."VAG_STR_IDENTIFICADOR" AS "identifier",
                 s."VAG_DEC_TAMANHO" AS "size",
-                s."VAG_BOL_COBERTA" AS "isCovered",
                 s."VAG_DEC_PRECO" AS "price",
-                s."VAG_JSN_VEICULOS_PERMITIDOS" AS "allowedVehicles",
-                s."VAG_STR_OCUPADA" AS "currentStatus",
                 p."PRO_INT_ID" AS "propertyId",
-                p."PRO_STR_NOME" AS "propertyName",
                 p."PRO_DEC_LATITUDE" AS "propertyLat",
                 p."PRO_DEC_LONGITUDE" AS "propertyLng",
+                s."VAG_JSN_VEICULOS_PERMITIDOS" AS "allowedVehicles",
+                s."VAG_STR_OCUPADA" AS "currentStatus",
+                p."PRO_STR_NOME" AS "propertyName",
+                p."PRO_JSON_IMAGENS" AS "propertyImages",
+                u."USU_INT_ID" AS "userId",
+                u."USU_STR_AVATAR_URL" AS "avatarUrl",
+                per."PES_STR_NOME" AS "ownerName",
+                per."PES_STR_PHONE" AS "ownerPhone",
                 sa."SAV_INT_WEEKDAYS" AS "weekdaysBitmask",
                 sa."SAV_DATE_START" AS "availableFrom",
                 sa."SAV_DATE_END" AS "availableUntil",
@@ -151,6 +212,9 @@ export class SpotSearchService {
             FROM spots s
             INNER JOIN properties p ON s."PRO_INT_ID" = p."PRO_INT_ID"
             INNER JOIN spot_availabilities sa ON sa."VAG_INT_ID" = s."VAG_INT_ID"
+            LEFT JOIN properties_users pu ON p."PRO_INT_ID" = pu."PRO_INT_ID"
+            LEFT JOIN users u ON pu."USU_INT_ID" = u."USU_INT_ID"
+            LEFT JOIN persons per ON u."PES_INT_ID" = per."PES_INT_ID"
             WHERE
                 s."VAG_STR_STATUS_APROVACAO" = 'APROVADA'
                 AND s."VAG_BOL_ATIVA" = true
