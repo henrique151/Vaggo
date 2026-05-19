@@ -2,15 +2,17 @@ import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../database';
 import { ReviewAttributes } from '../types/ReviewAttributes';
 
-export interface ReviewCreationAttributes extends Optional<ReviewAttributes, 'id'> { }
+export interface ReviewCreationAttributes extends Optional<ReviewAttributes, 'id' | 'reviewDate'> { }
 
 class Review extends Model<ReviewAttributes, ReviewCreationAttributes> implements ReviewAttributes {
     public id!: number;
-    public rating!: number | null;
+    public rating!: number;
     public comment!: string;
     public reviewDate!: Date;
     public userId!: number;
+    public spotId!: number;
     public propertyId!: number;
+    public reservationId!: number;
 }
 
 Review.init({
@@ -22,11 +24,11 @@ Review.init({
     },
     rating: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
         field: 'AVA_INT_NOTA'
     },
     comment: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(500),
         allowNull: true,
         field: 'AVA_STR_COMENTARIO'
     },
@@ -40,10 +42,20 @@ Review.init({
         allowNull: false,
         field: 'USU_INT_ID'
     },
+    spotId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        field: 'VAG_INT_ID'
+    },
     propertyId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         field: 'PRO_INT_ID'
+    },
+    reservationId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        field: 'RES_INT_ID'
     }
 }, {
     sequelize,

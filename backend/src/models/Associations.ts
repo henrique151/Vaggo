@@ -65,19 +65,25 @@ const setupAssociantos = () => {
     User.hasMany(Reservation, { foreignKey: 'USU_INT_ID', as: 'reservations' });
     Reservation.belongsTo(User, { foreignKey: 'USU_INT_ID', as: 'user' });
 
-    // 8. Reviews (User and Property)
+    // 8. Reviews (User, Property, Spot and Reservation)
     User.hasMany(Review, { foreignKey: 'USU_INT_ID', as: 'reviews' });
     Review.belongsTo(User, { foreignKey: 'USU_INT_ID', as: 'author' });
 
     Property.hasMany(Review, { foreignKey: 'PRO_INT_ID', as: 'reviews' });
     Review.belongsTo(Property, { foreignKey: 'PRO_INT_ID', as: 'property' });
 
-    // 9. Reports (User and Property)
+    Spot.hasMany(Review, { foreignKey: 'VAG_INT_ID', as: 'reviews' });
+    Review.belongsTo(Spot, { foreignKey: 'VAG_INT_ID', as: 'spot' });
+
+    Reservation.hasMany(Review, { foreignKey: 'RES_INT_ID', as: 'reviews' });
+    Review.belongsTo(Reservation, { foreignKey: 'RES_INT_ID', as: 'reservation' });
+
+    // 9. Reports (User and Spot)
     User.hasMany(Report, { foreignKey: 'USU_INT_ID', as: 'reports' });
     Report.belongsTo(User, { foreignKey: 'USU_INT_ID', as: 'reporter' });
 
-    Property.hasMany(Report, { foreignKey: 'PRO_INT_ID', as: 'reports' });
-    Report.belongsTo(Property, { foreignKey: 'PRO_INT_ID', as: 'property' });
+    Spot.hasMany(Report, { foreignKey: 'VAG_INT_ID', as: 'reports' });
+    Report.belongsTo(Spot, { foreignKey: 'VAG_INT_ID', as: 'spot' });
 }
 
 export default setupAssociantos
