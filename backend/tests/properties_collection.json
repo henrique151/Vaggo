@@ -1,0 +1,133 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "Properties API - Performance Testing",
+  "dateExport": "2024-01-01T00:00:00.000Z",
+  "version": "1.1",
+  "folders": [
+    {
+      "id": "1",
+      "name": "Authentication",
+      "requests": [
+        {
+          "id": "auth-login",
+          "name": "Login",
+          "method": "POST",
+          "url": "{{BASE_URL}}/users/login",
+          "body": {
+            "type": "json",
+            "raw": "{\"email\":\"teste@example.com\",\"password\":\"senha123\"}"
+          },
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "tests": "var token = pm.response.json().data.token;\npm.environment.set('TOKEN', token);"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Properties Tests",
+      "requests": [
+        {
+          "id": "properties-create",
+          "name": "1️⃣ CREATE Property (3 images)",
+          "description": "📊 TESTE MAIS IMPORTANTE - Esta é a rota MAIS LENTA",
+          "method": "POST",
+          "url": "{{BASE_URL}}/properties",
+          "headers": {
+            "Authorization": "Bearer {{TOKEN}}"
+          },
+          "body": {
+            "type": "formdata",
+            "formdata": [
+              { "key": "title", "value": "Apartamento Teste Performance" },
+              { "key": "type", "value": "APARTMENT" },
+              { "key": "price", "value": "2500" },
+              { "key": "bedroomCount", "value": "2" },
+              { "key": "bathroomCount", "value": "1" },
+              { "key": "area", "value": "85" },
+              { "key": "description", "value": "Teste de performance da API" },
+              { "key": "zipCode", "value": "01310100" },
+              { "key": "street", "value": "Avenida Paulista" },
+              { "key": "number", "value": "1000" },
+              { "key": "complement", "value": "Apto 500" },
+              { "key": "neighborhood", "value": "Bela Vista" },
+              {
+                "key": "files",
+                "value": "@/path/to/image1.jpg",
+                "type": "file"
+              },
+              {
+                "key": "files",
+                "value": "@/path/to/image2.jpg",
+                "type": "file"
+              },
+              {
+                "key": "files",
+                "value": "@/path/to/image3.jpg",
+                "type": "file"
+              }
+            ]
+          },
+          "tests": "var propertyId = pm.response.json().data.id;\npm.environment.set('PROPERTY_ID', propertyId);"
+        },
+        {
+          "id": "properties-get-all",
+          "name": "2️⃣ GET All Properties",
+          "method": "GET",
+          "url": "{{BASE_URL}}/properties",
+          "headers": {
+            "Authorization": "Bearer {{TOKEN}}"
+          }
+        },
+        {
+          "id": "properties-get-by-id",
+          "name": "3️⃣ GET Property By ID",
+          "method": "GET",
+          "url": "{{BASE_URL}}/properties/{{PROPERTY_ID}}",
+          "headers": {
+            "Authorization": "Bearer {{TOKEN}}"
+          }
+        },
+        {
+          "id": "properties-get-my",
+          "name": "4️⃣ GET My Properties",
+          "method": "GET",
+          "url": "{{BASE_URL}}/properties/my",
+          "headers": {
+            "Authorization": "Bearer {{TOKEN}}"
+          }
+        },
+        {
+          "id": "properties-update",
+          "name": "5️⃣ UPDATE Property",
+          "description": "📊 Observar: Upload de imagens é lento aqui também",
+          "method": "PUT",
+          "url": "{{BASE_URL}}/properties/{{PROPERTY_ID}}",
+          "headers": {
+            "Authorization": "Bearer {{TOKEN}}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "type": "json",
+            "raw": "{\"title\":\"Apartamento Teste Updated\",\"price\":2800,\"bedroomCount\":3,\"bathroomCount\":2,\"area\":100,\"description\":\"Atualizado via teste\",\"zipCode\":\"01310100\",\"street\":\"Avenida Paulista\",\"number\":1000,\"complement\":\"Apto 500\",\"neighborhood\":\"Bela Vista\"}"
+          }
+        },
+        {
+          "id": "properties-delete",
+          "name": "6️⃣ DELETE Property",
+          "method": "DELETE",
+          "url": "{{BASE_URL}}/properties/{{PROPERTY_ID}}",
+          "headers": {
+            "Authorization": "Bearer {{TOKEN}}"
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "BASE_URL": "http://localhost:3000",
+    "TOKEN": "",
+    "PROPERTY_ID": ""
+  }
+}

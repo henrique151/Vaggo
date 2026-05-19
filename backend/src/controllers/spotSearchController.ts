@@ -6,6 +6,5 @@ import { SearchByAddressInput, searchByAddressSchema } from '../schemas/spotSear
 export const searchByAddress = asyncHandler(async (req: Request, res: Response) => {
     const params = searchByAddressSchema.parse(req.query) as SearchByAddressInput;
     const result = await SpotSearchService.searchByAddress(params);
-
     res.status(200).json(result);
 });
