@@ -5,10 +5,15 @@ const storage = multer.memoryStorage();
 const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 const propertyImageFieldNames = ['images', 'files'];
 const spotImageFieldNames = ['imageUrl', 'image', 'file', 'images', 'files'];
+const chatImageFieldNames = ['image', 'file', 'imageUrl'];
+const reportImageFieldNames = ['images', 'files'];
 
 const createUploader = () => multer({
     storage,
-    limits: { fieldSize: 5 * 1024 * 1024 },
+    limits: {
+        fieldSize: 5 * 1024 * 1024,
+        fileSize: 5 * 1024 * 1024,
+    },
     fileFilter: (_req, file, cb) => {
         if (!allowedMimeTypes.includes(file.mimetype)) {
             return cb(new Error('INVALID_IMAGE_FORMAT'));
@@ -35,6 +40,10 @@ const normalizeUploadError = (err: any, allowedFieldNames: string[]) => {
 
     if (err.code === 'LIMIT_FILE_COUNT') {
         err.message = 'PROPERTY_IMAGE_LIMIT';
+    }
+
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        err.message = 'IMAGE_TOO_LARGE';
     }
 
     return err;
@@ -77,6 +86,55 @@ export const uploadSpotSingle = (req: Request, res: Response, next: NextFunction
         }
 
         req.file = normalizedFiles[0];
+        next();
+    });
+};
+
+const multerChatSingle = createUploader().fields(
+    chatImageFieldNames.map((fieldName) => ({ name: fieldName, maxCount: 1 }))
+);
+
+export const uploadChatSingle = (req: Request, res: Response, next: NextFunction) => {
+    multerChatSingle(req, res, (err) => {
+        if (err) {
+            return next(normalizeUploadError(err, chatImageFieldNames));
+        }
+
+        const groupedFiles = req.files as Record<string, Express.Multer.File[]> | undefined;
+        const normalizedFiles = chatImageFieldNames.flatMap((fieldName) => groupedFiles?.[fieldName] || []);
+
+        if (normalizedFiles.length > 1) {
+            return next(new Error('CHAT_IMAGE_LIMIT'));
+        }
+
+        req.file = normalizedFiles[0];
+        next();
+    });
+};
+
+const multerReportMultiple = createUploader().fields([
+    { name: 'images', maxCount: 2 },
+    { name: 'files', maxCount: 2 }
+]);
+
+export const uploadReportImages = (req: Request, res: Response, next: NextFunction) => {
+    multerReportMultiple(req, res, (err) => {
+        if (err) {
+            const normalizedError = normalizeUploadError(err, reportImageFieldNames);
+            if (normalizedError.message === 'PROPERTY_IMAGE_LIMIT') {
+                normalizedError.message = 'REPORT_IMAGE_LIMIT';
+            }
+            return next(normalizedError);
+        }
+
+        const groupedFiles = req.files as Record<string, Express.Multer.File[]> | undefined;
+        const normalizedFiles = reportImageFieldNames.flatMap((fieldName) => groupedFiles?.[fieldName] || []);
+
+        if (normalizedFiles.length > 2) {
+            return next(new Error('REPORT_IMAGE_LIMIT'));
+        }
+
+        req.files = normalizedFiles as Express.Multer.File[];
         next();
     });
 };

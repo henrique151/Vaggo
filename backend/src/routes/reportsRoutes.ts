@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { adminMiddleware } from '../middlewares/adminMiddleware';
 import { validateBody } from '../middlewares/validateBody';
+import { uploadReportImages } from '../middlewares/upload';
 import {
     createReport,
     getMyReports,
@@ -11,14 +12,13 @@ import {
     updateReportStatus
 } from '../controllers/reportsController';
 import {
-    createReportSchema,
     requestReportReanalysisSchema,
     updateReportStatusSchema
 } from '../schemas/reportsSchema';
 
 const router = Router();
 
-router.post('/', authMiddleware, validateBody(createReportSchema), createReport);
+router.post('/', authMiddleware, uploadReportImages, createReport);
 router.get('/my', authMiddleware, getMyReports);
 router.get('/', authMiddleware, adminMiddleware, listReports);
 router.get('/:id', authMiddleware, getReportById);
