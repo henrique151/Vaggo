@@ -13,6 +13,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public permissionLevel!: '1' | '2' | '3';
     public avatarUrl!: string;
     public personId!: number;
+    public refreshTokenHash?: string;
+    public refreshTokenExpiresAt?: Date;
 }
 
 User.init({
@@ -62,6 +64,16 @@ User.init({
         allowNull: false,
         unique: true,
         field: 'PES_INT_ID'
+    },
+    refreshTokenHash: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'USU_STR_REFRESH_TOKEN_HASH'
+    },
+    refreshTokenExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'USU_DATE_REFRESH_TOKEN_EXPIRES'
     },
 }, {
     sequelize,

@@ -41,8 +41,24 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json({ success: true, message: 'Atualizado com sucesso', data });
 });
 
-export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+export const loginUser = asyncHandler(async (req: Response, res: Response) => {
     const { email, password } = req.body;
     const data = await UserService.authenticate(email, password);
-    res.status(200).json({ success: true, message: 'Login realizado com sucesso', data });
+
+    res.cookie('refreshToken', data.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Login realizado com sucesso',
+        data: {
+            accessToken: data.accessToken,
+            expiresIn: data.expiresIn,
+            user: data.user,
+        },
+    });
 });

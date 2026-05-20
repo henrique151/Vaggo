@@ -1,15 +1,13 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import sequelize from '../database';
 import User from '../models/User';
 import Person from '../models/Person';
 import Vehicle from '../models/Vehicle';
 import { CreateUserInput, UpdateUserInput } from '../schemas/usersSchema';
 import { FileData, ImageService } from './ImageService';
+import { TokenUtils } from '../utils/tokenUtils';
 
 const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET || 'super-segredo';
-const JWT_EXPIRES_IN = 10800;
 
 type PersonData = Pick<CreateUserInput, 'name' | 'cpf' | 'gender' | 'phone' | 'birthDate'>;
 type UserData = Pick<CreateUserInput, 'email' | 'password' | 'permissionLevel'>;
@@ -152,16 +150,66 @@ export class UserService {
 
         await user.update({ lastLogin: new Date() });
 
-        const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+        const accessToken = TokenUtils.generateAccessToken(user.id);
+        const refreshToken = TokenUtils.generateRefreshToken();
+        const refreshTokenHash = await TokenUtils.hashRefreshToken(refreshToken);
+        const refreshTokenExpiresAt = TokenUtils.getRefreshTokenExpiresAt();
+
+        await user.update({
+            refreshTokenHash,
+            refreshTokenExpiresAt,
+        });
 
         return {
-            token,
-            expiresIn: JWT_EXPIRES_IN,
+            accessToken,
+            expiresIn: TokenUtils.getAccessTokenExpiresIn(),
+            refreshToken,
             user: {
                 id: user.id,
                 email: user.email,
                 permissionLevel: user.permissionLevel,
             },
         };
+    }
+
+    static async refreshAccessToken(userId: number, refreshToken: string) {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        if (!user.refreshTokenHash || !user.refreshTokenExpiresAt) {
+            throw new Error('NO_REFRESH_TOKEN');
+        }
+
+        if (new Date() > user.refreshTokenExpiresAt) {
+            await user.update({ refreshTokenHash: null, refreshTokenExpiresAt: null });
+            throw new Error('REFRESH_TOKEN_EXPIRED');
+        }
+
+        const isValidToken = await TokenUtils.verifyRefreshTokenHash(refreshToken, user.refreshTokenHash);
+        if (!isValidToken) throw new Error('INVALID_REFRESH_TOKEN');
+
+        const newAccessToken = TokenUtils.generateAccessToken(user.id);
+
+        return {
+            accessToken: newAccessToken,
+            expiresIn: TokenUtils.getAccessTokenExpiresIn(),
+            user: {
+                id: user.id,
+                email: user.email,
+                permissionLevel: user.permissionLevel,
+            },
+        };
+    }
+
+    static async logout(userId: number) {
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        await user.update({
+            refreshTokenHash: null,
+            refreshTokenExpiresAt: null,
+        });
+
+        return true;
     }
 }

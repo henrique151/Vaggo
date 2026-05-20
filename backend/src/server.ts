@@ -9,18 +9,27 @@ import spotsRoutes from './routes/spotsRoutes';
 import reservationsRoutes from './routes/reservationsRoutes';
 import reportsRoutes from './routes/reportsRoutes';
 import reviewsRoutes from './routes/reviewsRoutes';
+import authRoutes from './routes/authRoutes';
 import setupAssociantos from './models/Associations';
 import cors from "cors";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import { globalLimiter } from "./middlewares/rateLimiter";
 
 setupAssociantos();
 
 const app = express();
 
+app.use(helmet());
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+    credentials: true,
+}));
 app.use(globalLimiter);
 
+app.use('/auth', authRoutes);
 app.use('/users', usersRoutes);
 app.use('/vehicles', vehiclesRoutes);
 app.use('/locations', locationsRoutes);

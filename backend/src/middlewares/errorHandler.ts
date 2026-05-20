@@ -43,6 +43,9 @@ const BUSINESS_ERRORS: Record<string, number> = {
     RESERVATION_OUTSIDE_AVAILABILITY: 422,
     RESERVATION_NOT_COMPLETED: 422,
     REPORT_REANALYSIS_NOT_ALLOWED: 422,
+    NO_REFRESH_TOKEN: 401,
+    INVALID_REFRESH_TOKEN: 401,
+    REFRESH_TOKEN_EXPIRED: 401,
 };
 
 export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
@@ -104,6 +107,9 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         RESERVATION_OUTSIDE_AVAILABILITY: 'O periodo solicitado esta fora da disponibilidade da vaga.',
         RESERVATION_NOT_COMPLETED: 'A reserva precisa estar aprovada e finalizada para receber avaliacao.',
         REPORT_REANALYSIS_NOT_ALLOWED: 'A reanalise so pode ser solicitada para denuncias resolvidas ou recusadas.',
+        NO_REFRESH_TOKEN: 'Token de atualizacao nao fornecido.',
+        INVALID_REFRESH_TOKEN: 'Token de atualizacao invalido.',
+        REFRESH_TOKEN_EXPIRED: 'Token de atualizacao expirado. Faca login novamente.',
     };
 
     const message = messageMap[err.message] ?? (status === 500 ? 'Erro interno do servidor' : err.message);
