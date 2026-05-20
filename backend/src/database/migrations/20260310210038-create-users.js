@@ -41,6 +41,14 @@ module.exports = {
         type: Sequelize.STRING(255),
         allowNull: true,
       },
+      USU_STR_REFRESH_TOKEN_HASH: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
+      USU_DATE_REFRESH_TOKEN_EXPIRES: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       PES_INT_ID: {
         type: Sequelize.INTEGER,
         allowNull: false,
