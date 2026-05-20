@@ -85,6 +85,30 @@ export class ImageService {
         });
     }
 
+    static async uploadChatImage(file: FileData, userId: number): Promise<UploadApiResponse> {
+        this.validateFile(file);
+        const sanitized = await this.sanitizeImage(file.buffer);
+        const compressed = await this.compressImage(sanitized, 1280, 1280, 80);
+
+        return this.uploadStream(compressed, {
+            folder: `vaggo/users/user_${userId}/chat`,
+            public_id: `chat_${Date.now()}`,
+            transformation: [{ width: 1280, height: 1280, crop: 'limit' }, { quality: 'auto', fetch_format: 'auto' }]
+        });
+    }
+
+    static async uploadReportImage(file: FileData, userId: number, index: number): Promise<UploadApiResponse> {
+        this.validateFile(file);
+        const sanitized = await this.sanitizeImage(file.buffer);
+        const compressed = await this.compressImage(sanitized, 1280, 1280, 80);
+
+        return this.uploadStream(compressed, {
+            folder: `vaggo/users/user_${userId}/reports`,
+            public_id: `report_img_${index}_${Date.now()}`,
+            transformation: [{ width: 1280, height: 1280, crop: 'limit' }, { quality: 'auto', fetch_format: 'auto' }]
+        });
+    }
+
     static async deleteImage(publicId: string): Promise<void> {
         if (!publicId) return;
         await cloudinary.uploader.destroy(publicId);

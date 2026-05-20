@@ -54,6 +54,10 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
+      USU_DATE_LAST_ONLINE: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
     });
   },
 

@@ -1,5 +1,6 @@
 import { errorHandler } from "./middlewares/errorHandler";
 import express from "express";
+import http from "http";
 import sequelize from './database';
 import usersRoutes from './routes/usersRoutes';
 import vehiclesRoutes from './routes/vehiclesRoutes';
@@ -10,15 +11,19 @@ import reservationsRoutes from './routes/reservationsRoutes';
 import reportsRoutes from './routes/reportsRoutes';
 import reviewsRoutes from './routes/reviewsRoutes';
 import authRoutes from './routes/authRoutes';
+import chatsRoutes from './routes/chatsRoutes';
 import setupAssociantos from './models/Associations';
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { globalLimiter } from "./middlewares/rateLimiter";
+import { initSocket } from "./utils/socket";
 
 setupAssociantos();
 
 const app = express();
+const server = http.createServer(app);
+initSocket(server);
 
 app.use(helmet());
 app.use(express.json());
@@ -38,6 +43,7 @@ app.use('/spots', spotsRoutes);
 app.use('/reservations', reservationsRoutes);
 app.use('/reports', reportsRoutes);
 app.use('/reviews', reviewsRoutes);
+app.use('/chats', chatsRoutes);
 
 app.use(errorHandler);
 
@@ -45,7 +51,7 @@ sequelize
     .authenticate()
     .then(() => {
         console.log('Banco conectado');
-        app.listen(3000, () => {
+        server.listen(3000, () => {
             console.log('Server running on port 3000');
         });
     })

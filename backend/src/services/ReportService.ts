@@ -4,6 +4,7 @@ import Report from '../models/Report';
 import Spot from '../models/Spot';
 import User from '../models/User';
 import Property from '../models/Property';
+import Conversation from '../models/Conversation';
 import {
     CreateReportInput,
     RequestReportReanalysisInput,
@@ -22,15 +23,41 @@ export class ReportService {
         }
     ];
 
-    static async createReport(userId: number, data: CreateReportInput) {
-        const spot = await Spot.findByPk(data.spotId);
-        if (!spot) throw new Error('SPOT_NOT_FOUND');
+    static async createReport(userId: number, data: CreateReportInput, imageUrls: string[] = []) {
+        let spotId: number | null = null;
+
+        if (data.targetType === 'SPOT') {
+            const spot = await Spot.findByPk(data.targetId);
+            if (!spot) throw new Error('SPOT_NOT_FOUND');
+            spotId = spot.id;
+        }
+
+        if (data.targetType === 'CHAT') {
+            const conversation = await Conversation.findByPk(data.targetId);
+            if (!conversation) throw new Error('CONVERSATION_NOT_FOUND');
+            if (conversation.userRequesterId !== userId && conversation.userOwnerId !== userId) {
+                throw new Error('CONVERSATION_ACCESS_DENIED');
+            }
+            if (![conversation.userRequesterId, conversation.userOwnerId].includes(data.reportedUserId)) {
+                throw new Error('REPORTED_USER_NOT_IN_CHAT');
+            }
+            if (data.reportedUserId === userId) {
+                throw new Error('REPORT_SELF_NOT_ALLOWED');
+            }
+        }
+
+        const reportedUser = await User.findByPk(data.reportedUserId);
+        if (!reportedUser) throw new Error('USER_NOT_FOUND');
 
         const report = await Report.create({
             userId,
-            spotId: data.spotId,
-            description: data.description,
-            reason: data.reason ?? null
+            spotId,
+            reportedUserId: data.reportedUserId,
+            targetType: data.targetType,
+            targetId: data.targetId,
+            description: data.reason,
+            reason: data.reason,
+            images: imageUrls,
         });
 
         return this.getById(report.id, userId, false);

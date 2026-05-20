@@ -15,10 +15,21 @@ const BUSINESS_ERRORS: Record<string, number> = {
     RESERVATION_NOT_FOUND: 404,
     REPORT_NOT_FOUND: 404,
     REVIEW_NOT_FOUND: 404,
+    CONVERSATION_NOT_FOUND: 404,
+    MESSAGE_NOT_FOUND: 404,
     SPOT_IMAGE_REQUIRED: 400,
     SPOT_IMAGE_LIMIT: 400,
+    CHAT_IMAGE_REQUIRED: 400,
+    CHAT_IMAGE_LIMIT: 400,
+    REPORT_IMAGE_LIMIT: 400,
     INVALID_CREDENTIALS: 401,
     FORBIDDEN: 403,
+    CONVERSATION_ACCESS_DENIED: 403,
+    MESSAGE_NOT_YOURS: 403,
+    REPORT_SELF_NOT_ALLOWED: 403,
+    REPORTED_USER_NOT_IN_CHAT: 422,
+    BLOCK_SELF_NOT_ALLOWED: 422,
+    CHAT_BLOCKED: 403,
     MAX_VEHICLES_REACHED: 403,
     PROPERTY_ACCESS_DENIED: 403,
     USER_NOT_FOUND: 404,
@@ -36,6 +47,7 @@ const BUSINESS_ERRORS: Record<string, number> = {
     SPOT_ALREADY_EXISTS: 409,
     EXTERNAL_API_FAILURE: 409,
     INVALID_IMAGE_FORMAT: 415,
+    IMAGE_TOO_LARGE: 413,
     PROFILE_IMAGE_REQUIRED: 400,
     SPOT_NOT_APPROVED: 422,
     PROPERTY_CAPACITY_EXCEEDED: 422,
@@ -43,6 +55,7 @@ const BUSINESS_ERRORS: Record<string, number> = {
     RESERVATION_OUTSIDE_AVAILABILITY: 422,
     RESERVATION_NOT_COMPLETED: 422,
     REPORT_REANALYSIS_NOT_ALLOWED: 422,
+    MESSAGE_ALREADY_DELETED: 422,
     NO_REFRESH_TOKEN: 401,
     INVALID_REFRESH_TOKEN: 401,
     REFRESH_TOKEN_EXPIRED: 401,
@@ -60,6 +73,13 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         return res.status(400).json({
             success: false,
             message: 'Valor numerico fora do limite permitido para este campo.'
+        });
+    }
+
+    if (err?.name === 'ZodError') {
+        return res.status(400).json({
+            success: false,
+            message: err.issues?.[0]?.message || 'Dados invalidos.'
         });
     }
 
@@ -103,6 +123,19 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         RESERVATION_NOT_FOUND: 'Reserva nao encontrada.',
         REPORT_NOT_FOUND: 'Denuncia nao encontrada.',
         REVIEW_NOT_FOUND: 'Avaliacao nao encontrada.',
+        CONVERSATION_NOT_FOUND: 'Conversa nao encontrada.',
+        CONVERSATION_ACCESS_DENIED: 'Voce nao participa desta conversa.',
+        MESSAGE_NOT_FOUND: 'Mensagem nao encontrada.',
+        MESSAGE_NOT_YOURS: 'Voce so pode editar mensagens enviadas por voce.',
+        MESSAGE_ALREADY_DELETED: 'Mensagem ja apagada.',
+        CHAT_IMAGE_REQUIRED: 'Envie uma imagem para o chat.',
+        CHAT_IMAGE_LIMIT: 'Envie no maximo uma imagem por mensagem.',
+        REPORT_IMAGE_LIMIT: 'Envie no maximo duas imagens na denuncia.',
+        IMAGE_TOO_LARGE: 'Imagem muito grande. O limite e 5 MB por arquivo.',
+        REPORTED_USER_NOT_IN_CHAT: 'Usuario denunciado nao participa desta conversa.',
+        REPORT_SELF_NOT_ALLOWED: 'Voce nao pode denunciar a si mesmo.',
+        BLOCK_SELF_NOT_ALLOWED: 'Voce nao pode bloquear a si mesmo.',
+        CHAT_BLOCKED: 'Nao e possivel enviar mensagem porque existe bloqueio entre os usuarios.',
         SPOT_AVAILABILITY_NOT_CONFIGURED: 'A vaga nao possui disponibilidade configurada.',
         RESERVATION_OUTSIDE_AVAILABILITY: 'O periodo solicitado esta fora da disponibilidade da vaga.',
         RESERVATION_NOT_COMPLETED: 'A reserva precisa estar aprovada e finalizada para receber avaliacao.',

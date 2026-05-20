@@ -11,7 +11,11 @@ class Report extends Model<ReportAttributes, ReportCreationAttributes> implement
     public status!: 'PENDENTE' | 'EM_ANALISE' | 'RESOLVIDA' | 'RECUSADA' | 'REANALISE';
     public adminNote!: string | null;
     public userId!: number;
-    public spotId!: number;
+    public spotId!: number | null;
+    public reportedUserId!: number | null;
+    public targetType!: 'CHAT' | 'SPOT';
+    public targetId!: number;
+    public images!: string[];
     public createdAt!: Date;
     public updatedAt!: Date;
     public reviewedAt!: Date | null;
@@ -52,8 +56,30 @@ Report.init({
     },
     spotId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         field: 'VAG_INT_ID'
+    },
+    reportedUserId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'USU_INT_REPORTED_ID'
+    },
+    targetType: {
+        type: DataTypes.ENUM('CHAT', 'SPOT'),
+        allowNull: false,
+        defaultValue: 'SPOT',
+        field: 'DEN_STR_TARGET_TYPE'
+    },
+    targetId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        field: 'DEN_INT_TARGET_ID'
+    },
+    images: {
+        type: DataTypes.JSON,
+        allowNull: false,
+        defaultValue: [],
+        field: 'DEN_JSON_IMAGES'
     },
     createdAt: {
         type: DataTypes.DATE,

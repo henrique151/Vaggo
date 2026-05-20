@@ -13,6 +13,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public permissionLevel!: '1' | '2' | '3';
     public avatarUrl!: string;
     public personId!: number;
+    public lastOnline?: Date | null;
     public refreshTokenHash?: string;
     public refreshTokenExpiresAt?: Date;
 }
@@ -64,6 +65,11 @@ User.init({
         allowNull: false,
         unique: true,
         field: 'PES_INT_ID'
+    },
+    lastOnline: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'USU_DATE_LAST_ONLINE'
     },
     refreshTokenHash: {
         type: DataTypes.STRING(255),

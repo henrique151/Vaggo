@@ -11,6 +11,7 @@ import Property from '../models/Property';
 import PropertyUser from '../models/PropertyUser';
 import { CreateReservationInput } from '../schemas/reservationsSchema';
 import { getCurrentDateString, isRangeWithinAvailability } from '../utils/dateRange';
+import { ChatService } from './ChatService';
 
 function generateReservationCode(): string {
     return crypto.randomBytes(4).toString('hex').toUpperCase();
@@ -77,6 +78,12 @@ export class ReservationService {
             await transaction.commit();
 
             if (propertyOwner) {
+                await ChatService.createConversationForReservation({
+                    solicitationId: reservation.id,
+                    propertyId: spot.propertyId,
+                    userRequesterId: data.userId,
+                    userOwnerId: propertyOwner.userId,
+                });
                 this.notifyOwner(propertyOwner.userId, 'NEW_RESERVATION', reservation.id);
             }
 
