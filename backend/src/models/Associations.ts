@@ -11,6 +11,9 @@ import Reservation from "./Reservation";
 import Review from "./Review";
 import Report from "./Report";
 import SpotAvailability from './SpotAvailabilities';
+import Conversation from "./Conversation";
+import Message from "./Message";
+import BlockedUser from "./BlockedUser";
 
 const setupAssociantos = () => {
     // 1. Location Relationship (State -> City -> Address)
@@ -84,6 +87,31 @@ const setupAssociantos = () => {
 
     Spot.hasMany(Report, { foreignKey: 'VAG_INT_ID', as: 'reports' });
     Report.belongsTo(Spot, { foreignKey: 'VAG_INT_ID', as: 'spot' });
+
+    // 10. Internal chat
+    Reservation.hasMany(Conversation, { foreignKey: 'RES_INT_ID', as: 'conversations' });
+    Conversation.belongsTo(Reservation, { foreignKey: 'RES_INT_ID', as: 'solicitation' });
+
+    Property.hasMany(Conversation, { foreignKey: 'PRO_INT_ID', as: 'conversations' });
+    Conversation.belongsTo(Property, { foreignKey: 'PRO_INT_ID', as: 'property' });
+
+    User.hasMany(Conversation, { foreignKey: 'USU_INT_SOLICITANTE_ID', as: 'requestedConversations' });
+    Conversation.belongsTo(User, { foreignKey: 'USU_INT_SOLICITANTE_ID', as: 'requester' });
+
+    User.hasMany(Conversation, { foreignKey: 'USU_INT_DONO_ID', as: 'ownedConversations' });
+    Conversation.belongsTo(User, { foreignKey: 'USU_INT_DONO_ID', as: 'owner' });
+
+    Conversation.hasMany(Message, { foreignKey: 'CON_INT_ID', as: 'messages' });
+    Message.belongsTo(Conversation, { foreignKey: 'CON_INT_ID', as: 'conversation' });
+
+    User.hasMany(Message, { foreignKey: 'USU_INT_REMETENTE_ID', as: 'sentMessages' });
+    Message.belongsTo(User, { foreignKey: 'USU_INT_REMETENTE_ID', as: 'sender' });
+
+    User.hasMany(BlockedUser, { foreignKey: 'USU_INT_BLOCKER_ID', as: 'blockedUsers' });
+    BlockedUser.belongsTo(User, { foreignKey: 'USU_INT_BLOCKER_ID', as: 'blocker' });
+
+    User.hasMany(BlockedUser, { foreignKey: 'USU_INT_BLOCKED_ID', as: 'blockedByUsers' });
+    BlockedUser.belongsTo(User, { foreignKey: 'USU_INT_BLOCKED_ID', as: 'blocked' });
 }
 
 export default setupAssociantos

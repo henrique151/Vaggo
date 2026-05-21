@@ -8,6 +8,7 @@ export interface UserAttributes {
     permissionLevel: '1' | '2' | '3';
     avatarUrl: string;
     personId: number;
+    lastOnline?: Date | null;
     refreshTokenHash?: string;
     refreshTokenExpiresAt?: Date;
 }
