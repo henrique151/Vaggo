@@ -1,6 +1,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../database';
 import { UserAttributes } from '../types/UserAttributes';
+import type Person from './Person';
 
 export interface UserCreationAttributes extends Optional<UserAttributes, 'id'> { }
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
@@ -16,6 +17,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public lastOnline?: Date | null;
     public refreshTokenHash?: string;
     public refreshTokenExpiresAt?: Date;
+    public passwordResetOtpHash?: string;
+    public passwordResetOtpExpiresAt?: Date;
+    public person?: Person;
 }
 
 User.init({
@@ -80,6 +84,16 @@ User.init({
         type: DataTypes.DATE,
         allowNull: true,
         field: 'USU_DATE_REFRESH_TOKEN_EXPIRES'
+    },
+    passwordResetOtpHash: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'USU_STR_PASSWORD_RESET_OTP_HASH'
+    },
+    passwordResetOtpExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'USU_DATE_PASSWORD_RESET_OTP_EXPIRES'
     },
 }, {
     sequelize,
