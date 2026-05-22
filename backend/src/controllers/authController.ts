@@ -1,10 +1,36 @@
 import { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { UserService } from '../services/UserService';
-import jwt from 'jsonwebtoken';
+import { AuthService } from '../services/AuthService';
+import {
+    ConfirmForgotPasswordInput,
+    ConfirmRegistrationInput,
+    ForgotPasswordInput,
+    LoginInput,
+    ResetForgotPasswordInput,
+} from '../schemas/authSchema';
 
-const JWT_ACCESS_SECRET = process.env.JWT_SECRET || 'super-segredo';
+export const login = asyncHandler(async (req: Request, res: Response) => {
+    const { email, password } = req.body as LoginInput;
+    const data = await AuthService.authenticate(email, password);
+
+    res.cookie('refreshToken', data.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Login realizado com sucesso',
+        data: {
+            accessToken: data.accessToken,
+            expiresIn: data.expiresIn,
+            user: data.user,
+        },
+    });
+});
 
 export const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
@@ -13,31 +39,7 @@ export const refreshAccessToken = asyncHandler(async (req: Request, res: Respons
         throw new Error('NO_REFRESH_TOKEN');
     }
 
-    // Extract user ID from Authorization header (access token) or decode the cookie
-    const authHeader = req.headers.authorization;
-    let userId: number | undefined;
-
-    if (authHeader) {
-        const [, token] = authHeader.split(' ');
-        try {
-            const decoded = jwt.verify(token, JWT_ACCESS_SECRET) as { id: string };
-            userId = Number(decoded.id);
-        } catch {
-            // Access token might be expired, try to decode without verification
-            try {
-                const decoded = jwt.decode(token) as { id: string } | null;
-                if (decoded) userId = Number(decoded.id);
-            } catch {
-                throw new Error('USER_NOT_FOUND');
-            }
-        }
-    }
-
-    if (!userId) {
-        throw new Error('USER_NOT_FOUND');
-    }
-
-    const data = await UserService.refreshAccessToken(userId, refreshToken);
+    const data = await AuthService.refreshAccessTokenFromRequest(refreshToken, req.headers.authorization);
 
     res.status(200).json({
         success: true,
@@ -54,7 +56,7 @@ export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
         throw new Error('USER_NOT_FOUND');
     }
 
-    await UserService.logout(userId);
+    await AuthService.logout(userId);
 
     res.clearCookie('refreshToken');
 
@@ -64,3 +66,56 @@ export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
     });
 });
 
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+    const { identifier } = req.body as ForgotPasswordInput;
+    const data = await AuthService.requestPasswordResetOtp(identifier);
+
+    res.status(200).json({
+        success: true,
+        message: 'Código de recuperação enviado pelo WhatsApp',
+        data,
+    });
+});
+
+export const resendRegistrationCode = asyncHandler(async (req: Request, res: Response) => {
+    const { identifier } = req.body as ForgotPasswordInput;
+    const data = await AuthService.resendRegistrationOtp(identifier);
+
+    res.status(200).json({
+        success: true,
+        message: 'Código de confirmação enviado pelo WhatsApp',
+        data,
+    });
+});
+
+export const confirmForgotPassword = asyncHandler(async (req: Request, res: Response) => {
+    const { identifier, code } = req.body as ConfirmForgotPasswordInput;
+    const data = await AuthService.confirmPasswordResetOtp(identifier, code);
+
+    res.status(200).json({
+        success: true,
+        message: 'Código validado com sucesso',
+        data,
+    });
+});
+
+export const resetForgotPassword = asyncHandler(async (req: Request, res: Response) => {
+    const { resetToken, newPassword } = req.body as ResetForgotPasswordInput;
+    await AuthService.resetPasswordWithToken(resetToken, newPassword);
+
+    res.status(200).json({
+        success: true,
+        message: 'Senha atualizada com sucesso',
+    });
+});
+
+export const confirmRegistration = asyncHandler(async (req: Request, res: Response) => {
+    const { email, code } = req.body as ConfirmRegistrationInput;
+    const data = await AuthService.confirmRegistrationOtp(email, code);
+
+    res.status(200).json({
+        success: true,
+        message: 'Cadastro confirmado com sucesso',
+        data,
+    });
+});

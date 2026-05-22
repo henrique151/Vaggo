@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import sequelize from '../database';
 import User from '../models/User';
@@ -5,55 +6,158 @@ import Person from '../models/Person';
 import Vehicle from '../models/Vehicle';
 import { CreateUserInput, UpdateUserInput } from '../schemas/usersSchema';
 import { FileData, ImageService } from './ImageService';
-import { TokenUtils } from '../utils/tokenUtils';
+import TwilioWhatsAppService from './TwilioWhatsAppService';
 
 const SALT_ROUNDS = 10;
+const REGISTRATION_OTP_TTL_SECONDS = 10 * 60;
+const SENSITIVE_USER_ATTRIBUTES = [
+    'password',
+    'refreshTokenHash',
+    'refreshTokenExpiresAt',
+    'passwordResetOtpHash',
+    'passwordResetOtpExpiresAt',
+    'PES_INT_ID',
+];
 
 type PersonData = Pick<CreateUserInput, 'name' | 'cpf' | 'gender' | 'phone' | 'birthDate'>;
 type UserData = Pick<CreateUserInput, 'email' | 'password' | 'permissionLevel'>;
+
+interface PendingRegistrationData {
+    name: string;
+    cpf: string;
+    gender: string;
+    phone: string;
+    birthDate: Date;
+    email: string;
+    passwordHash: string;
+    permissionLevel: '1' | '2' | '3';
+    avatarFile: FileData;
+    otpHash: string;
+    otpExpiresAt: Date;
+}
+
+const pendingRegistrations = new Map<string, PendingRegistrationData>();
 
 export class UserService {
     static async createAccount(personData: PersonData, userData: UserData, avatarFile?: FileData) {
         if (!avatarFile) throw new Error('PROFILE_IMAGE_REQUIRED');
 
+        await this.assertRegistrationIsAvailable(personData.cpf, userData.email);
+        ImageService.validateFile(avatarFile);
+
+        const normalizedEmail = userData.email.toLowerCase().trim();
+        const verificationCode = this.generateOtpCode();
+
+        this.removeConflictingPendingRegistrations(normalizedEmail, personData.cpf, personData.phone);
+        pendingRegistrations.set(normalizedEmail, {
+            name: personData.name,
+            cpf: personData.cpf,
+            gender: personData.gender,
+            phone: personData.phone,
+            birthDate: personData.birthDate,
+            email: normalizedEmail,
+            passwordHash: await bcrypt.hash(userData.password, SALT_ROUNDS),
+            permissionLevel: userData.permissionLevel ?? '1',
+            avatarFile: {
+                buffer: Buffer.from(avatarFile.buffer),
+                mimetype: avatarFile.mimetype,
+            },
+            otpHash: await bcrypt.hash(verificationCode, SALT_ROUNDS),
+            otpExpiresAt: new Date(Date.now() + REGISTRATION_OTP_TTL_SECONDS * 1000),
+        });
+
+        TwilioWhatsAppService.dispatchInBackground(() =>
+            TwilioWhatsAppService.sendEmailVerificationOtp(personData.phone, verificationCode)
+        );
+
+        return {
+            email: normalizedEmail,
+            requiresOtpVerification: true,
+            otpExpiresIn: REGISTRATION_OTP_TTL_SECONDS,
+            deliveryChannel: 'whatsapp',
+        };
+    }
+
+    static async resendRegistrationOtp(identifier: string) {
+        const pendingRegistration = this.findPendingRegistration(identifier);
+        const code = this.generateOtpCode();
+
+        pendingRegistration.otpHash = await bcrypt.hash(code, SALT_ROUNDS);
+        pendingRegistration.otpExpiresAt = new Date(Date.now() + REGISTRATION_OTP_TTL_SECONDS * 1000);
+        pendingRegistrations.set(pendingRegistration.email, pendingRegistration);
+
+        TwilioWhatsAppService.dispatchInBackground(() =>
+            TwilioWhatsAppService.sendEmailVerificationOtp(pendingRegistration.phone, code)
+        );
+
+        return {
+            expiresIn: REGISTRATION_OTP_TTL_SECONDS,
+            deliveryChannel: 'whatsapp',
+        };
+    }
+
+    static async confirmPendingRegistration(email: string, code: string) {
+        const normalizedEmail = email.toLowerCase().trim();
+        const pendingRegistration = pendingRegistrations.get(normalizedEmail);
+        if (!pendingRegistration) throw new Error('PENDING_REGISTRATION_NOT_FOUND');
+
+        if (new Date() > pendingRegistration.otpExpiresAt) {
+            pendingRegistrations.delete(normalizedEmail);
+            throw new Error('OTP_EXPIRED');
+        }
+
+        const isValidCode = await bcrypt.compare(code, pendingRegistration.otpHash);
+        if (!isValidCode) throw new Error('INVALID_OTP');
+
         const transaction = await sequelize.transaction();
         let uploadedPublicId: string | null = null;
 
         try {
-            const existingCpf = await Person.findOne({ where: { cpf: personData.cpf } });
-            if (existingCpf) throw new Error('CPF_ALREADY_EXISTS');
-
-            const existingEmail = await User.findOne({ where: { email: userData.email } });
-            if (existingEmail) throw new Error('EMAIL_ALREADY_EXISTS');
+            await this.assertRegistrationIsAvailable(pendingRegistration.cpf, pendingRegistration.email);
 
             const person = await Person.create(
-                { ...personData, registrationDate: new Date(), isActive: true },
+                {
+                    name: pendingRegistration.name,
+                    cpf: pendingRegistration.cpf,
+                    gender: pendingRegistration.gender,
+                    phone: pendingRegistration.phone,
+                    birthDate: pendingRegistration.birthDate,
+                    registrationDate: new Date(),
+                    isActive: true,
+                },
                 { transaction }
             );
 
-            const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS);
-
             const user = await User.create(
                 {
-                    ...userData,
-                    password: hashedPassword,
+                    email: pendingRegistration.email,
+                    password: pendingRegistration.passwordHash,
                     personId: person.id,
                     lastLogin: new Date(),
                     isBlocked: false,
                     isAdmin: false,
-                    permissionLevel: userData.permissionLevel ?? '1',
+                    permissionLevel: pendingRegistration.permissionLevel,
                     avatarUrl: 'pending',
                 },
                 { transaction }
             );
 
-            const uploadResult = await ImageService.uploadUserAvatar(avatarFile, user.id);
+            const uploadResult = await ImageService.uploadUserAvatar(pendingRegistration.avatarFile, user.id);
             uploadedPublicId = uploadResult.public_id;
 
             await user.update({ avatarUrl: uploadResult.secure_url }, { transaction });
             await transaction.commit();
+            pendingRegistrations.delete(normalizedEmail);
 
-            const { password: _, ...userResponse } = user.toJSON();
+            const {
+                password: _password,
+                refreshTokenHash: _refreshTokenHash,
+                refreshTokenExpiresAt: _refreshTokenExpiresAt,
+                passwordResetOtpHash: _passwordResetOtpHash,
+                passwordResetOtpExpiresAt: _passwordResetOtpExpiresAt,
+                ...userResponse
+            } = user.toJSON();
+
             return userResponse;
         } catch (error) {
             await transaction.rollback();
@@ -64,14 +168,14 @@ export class UserService {
 
     static async getAllUsers() {
         return User.findAll({
-            attributes: { exclude: ['PES_INT_ID'] },
+            attributes: { exclude: SENSITIVE_USER_ATTRIBUTES },
             include: [{ model: Person, as: 'person' }],
         });
     }
 
     static async getUserById(id: number) {
         const user = await User.findByPk(id, {
-            attributes: { exclude: ['PES_INT_ID'] },
+            attributes: { exclude: SENSITIVE_USER_ATTRIBUTES },
             include: [{ model: Person, as: 'person' }],
         });
         if (!user) throw new Error('USER_NOT_FOUND');
@@ -142,74 +246,67 @@ export class UserService {
         }
     }
 
-    static async authenticate(email: string, password: string) {
-        const user = await User.findOne({ where: { email } });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            throw new Error('INVALID_CREDENTIALS');
-        }
+    private static async assertRegistrationIsAvailable(cpf: string, email: string): Promise<void> {
+        const [existingCpf, existingEmail] = await Promise.all([
+            Person.findOne({ where: { cpf } }),
+            User.findOne({ where: { email: email.toLowerCase().trim() } }),
+        ]);
 
-        await user.update({ lastLogin: new Date() });
-
-        const accessToken = TokenUtils.generateAccessToken(user.id);
-        const refreshToken = TokenUtils.generateRefreshToken();
-        const refreshTokenHash = await TokenUtils.hashRefreshToken(refreshToken);
-        const refreshTokenExpiresAt = TokenUtils.getRefreshTokenExpiresAt();
-
-        await user.update({
-            refreshTokenHash,
-            refreshTokenExpiresAt,
-        });
-
-        return {
-            accessToken,
-            expiresIn: TokenUtils.getAccessTokenExpiresIn(),
-            refreshToken,
-            user: {
-                id: user.id,
-                email: user.email,
-                permissionLevel: user.permissionLevel,
-            },
-        };
+        if (existingCpf) throw new Error('CPF_ALREADY_EXISTS');
+        if (existingEmail) throw new Error('EMAIL_ALREADY_EXISTS');
     }
 
-    static async refreshAccessToken(userId: number, refreshToken: string) {
-        const user = await User.findByPk(userId);
-        if (!user) throw new Error('USER_NOT_FOUND');
+    private static findPendingRegistration(identifier: string): PendingRegistrationData {
+        const normalizedIdentifier = identifier.trim().toLowerCase();
 
-        if (!user.refreshTokenHash || !user.refreshTokenExpiresAt) {
-            throw new Error('NO_REFRESH_TOKEN');
+        if (normalizedIdentifier.includes('@')) {
+            const pending = pendingRegistrations.get(normalizedIdentifier);
+            if (!pending) throw new Error('PENDING_REGISTRATION_NOT_FOUND');
+            return pending;
         }
 
-        if (new Date() > user.refreshTokenExpiresAt) {
-            await user.update({ refreshTokenHash: null, refreshTokenExpiresAt: null });
-            throw new Error('REFRESH_TOKEN_EXPIRED');
-        }
-
-        const isValidToken = await TokenUtils.verifyRefreshTokenHash(refreshToken, user.refreshTokenHash);
-        if (!isValidToken) throw new Error('INVALID_REFRESH_TOKEN');
-
-        const newAccessToken = TokenUtils.generateAccessToken(user.id);
-
-        return {
-            accessToken: newAccessToken,
-            expiresIn: TokenUtils.getAccessTokenExpiresIn(),
-            user: {
-                id: user.id,
-                email: user.email,
-                permissionLevel: user.permissionLevel,
-            },
-        };
-    }
-
-    static async logout(userId: number) {
-        const user = await User.findByPk(userId);
-        if (!user) throw new Error('USER_NOT_FOUND');
-
-        await user.update({
-            refreshTokenHash: null,
-            refreshTokenExpiresAt: null,
+        const candidates = this.getPhoneCandidates(this.onlyDigits(normalizedIdentifier));
+        const pending = Array.from(pendingRegistrations.values()).find((registration) => {
+            const pendingPhoneDigits = this.onlyDigits(registration.phone);
+            return candidates.includes(pendingPhoneDigits);
         });
 
-        return true;
+        if (!pending) throw new Error('PENDING_REGISTRATION_NOT_FOUND');
+        return pending;
+    }
+
+    private static removeConflictingPendingRegistrations(email: string, cpf: string, phone: string): void {
+        const phoneCandidates = this.getPhoneCandidates(this.onlyDigits(phone));
+
+        for (const [pendingEmail, registration] of pendingRegistrations.entries()) {
+            const sameEmail = pendingEmail === email;
+            const sameCpf = registration.cpf === cpf;
+            const samePhone = phoneCandidates.includes(this.onlyDigits(registration.phone));
+
+            if (sameEmail || sameCpf || samePhone) {
+                pendingRegistrations.delete(pendingEmail);
+            }
+        }
+    }
+
+    private static generateOtpCode(): string {
+        return crypto.randomInt(100000, 1000000).toString();
+    }
+
+    private static onlyDigits(value: string): string {
+        return value.replace(/\D/g, '');
+    }
+
+    private static getPhoneCandidates(phoneDigits: string): string[] {
+        if (!phoneDigits) return [];
+
+        const candidates = new Set<string>([phoneDigits]);
+        if (phoneDigits.startsWith('55') && phoneDigits.length > 11) {
+            candidates.add(phoneDigits.slice(2));
+        } else if ([10, 11].includes(phoneDigits.length)) {
+            candidates.add(`55${phoneDigits}`);
+        }
+
+        return Array.from(candidates);
     }
 }

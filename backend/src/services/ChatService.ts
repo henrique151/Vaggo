@@ -7,13 +7,9 @@ import Person from '../models/Person';
 import PropertyUser from '../models/PropertyUser';
 import BlockedUser from '../models/BlockedUser';
 import { CreateMessageInput, UpdateMessageInput } from '../schemas/chatsSchema';
+import TwilioWhatsAppService from './TwilioWhatsAppService';
+import { ConversationWithParticipants } from '../types/ConversationAttributes';
 
-type ConversationWithParticipants = Conversation & {
-    requester?: User & { person?: Person };
-    owner?: User & { person?: Person };
-    property?: Property;
-    messages?: Message[];
-};
 
 function isParticipant(conversation: Conversation, userId: number): boolean {
     return conversation.userRequesterId === userId || conversation.userOwnerId === userId;
@@ -271,6 +267,8 @@ export class ChatService {
         });
 
         const loaded = await this.getMessageById(message.id);
+        this.notifyChatRecipient(conversation, senderId);
+
         return {
             message: publicMessage(loaded),
             participantIds: this.getParticipantIds(conversation),
@@ -443,6 +441,30 @@ export class ChatService {
                 propertyId,
                 role: 'DONO',
             },
+        });
+    }
+
+    private static notifyChatRecipient(conversation: Conversation, senderId: number): void {
+        const recipientId =
+            conversation.userRequesterId === senderId
+                ? conversation.userOwnerId
+                : conversation.userRequesterId;
+
+        TwilioWhatsAppService.dispatchInBackground(async () => {
+            const [recipient, sender] = await Promise.all([
+                User.findByPk(recipientId, { include: [{ model: Person, as: 'person' }] }),
+                User.findByPk(senderId, { include: [{ model: Person, as: 'person' }] }),
+            ]);
+
+            if (!recipient?.person?.phone || !sender?.person?.name) {
+                throw new Error('NOTIFICATION_CONTEXT_NOT_FOUND');
+            }
+
+            return TwilioWhatsAppService.sendNewChatMessage(
+                recipient.person.phone,
+                sender.person.name,
+                conversation.id
+            );
         });
     }
 }
