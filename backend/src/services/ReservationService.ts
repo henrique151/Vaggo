@@ -7,11 +7,14 @@ import Spot from '../models/Spot';
 import SpotAvailability from '../models/SpotAvailabilities';
 import Vehicle from '../models/Vehicle';
 import User from '../models/User';
+import Person from '../models/Person';
+import Conversation from '../models/Conversation';
 import Property from '../models/Property';
 import PropertyUser from '../models/PropertyUser';
 import { CreateReservationInput } from '../schemas/reservationsSchema';
 import { getCurrentDateString, isRangeWithinAvailability } from '../utils/dateRange';
 import { ChatService } from './ChatService';
+import TwilioWhatsAppService from './TwilioWhatsAppService';
 
 function generateReservationCode(): string {
     return crypto.randomBytes(4).toString('hex').toUpperCase();
@@ -78,13 +81,13 @@ export class ReservationService {
             await transaction.commit();
 
             if (propertyOwner) {
-                await ChatService.createConversationForReservation({
+                const conversation = await ChatService.createConversationForReservation({
                     solicitationId: reservation.id,
                     propertyId: spot.propertyId,
                     userRequesterId: data.userId,
                     userOwnerId: propertyOwner.userId,
                 });
-                this.notifyOwner(propertyOwner.userId, 'NEW_RESERVATION', reservation.id);
+                this.notifyOwner(propertyOwner.userId, reservation.id, conversation.id);
             }
 
             return this.getById(reservation.id);
@@ -138,8 +141,8 @@ export class ReservationService {
             await this.syncSpotStatus(reservation.spotId, transaction);
             await transaction.commit();
 
-            if (action === 'approve') this.notifyUser(reservation.userId, 'RESERVATION_APPROVED', id);
-            if (action === 'reject') this.notifyUser(reservation.userId, 'RESERVATION_REJECTED', id);
+            if (action === 'approve') this.notifyReservationApproved(reservation.userId, userId, id);
+            if (action === 'reject') this.notifyReservationRejected(reservation.userId, id);
 
             return this.getById(id);
         } catch (error) {
@@ -203,12 +206,56 @@ export class ReservationService {
         });
     }
 
-    private static notifyOwner(ownerId: number, event: string, reservationId: number) {
-        console.log(`[NOTIFY OWNER ${ownerId}] Event: ${event}, Reservation: ${reservationId}`);
+    private static notifyOwner(ownerId: number, reservationId: number, conversationId: number): void {
+        TwilioWhatsAppService.dispatchInBackground(async () => {
+            const [owner, reservation] = await Promise.all([
+                User.findByPk(ownerId, { include: [{ model: Person, as: 'person' }] }),
+                Reservation.findByPk(reservationId, { include: [{ model: Spot, as: 'spot' }] }),
+            ]);
+
+            if (!owner?.person?.phone || !reservation?.spot) {
+                throw new Error('NOTIFICATION_CONTEXT_NOT_FOUND');
+            }
+
+            await TwilioWhatsAppService.sendRentalRequestAlert(
+                owner.person.phone,
+                owner.person.name,
+                reservation.spot.identifier
+            );
+
+            return TwilioWhatsAppService.sendNewChatMessage(
+                owner.person.phone,
+                'Vaggo',
+                conversationId
+            );
+        });
     }
 
-    private static notifyUser(userId: number, event: string, reservationId: number) {
-        console.log(`[NOTIFY USER ${userId}] Event: ${event}, Reservation: ${reservationId}`);
+    private static notifyReservationApproved(userId: number, ownerId: number, reservationId: number): void {
+        TwilioWhatsAppService.dispatchInBackground(async () => {
+            const [user, owner, reservation, conversation] = await Promise.all([
+                User.findByPk(userId, { include: [{ model: Person, as: 'person' }] }),
+                User.findByPk(ownerId, { include: [{ model: Person, as: 'person' }] }),
+                Reservation.findByPk(reservationId, { include: [{ model: Spot, as: 'spot' }] }),
+                Conversation.findOne({ where: { solicitationId: reservationId } }),
+            ]);
+
+            if (!user?.person?.phone || !owner?.person?.name || !reservation?.spot || !conversation) {
+                throw new Error('NOTIFICATION_CONTEXT_NOT_FOUND');
+            }
+
+            return TwilioWhatsAppService.sendRentalApprovedAlert(
+                user.person.phone,
+                user.person.name,
+                reservation.spot.identifier,
+                owner.person.name,
+                conversation.id
+            );
+        });
+    }
+
+    private static notifyReservationRejected(userId: number, reservationId: number): void {
+        console.log(`[NOTIFY USER ${userId}] Event: RESERVATION_REJECTED, Reservation: ${reservationId}`);
     }
 
     private static async syncSpotStatus(spotId: number, transaction: Transaction) {

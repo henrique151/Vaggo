@@ -23,6 +23,8 @@ const BUSINESS_ERRORS: Record<string, number> = {
     CHAT_IMAGE_LIMIT: 400,
     REPORT_IMAGE_LIMIT: 400,
     INVALID_CREDENTIALS: 401,
+    EMAIL_NOT_VERIFIED: 403,
+    ACCOUNT_ALREADY_VERIFIED: 409,
     FORBIDDEN: 403,
     CONVERSATION_ACCESS_DENIED: 403,
     MESSAGE_NOT_YOURS: 403,
@@ -59,6 +61,14 @@ const BUSINESS_ERRORS: Record<string, number> = {
     NO_REFRESH_TOKEN: 401,
     INVALID_REFRESH_TOKEN: 401,
     REFRESH_TOKEN_EXPIRED: 401,
+    PASSWORD_RESET_OTP_NOT_REQUESTED: 400,
+    PASSWORD_RESET_OTP_EXPIRED: 401,
+    INVALID_PASSWORD_RESET_OTP: 401,
+    INVALID_PASSWORD_RESET_TOKEN: 401,
+    PENDING_REGISTRATION_NOT_FOUND: 404,
+    OTP_NOT_REQUESTED: 400,
+    OTP_EXPIRED: 401,
+    INVALID_OTP: 401,
 };
 
 export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
@@ -95,6 +105,8 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         SPOT_IMAGE_LIMIT: 'Envie no maximo uma imagem para atualizar a vaga.',
         CEP_NOT_FOUND: 'CEP nao encontrado.',
         INVALID_CREDENTIALS: 'E-mail ou senha incorretos.',
+        EMAIL_NOT_VERIFIED: 'Confirme o codigo enviado pelo WhatsApp antes de fazer login.',
+        ACCOUNT_ALREADY_VERIFIED: 'Cadastro ja confirmado.',
         FORBIDDEN: 'Sem permissao para realizar esta acao.',
         MAX_VEHICLES_REACHED: 'Voce atingiu o limite maximo de 3 veiculos por conta.',
         PROPERTY_ACCESS_DENIED: 'Voce nao tem vinculo com a propriedade.',
@@ -143,6 +155,14 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         NO_REFRESH_TOKEN: 'Token de atualizacao nao fornecido.',
         INVALID_REFRESH_TOKEN: 'Token de atualizacao invalido.',
         REFRESH_TOKEN_EXPIRED: 'Token de atualizacao expirado. Faca login novamente.',
+        PASSWORD_RESET_OTP_NOT_REQUESTED: 'Solicite um codigo de recuperacao antes de confirmar.',
+        PASSWORD_RESET_OTP_EXPIRED: 'Codigo de recuperacao expirado. Solicite um novo codigo.',
+        INVALID_PASSWORD_RESET_OTP: 'Codigo de recuperacao invalido.',
+        INVALID_PASSWORD_RESET_TOKEN: 'Token de recuperacao invalido ou expirado.',
+        PENDING_REGISTRATION_NOT_FOUND: 'Cadastro pendente nao encontrado. Solicite um novo codigo.',
+        OTP_NOT_REQUESTED: 'Solicite um codigo antes de confirmar.',
+        OTP_EXPIRED: 'Codigo expirado. Solicite um novo codigo.',
+        INVALID_OTP: 'Codigo invalido.',
     };
 
     const message = messageMap[err.message] ?? (status === 500 ? 'Erro interno do servidor' : err.message);

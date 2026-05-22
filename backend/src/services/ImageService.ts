@@ -17,7 +17,7 @@ export interface FileData {
 }
 
 export class ImageService {
-    private static validateFile(file: FileData): void {
+    static validateFile(file: FileData): void {
         if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) throw new Error('INVALID_IMAGE_FORMAT');
         if (file.buffer.length > MAX_SIZE_BYTES) throw new Error('IMAGE_TOO_LARGE');
 

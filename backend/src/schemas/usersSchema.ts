@@ -61,7 +61,6 @@ const genderSchema = z.enum(['M', 'F', 'O'], {
     error: 'Gênero deve ser M, F ou O',
 });
 
-
 export const createUserSchema = z
     .object({
         name: nameSchema,
@@ -76,17 +75,8 @@ export const createUserSchema = z
     .strict();
 
 export const updateUserSchema = createUserSchema
-    .omit({ cpf: true })   // CPF não deve ser alterado
+    .omit({ cpf: true })
     .partial();
-
-export const loginUserSchema = z
-    .object({
-        email: emailSchema,
-        password: z.string({ error: 'Senha é obrigatória' }).min(1, 'Senha é obrigatória'),
-    })
-    .strict();
-
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
-export type LoginUserInput = z.infer<typeof loginUserSchema>;

@@ -11,5 +11,7 @@ export interface UserAttributes {
     lastOnline?: Date | null;
     refreshTokenHash?: string;
     refreshTokenExpiresAt?: Date;
+    passwordResetOtpHash?: string;
+    passwordResetOtpExpiresAt?: Date;
 }
 

@@ -11,7 +11,11 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
     const fileData = req.file ? { buffer: req.file.buffer, mimetype: req.file.mimetype } : undefined;
     const data = await UserService.createAccount(personData, userData, fileData);
 
-    res.status(201).json({ success: true, message: 'Usuário criado com sucesso', data });
+    res.status(201).json({
+        success: true,
+        message: 'Usuário criado. Confirme o código enviado pelo WhatsApp.',
+        data,
+    });
 });
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
@@ -34,31 +38,11 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const authReq = req as AuthRequest;
-    if (Number(authReq.user?.id) !== id) return res.status(403).json({ success: false, message: 'Sem permissão' });
+    if (Number(authReq.user?.id) !== id) {
+        return res.status(403).json({ success: false, message: 'Sem permissão' });
+    }
 
     const fileData = req.file ? { buffer: req.file.buffer, mimetype: req.file.mimetype } : undefined;
     const data = await UserService.updateAccount(id, req.body, fileData);
     res.status(200).json({ success: true, message: 'Atualizado com sucesso', data });
-});
-
-export const loginUser = asyncHandler(async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    const data = await UserService.authenticate(email, password);
-
-    res.cookie('refreshToken', data.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    res.status(200).json({
-        success: true,
-        message: 'Login realizado com sucesso',
-        data: {
-            accessToken: data.accessToken,
-            expiresIn: data.expiresIn,
-            user: data.user,
-        },
-    });
 });

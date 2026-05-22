@@ -49,6 +49,14 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
+      USU_STR_PASSWORD_RESET_OTP_HASH: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
+      USU_DATE_PASSWORD_RESET_OTP_EXPIRES: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       PES_INT_ID: {
         type: Sequelize.INTEGER,
         allowNull: false,
