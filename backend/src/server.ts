@@ -21,7 +21,6 @@ import { globalLimiter } from "./middlewares/rateLimiter";
 import { initSocket } from "./utils/socket";
 import swaggerUi from "swagger-ui-express";
 import { swaggerDocument } from "./config/swagger";
-import { swaggerCustomCss } from "./config/swagger-css";
 
 setupAssociantos();
 
@@ -29,7 +28,7 @@ const app = express();
 const server = http.createServer(app);
 initSocket(server);
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
@@ -50,15 +49,8 @@ app.use('/reviews', reviewsRoutes);
 app.use('/chats', chatsRoutes);
 app.use('/admin', adminRoutes);
 
-// Swagger API Documentation with Custom Dark Theme & CSP Headers
-app.use('/api-docs', (req, res, next) => {
-    res.setHeader(
-        "Content-Security-Policy",
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self'"
-    );
-    next();
-}, swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
-    customCss: swaggerCustomCss,
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
     customSiteTitle: "Veggo API - Documentation",
 }));
 

@@ -1,1515 +1,1267 @@
-// Veggo API OpenAPI 3.0 Specification Configuration
+const auth = [{ BearerAuth: [] }];
+
+const idParam = (name = "id", description = "Numeric resource ID") => ({
+  name,
+  in: "path",
+  required: true,
+  description,
+  schema: { type: "integer", minimum: 1 },
+});
+
+const jsonBody = (schema: object, required = true) => ({
+  required,
+  content: {
+    "application/json": { schema },
+  },
+});
+
+const multipartBody = (schema: object, required = true) => ({
+  required,
+  content: {
+    "multipart/form-data": { schema },
+  },
+});
+
+const ok = (description = "Success") => ({ description });
+const created = (description = "Created") => ({ description });
+
+const schemas = {
+  LoginRequest: {
+    type: "object",
+    required: ["email", "password"],
+    additionalProperties: false,
+    properties: {
+      email: { type: "string", format: "email", example: "user@example.com" },
+      password: { type: "string", example: "Password123!" },
+    },
+  },
+  IdentifierRequest: {
+    type: "object",
+    required: ["identifier"],
+    additionalProperties: false,
+    properties: {
+      identifier: { type: "string", example: "user@example.com" },
+    },
+  },
+  ConfirmRegistrationRequest: {
+    type: "object",
+    required: ["email", "code"],
+    additionalProperties: false,
+    properties: {
+      email: { type: "string", format: "email", example: "user@example.com" },
+      code: { type: "string", minLength: 6, maxLength: 6, example: "123456" },
+    },
+  },
+  ConfirmForgotPasswordRequest: {
+    type: "object",
+    required: ["code"],
+    additionalProperties: false,
+    properties: {
+      identifier: { type: "string", example: "user@example.com" },
+      code: { type: "string", minLength: 6, maxLength: 6, example: "123456" },
+    },
+  },
+  ResetForgotPasswordRequest: {
+    type: "object",
+    required: ["resetToken", "newPassword", "confirmPassword"],
+    additionalProperties: false,
+    properties: {
+      resetToken: { type: "string", minLength: 32 },
+      newPassword: { type: "string", minLength: 8, maxLength: 128, example: "NewPassword123!" },
+      confirmPassword: { type: "string", example: "NewPassword123!" },
+    },
+  },
+  CreateUserMultipart: {
+    type: "object",
+    required: ["name", "cpf", "gender", "phone", "birthDate", "email", "password"],
+    additionalProperties: false,
+    properties: {
+      name: { type: "string", minLength: 3, maxLength: 100, example: "Guilherme Silva" },
+      cpf: { type: "string", minLength: 11, maxLength: 11, pattern: "^\\d{11}$", example: "12345678901" },
+      gender: { type: "string", enum: ["M", "F", "O"], example: "M" },
+      phone: { type: "string", minLength: 10, maxLength: 15, example: "11988887777" },
+      birthDate: { type: "string", format: "date", example: "1995-05-20" },
+      email: { type: "string", format: "email", example: "user@example.com" },
+      password: { type: "string", minLength: 8, maxLength: 128, example: "Password123!" },
+      permissionLevel: { type: "string", enum: ["1", "2", "3"], default: "1" },
+      avatarUrl: { type: "string", format: "binary", description: "Accepted upload field for the profile image." },
+    },
+  },
+  UpdateUserMultipart: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      name: { type: "string", minLength: 3, maxLength: 100 },
+      gender: { type: "string", enum: ["M", "F", "O"] },
+      phone: { type: "string", minLength: 10, maxLength: 15 },
+      birthDate: { type: "string", format: "date" },
+      email: { type: "string", format: "email" },
+      password: { type: "string", minLength: 8, maxLength: 128 },
+      permissionLevel: { type: "string", enum: ["1", "2", "3"] },
+      avatarUrl: { type: "string", format: "binary" },
+    },
+  },
+  AdminUpdateUserRequest: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      name: { type: "string", minLength: 3, maxLength: 100 },
+      gender: { type: "string", enum: ["M", "F", "O"] },
+      phone: { type: "string", minLength: 10, maxLength: 15 },
+      birthDate: { type: "string", format: "date" },
+      email: { type: "string", format: "email" },
+      password: { type: "string", minLength: 8, maxLength: 128 },
+      permissionLevel: { type: "string", enum: ["1", "2", "3"] },
+    },
+  },
+  VehicleRequest: {
+    type: "object",
+    required: ["brand", "model", "color", "licensePlate", "manufactureYear", "type"],
+    additionalProperties: false,
+    properties: {
+      brand: { type: "string", minLength: 2, maxLength: 30, example: "Toyota" },
+      model: { type: "string", minLength: 2, maxLength: 25, example: "Corolla" },
+      color: { type: "string", minLength: 3, maxLength: 30, example: "Preto" },
+      licensePlate: { type: "string", maxLength: 10, example: "ABC1D23" },
+      manufactureYear: { type: "string", pattern: "^\\d{4}$", example: "2022" },
+      type: { type: "string", enum: ["CARRO", "MOTO"], example: "CARRO" },
+      size: { type: "string", enum: ["PEQUENO", "MEDIO", "GRANDE"], description: "Required when type is CARRO." },
+    },
+  },
+  UpdateVehicleRequest: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      brand: { type: "string", minLength: 2, maxLength: 30 },
+      model: { type: "string", minLength: 2, maxLength: 25 },
+      color: { type: "string", minLength: 3, maxLength: 30 },
+      licensePlate: { type: "string", maxLength: 10 },
+      manufactureYear: { type: "string", pattern: "^\\d{4}$" },
+      type: { type: "string", enum: ["CARRO", "MOTO"] },
+      size: { type: "string", enum: ["PEQUENO", "MEDIO", "GRANDE"] },
+    },
+  },
+  PropertyMultipart: {
+    type: "object",
+    required: ["name", "type", "totalCapacity", "number", "zipCode"],
+    additionalProperties: false,
+    properties: {
+      name: { type: "string", minLength: 3, maxLength: 70, example: "Condominio Jardim" },
+      type: { type: "string", example: "RESIDENCIAL" },
+      description: { type: "string", maxLength: 100 },
+      totalCapacity: { type: "integer", minimum: 1, example: 20 },
+      isActive: { type: "boolean", default: true },
+      street: { type: "string", maxLength: 70, example: "Rua das Flores" },
+      number: { type: "string", maxLength: 20, example: "100" },
+      complement: { type: "string", maxLength: 100 },
+      neighborhood: { type: "string", maxLength: 70, example: "Centro" },
+      zipCode: { type: "string", minLength: 8, maxLength: 8, pattern: "^\\d{8}$", example: "12345000" },
+      cityId: { type: "integer", minimum: 1 },
+      images: { type: "array", maxItems: 3, items: { type: "string", format: "binary" } },
+      files: { type: "array", maxItems: 3, items: { type: "string", format: "binary" } },
+    },
+  },
+  UpdatePropertyMultipart: {
+    type: "object",
+    required: ["name", "type", "totalCapacity", "number", "zipCode"],
+    additionalProperties: false,
+    properties: {
+      name: { type: "string", minLength: 3, maxLength: 70 },
+      type: { type: "string" },
+      description: { type: "string", maxLength: 100 },
+      totalCapacity: { type: "integer", minimum: 1 },
+      isActive: { type: "boolean" },
+      street: { type: "string", maxLength: 70 },
+      number: { type: "string", maxLength: 20 },
+      complement: { type: "string", maxLength: 100 },
+      neighborhood: { type: "string", maxLength: 70 },
+      zipCode: { type: "string", minLength: 8, maxLength: 8, pattern: "^\\d{8}$" },
+      cityId: { type: "integer", minimum: 1 },
+      imagesToRemove: {
+        oneOf: [
+          { type: "string", example: "[\"https://res.cloudinary.com/example/image/upload/v1/image.jpg\"]" },
+          { type: "array", items: { type: "string" } },
+        ],
+      },
+      images: { type: "array", maxItems: 3, items: { type: "string", format: "binary" } },
+      files: { type: "array", maxItems: 3, items: { type: "string", format: "binary" } },
+    },
+  },
+  AdminUpdatePropertyRequest: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      name: { type: "string", minLength: 3, maxLength: 70 },
+      type: { type: "string" },
+      description: { type: "string", maxLength: 100 },
+      totalCapacity: { type: "integer", minimum: 1 },
+      isActive: { type: "boolean" },
+      street: { type: "string", maxLength: 70 },
+      number: { type: "string", maxLength: 20 },
+      complement: { type: "string", maxLength: 100 },
+      neighborhood: { type: "string", maxLength: 70 },
+      zipCode: { type: "string", minLength: 8, maxLength: 8, pattern: "^\\d{8}$" },
+      cityId: { type: "integer", minimum: 1 },
+      imagesToRemove: {
+        oneOf: [
+          { type: "string", example: "[\"https://res.cloudinary.com/example/image/upload/v1/image.jpg\"]" },
+          { type: "array", items: { type: "string" } },
+        ],
+      },
+    },
+  },
+  SpotAvailability: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      startDate: { type: "string", nullable: true, format: "date", example: "2026-06-01" },
+      endDate: { type: "string", nullable: true, format: "date", example: "2026-12-31" },
+      weekdays: { type: "integer", minimum: 1, maximum: 127, default: 127, example: 127 },
+      startTime: { type: "string", pattern: "^([01]\\d|2[0-3]):([0-5]\\d)(?::([0-5]\\d))?$", default: "00:00:00" },
+      endTime: { type: "string", pattern: "^([01]\\d|2[0-3]):([0-5]\\d)(?::([0-5]\\d))?$", default: "23:59:59" },
+    },
+  },
+  GenerateSpotsMultipart: {
+    type: "object",
+    required: ["allowedVehicles"],
+    additionalProperties: false,
+    properties: {
+      count: { type: "integer", minimum: 1, default: 1, example: 2 },
+      price: { type: "number", minimum: 0, default: 0, example: 20 },
+      size: { type: "number", minimum: 0, maximum: 999.99, default: 12.5, example: 12.5 },
+      isCovered: { type: "boolean", default: true },
+      prefix: { type: "string", maxLength: 10, default: "VAGA-", example: "A-" },
+      allowedVehicles: {
+        type: "string",
+        description: "JSON array, comma-separated list, or single value accepted by Zod.",
+        example: "[\"CARRO\",\"MOTO\"]",
+      },
+      availability: {
+        type: "string",
+        description: "JSON object matching SpotAvailability.",
+        example: "{\"weekdays\":127,\"startTime\":\"08:00\",\"endTime\":\"18:00\"}",
+      },
+      images: { type: "array", items: { type: "string", format: "binary" } },
+      files: { type: "array", items: { type: "string", format: "binary" } },
+    },
+  },
+  UpdateSpotMultipart: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      isCovered: { type: "boolean" },
+      price: { type: "number", minimum: 0, maximum: 999999.99 },
+      size: { type: "number", minimum: 0, maximum: 999.99 },
+      allowedVehicles: { type: "string", example: "[\"CARRO\"]" },
+      availability: { type: "string", example: "{\"startTime\":\"08:00\",\"endTime\":\"18:00\"}" },
+      identifier: { type: "string", maxLength: 70 },
+      imageUrl: { type: "string", format: "binary" },
+      image: { type: "string", format: "binary" },
+      file: { type: "string", format: "binary" },
+      images: { type: "string", format: "binary" },
+      files: { type: "string", format: "binary" },
+    },
+  },
+  UpdateSpotStatusRequest: {
+    type: "object",
+    required: ["status"],
+    additionalProperties: false,
+    properties: {
+      status: { type: "string", enum: ["DISPONIVEL", "INDISPONIVEL", "OCUPADA"] },
+    },
+  },
+  EvaluateSpotRequest: {
+    type: "object",
+    required: ["status"],
+    additionalProperties: false,
+    properties: {
+      status: { type: "string", enum: ["APROVADA", "RECUSADA"], example: "APROVADA" },
+      rejectionReason: { type: "string", maxLength: 255 },
+    },
+  },
+  ToggleUserBlockRequest: {
+    type: "object",
+    required: ["blocked"],
+    properties: {
+      blocked: { type: "boolean", example: true },
+    },
+  },
+  ToggleSpotActiveRequest: {
+    type: "object",
+    required: ["isActive"],
+    properties: {
+      isActive: { type: "boolean", example: true },
+    },
+  },
+  DeleteSpotAdminRequest: {
+    type: "object",
+    required: ["propertyId"],
+    properties: {
+      propertyId: { type: "integer", minimum: 1 },
+    },
+  },
+  CreateReservationRequest: {
+    type: "object",
+    required: ["spotId", "vehicleId", "startDate", "endDate"],
+    properties: {
+      spotId: { type: "integer", minimum: 1 },
+      vehicleId: { type: "integer", minimum: 1 },
+      startDate: { type: "string", format: "date", example: "2026-06-01" },
+      endDate: { type: "string", format: "date", example: "2026-06-05" },
+    },
+  },
+  CreateReviewRequest: {
+    type: "object",
+    required: ["reservationId", "rating"],
+    additionalProperties: false,
+    properties: {
+      reservationId: { type: "integer", minimum: 1 },
+      rating: { type: "integer", minimum: 1, maximum: 5 },
+      comment: { type: "string", maxLength: 500, default: "" },
+    },
+  },
+  UpdateReviewRequest: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      rating: { type: "integer", minimum: 1, maximum: 5 },
+      comment: { type: "string", maxLength: 500 },
+    },
+  },
+  CreateReportMultipart: {
+    type: "object",
+    required: ["reportedUserId", "targetType", "targetId", "reason"],
+    additionalProperties: false,
+    properties: {
+      reportedUserId: { type: "integer", minimum: 1 },
+      targetType: { type: "string", enum: ["CHAT", "SPOT"] },
+      targetId: { type: "integer", minimum: 1 },
+      reason: { type: "string", minLength: 5, maxLength: 500 },
+      images: { type: "array", maxItems: 2, items: { type: "string", format: "binary" } },
+      files: { type: "array", maxItems: 2, items: { type: "string", format: "binary" } },
+    },
+  },
+  UpdateReportStatusRequest: {
+    type: "object",
+    required: ["status"],
+    additionalProperties: false,
+    properties: {
+      status: { type: "string", enum: ["PENDENTE", "EM_ANALISE", "RESOLVIDA", "RECUSADA", "REANALISE"] },
+      adminNote: { type: "string", maxLength: 500 },
+      suspendSpot: { type: "boolean", default: false },
+    },
+  },
+  RequestReportReanalysisRequest: {
+    type: "object",
+    required: ["description"],
+    additionalProperties: false,
+    properties: {
+      description: { type: "string", minLength: 5, maxLength: 500 },
+      reason: { type: "string", maxLength: 255 },
+    },
+  },
+  BlockUserRequest: {
+    type: "object",
+    required: ["blockedUserId"],
+    properties: {
+      blockedUserId: { type: "integer", minimum: 1 },
+    },
+  },
+  CreateChatMessageMultipart: {
+    type: "object",
+    properties: {
+      content: { type: "string", maxLength: 2000 },
+      image_url: { type: "string", format: "uri", maxLength: 255 },
+      image: { type: "string", format: "binary" },
+      file: { type: "string", format: "binary" },
+      imageUrl: { type: "string", format: "binary" },
+    },
+  },
+  UpdateChatMessageRequest: {
+    type: "object",
+    required: ["content"],
+    properties: {
+      content: { type: "string", minLength: 1, maxLength: 2000 },
+    },
+  },
+  DeleteMultipleChatsRequest: {
+    type: "object",
+    required: ["conversationIds"],
+    properties: {
+      conversationIds: { type: "array", minItems: 1, items: { type: "integer", minimum: 1 } },
+    },
+  },
+  Success: {
+    type: "object",
+    properties: {
+      success: { type: "boolean", example: true },
+      message: { type: "string" },
+      data: {},
+    },
+  },
+};
 
 export const swaggerDocument = {
   openapi: "3.0.3",
   info: {
-    title: "Veggo API - Documentation",
-    description: "Welcome to the official **Veggo API** documentation. Veggo is a premium, real-time shared parking reservation platform designed to optimize urban mobility.\n\n### Key Features:\n- **Advanced Authentication & Authorization:** Multi-role RBAC (USER, MANAGER, ADMIN) with stateless JWT tokens and cookie-based Refresh Tokens.\n- **Parking Spots & Properties Batching:** Dynamic spot generation and robust multi-image Cloudinary upload integration.\n- **Real-Time Communication:** Live web-socket integrated chats with offensive language detection and user blocking.\n- **Admin Control Panel:** High-performance dashboard analytics, advanced regex search filters, and spot evaluation flows.\n- **Report & Review Systems:** Complete audit trailing for reports, manual evaluation workflows, and property rating systems.\n\n*Created with premium development practices to showcase structural and code excellence to recruiters and technical evaluators.*",
+    title: "Vaggo API - Documentation",
     version: "1.0.0",
-    contact: {
-      name: "Veggo Development Team",
-      email: "support@veg_go.com"
-    }
+    description: "OpenAPI documentation aligned with the current Express routes, Zod schemas, and Multer upload field names.",
   },
   servers: [
-    {
-      url: "http://localhost:3000",
-      description: "Local Development Server"
-    }
+    { url: "http://localhost:3000", description: "Local Development Server" },
   ],
   tags: [
-    { name: "Authentication", description: "Role-based token exchange and password recovery workflows" },
-    { name: "Users", description: "User profile CRUD, registration, and administrative lists" },
-    { name: "Vehicles", description: "Vehicle registration and ownership management" },
-    { name: "Properties", description: "Real-estate property CRUD with coordinates and photo portfolios" },
-    { name: "Spots (Parking)", description: "Parking spot batching, availability schedules, and CRUD" },
-    { name: "Reservations", description: "Spot scheduling, pricing, state machine, and geolocation search" },
-    { name: "Reviews", description: "Quality control and evaluation rating system" },
-    { name: "Reports", description: "Content moderation, chat/spot reporting, and administrative reviews" },
-    { name: "Chats", description: "Real-time communication, text histories, and user blocks" },
-    { name: "Locations", description: "Static lists of Brazilian states and cities" },
-    { name: "Admin Dashboard", description: "High-level metrics, system statistics, and master controls" }
+    { name: "Authentication" },
+    { name: "Users" },
+    { name: "Vehicles" },
+    { name: "Properties" },
+    { name: "Spots" },
+    { name: "Reservations" },
+    { name: "Reviews" },
+    { name: "Reports" },
+    { name: "Chats" },
+    { name: "Locations" },
+    { name: "Admin" },
   ],
   paths: {
-    // AUTHENTICATION
     "/auth/login": {
       post: {
         tags: ["Authentication"],
         summary: "Authenticate credentials",
-        description: "Exchanges valid email and password for an access token (JWT body) and refresh token (HttpOnly Cookie).",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["email", "password"],
-                properties: {
-                  email: { type: "string", format: "email", example: "joao@gmail.com" },
-                  password: { type: "string", format: "password", example: "Password123!" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: {
-            description: "Authentication successful",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    success: { type: "boolean", example: true },
-                    accessToken: { type: "string", example: "eyJhbGciOiJIUzI1..." },
-                    user: {
-                      type: "object",
-                      properties: {
-                        id: { type: "integer", example: 1 },
-                        email: { type: "string", example: "joao@gmail.com" },
-                        role: { type: "string", example: "USER" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          401: { description: "Invalid credentials" }
-        }
-      }
+        requestBody: jsonBody({ $ref: "#/components/schemas/LoginRequest" }),
+        responses: { 200: ok("Authenticated"), 401: ok("Invalid credentials") },
+      },
+    },
+    "/auth/register/resend": {
+      post: {
+        tags: ["Authentication"],
+        summary: "Resend registration confirmation code",
+        requestBody: jsonBody({ $ref: "#/components/schemas/IdentifierRequest" }),
+        responses: { 200: ok("Code resent") },
+      },
     },
     "/auth/register/confirm": {
       post: {
         tags: ["Authentication"],
         summary: "Confirm user registration",
-        description: "Confirms user registration using the code sent to their phone/email.",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["email", "code"],
-                properties: {
-                  email: { type: "string", format: "email", example: "joao@gmail.com" },
-                  code: { type: "string", example: "123456" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: {
-            description: "Registration confirmed",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    success: { type: "boolean", example: true },
-                    message: { type: "string", example: "Registration confirmed successfully." }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/register/resend": {
-      post: {
-        tags: ["Authentication"],
-        summary: "Resend confirmation code",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["email"],
-                properties: {
-                  email: { type: "string", format: "email", example: "joao@gmail.com" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Code sent successfully" }
-        }
-      }
+        requestBody: jsonBody({ $ref: "#/components/schemas/ConfirmRegistrationRequest" }),
+        responses: { 200: ok("Registration confirmed") },
+      },
     },
     "/auth/refresh": {
       post: {
         tags: ["Authentication"],
-        summary: "Refresh access token",
-        description: "Uses the HttpOnly `refreshToken` cookie to generate a fresh short-lived `accessToken`.",
-        responses: {
-          200: {
-            description: "Token refreshed successfully",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    success: { type: "boolean", example: true },
-                    accessToken: { type: "string", example: "eyJhbGciOiJIUzI1..." }
-                  }
-                }
-              }
-            }
-          },
-          401: { description: "Refresh token expired or missing" }
-        }
-      }
+        summary: "Refresh access token using the refreshToken cookie",
+        responses: { 200: ok("Token refreshed"), 401: ok("Refresh token expired or missing") },
+      },
     },
     "/auth/forgot-password": {
       post: {
         tags: ["Authentication"],
         summary: "Request password reset",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["email"],
-                properties: {
-                  email: { type: "string", format: "email", example: "joao@gmail.com" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Reset code sent" }
-        }
-      }
+        requestBody: jsonBody({ $ref: "#/components/schemas/IdentifierRequest" }),
+        responses: { 200: ok("Reset code sent") },
+      },
     },
     "/auth/forgot-password/confirm": {
       post: {
         tags: ["Authentication"],
         summary: "Confirm password reset code",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["email", "code"],
-                properties: {
-                  email: { type: "string", example: "joao@gmail.com" },
-                  code: { type: "string", example: "654321" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Code verified successfully" }
-        }
-      }
+        requestBody: jsonBody({ $ref: "#/components/schemas/ConfirmForgotPasswordRequest" }),
+        responses: { 200: ok("Code verified") },
+      },
     },
     "/auth/forgot-password/reset": {
       post: {
         tags: ["Authentication"],
-        summary: "Reset to new password",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["email", "code", "password"],
-                properties: {
-                  email: { type: "string", example: "joao@gmail.com" },
-                  code: { type: "string", example: "654321" },
-                  password: { type: "string", example: "NewSecurePassword1!" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Password reset completed" }
-        }
-      }
+        summary: "Reset password",
+        requestBody: jsonBody({ $ref: "#/components/schemas/ResetForgotPasswordRequest" }),
+        responses: { 200: ok("Password reset") },
+      },
     },
     "/auth/logout": {
       post: {
         tags: ["Authentication"],
-        summary: "Log out user",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Session ended successfully" }
-        }
-      }
+        summary: "Log out",
+        security: auth,
+        responses: { 200: ok("Logged out") },
+      },
     },
 
-    // USERS
     "/users": {
       post: {
         tags: ["Users"],
-        summary: "Create new user account",
-        description: "Creates a standard USER account. Supports multipart/form-data for profile picture uploads.",
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                required: ["email", "password", "name", "phone", "cpf"],
-                properties: {
-                  email: { type: "string", format: "email", example: "user@example.com" },
-                  password: { type: "string", format: "password", example: "MySecureP@ss1" },
-                  name: { type: "string", example: "Guilherme Silva" },
-                  phone: { type: "string", example: "11988887777" },
-                  cpf: { type: "string", example: "12345678901" },
-                  avatar: { type: "string", format: "binary", description: "Profile photo upload file" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "User registered, pending code verification" }
-        }
-      }
+        summary: "Create user account",
+        requestBody: multipartBody({ $ref: "#/components/schemas/CreateUserMultipart" }),
+        responses: { 201: created("User created") },
+      },
     },
     "/users/admin/search": {
       get: {
         tags: ["Users"],
-        summary: "Advanced search user directory (Manager/Admin)",
-        security: [{ BearerAuth: [] }],
+        summary: "Search users",
+        security: auth,
         parameters: [
-          { name: "email", in: "query", schema: { type: "string" }, description: "Partial or full email search" },
-          { name: "role", in: "query", schema: { type: "string", enum: ["USER", "MANAGER", "ADMIN"] } }
+          { name: "email", in: "query", schema: { type: "string", format: "email" } },
+          { name: "name", in: "query", schema: { type: "string" } },
+          { name: "phone", in: "query", schema: { type: "string" } },
         ],
-        responses: {
-          200: { description: "List of matching users" }
-        }
-      }
+        responses: { 200: ok("Users found") },
+      },
     },
     "/users/{id}": {
       get: {
         tags: ["Users"],
-        summary: "Get user profile details",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "User details object" }
-        }
+        summary: "Get user by ID",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("User found") },
       },
       put: {
         tags: ["Users"],
-        summary: "Update user profile details",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  phone: { type: "string" },
-                  avatar: { type: "string", format: "binary" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Profile updated successfully" }
-        }
+        summary: "Update user",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: multipartBody({ $ref: "#/components/schemas/UpdateUserMultipart" }, false),
+        responses: { 200: ok("User updated") },
       },
       delete: {
         tags: ["Users"],
-        summary: "Soft delete account",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "User deactivated successfully" }
-        }
-      }
+        summary: "Delete user",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("User removed") },
+      },
     },
 
-    // VEHICLES
     "/vehicles": {
       post: {
         tags: ["Vehicles"],
-        summary: "Register new vehicle",
-        security: [{ BearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["plate", "brand", "model", "color", "type"],
-                properties: {
-                  plate: { type: "string", example: "ABC1D23" },
-                  brand: { type: "string", example: "Toyota" },
-                  model: { type: "string", example: "Corolla" },
-                  color: { type: "string", example: "Preto" },
-                  type: { type: "string", enum: ["CARRO", "MOTO"], example: "CARRO" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Vehicle registered successfully" }
-        }
-      }
+        summary: "Register vehicle",
+        security: auth,
+        requestBody: jsonBody({ $ref: "#/components/schemas/VehicleRequest" }),
+        responses: { 201: created("Vehicle registered") },
+      },
     },
     "/vehicles/my-vehicles": {
       get: {
         tags: ["Vehicles"],
-        summary: "Get current user registered vehicles",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "List of owned vehicles" }
-        }
-      }
+        summary: "List current user's vehicles",
+        security: auth,
+        responses: { 200: ok("Vehicles listed") },
+      },
     },
     "/vehicles/{id}": {
       get: {
         tags: ["Vehicles"],
         summary: "Get vehicle by ID",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Vehicle data object" }
-        }
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Vehicle found") },
       },
       put: {
         tags: ["Vehicles"],
-        summary: "Update vehicle specs",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  brand: { type: "string" },
-                  model: { type: "string" },
-                  color: { type: "string" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Vehicle updated successfully" }
-        }
+        summary: "Update vehicle",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/UpdateVehicleRequest" }),
+        responses: { 200: ok("Vehicle updated") },
       },
       delete: {
         tags: ["Vehicles"],
-        summary: "Remove vehicle registration",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Vehicle deleted successfully" }
-        }
-      }
+        summary: "Delete vehicle",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Vehicle deleted") },
+      },
     },
 
-    // PROPERTIES
     "/properties": {
       get: {
         tags: ["Properties"],
-        summary: "Get all properties",
-        description: "Public directory listing all active properties.",
-        responses: {
-          200: { description: "Array of properties" }
-        }
+        summary: "List properties",
+        responses: { 200: ok("Properties listed") },
       },
       post: {
         tags: ["Properties"],
-        summary: "Register a property",
-        description: "Creates a property with geolocation details and image files uploaded via Cloudinary.",
-        security: [{ BearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                required: ["name", "cep", "street", "number", "neighborhood", "city", "state"],
-                properties: {
-                  name: { type: "string", example: "Condominio Jardim" },
-                  cep: { type: "string", example: "12345000" },
-                  street: { type: "string", example: "Rua das Flores" },
-                  number: { type: "string", example: "100" },
-                  complement: { type: "string" },
-                  neighborhood: { type: "string", example: "Centro" },
-                  city: { type: "string", example: "Sao Paulo" },
-                  state: { type: "string", example: "SP" },
-                  images: { type: "array", items: { type: "string", format: "binary" }, description: "Multiple image uploads" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Property created successfully" }
-        }
-      }
+        summary: "Create property",
+        security: auth,
+        requestBody: multipartBody({ $ref: "#/components/schemas/PropertyMultipart" }),
+        responses: { 201: created("Property created") },
+      },
     },
     "/properties/my-properties": {
       get: {
         tags: ["Properties"],
-        summary: "List owner's registered properties",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "List of owned properties" }
-        }
-      }
+        summary: "List current user's properties",
+        security: auth,
+        responses: { 200: ok("Properties listed") },
+      },
     },
     "/properties/{id}": {
       get: {
         tags: ["Properties"],
-        summary: "Get property profile",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Detailed property profile" }
-        }
+        summary: "Get property by ID",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Property found") },
       },
       put: {
         tags: ["Properties"],
-        summary: "Edit property configurations",
-        description: "Updates textual data, allows submitting new image uploads and specifying existing images to delete via their URLs.",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  cep: { type: "string" },
-                  street: { type: "string" },
-                  number: { type: "string" },
-                  imagesToRemove: { type: "array", items: { type: "string" }, description: "Array of image URLs to delete from Cloudinary" },
-                  images: { type: "array", items: { type: "string", format: "binary" }, description: "New image uploads to append" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Property updated successfully" }
-        }
+        summary: "Update property",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: multipartBody({ $ref: "#/components/schemas/UpdatePropertyMultipart" }),
+        responses: { 200: ok("Property updated") },
       },
       delete: {
         tags: ["Properties"],
-        summary: "Remove property details",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Property removed" }
-        }
-      }
+        summary: "Delete property",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Property deleted") },
+      },
     },
 
-    // SPOTS (PARKING SPOTS)
     "/spots/properties/{propId}/spots": {
       get: {
-        tags: ["Spots (Parking)"],
-        summary: "List all spots inside a property",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "propId", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Array of spots inside this property" }
-        }
+        tags: ["Spots"],
+        summary: "List spots in a property",
+        security: auth,
+        parameters: [idParam("propId", "Property ID")],
+        responses: { 200: ok("Spots listed") },
       },
       post: {
-        tags: ["Spots (Parking)"],
-        summary: "Batch generate spots",
-        description: "Generates multiple identical parking spots inside a property with default weekday schedules and specifications.",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "propId", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                required: ["price", "size", "allowedVehicles", "quantity", "startDate", "endDate", "startTime", "endTime", "weekdays"],
-                properties: {
-                  price: { type: "string", example: "20.00" },
-                  size: { type: "string", example: "12.50" },
-                  isCovered: { type: "boolean", default: false },
-                  allowedVehicles: { type: "string", description: "JSON Array of allowed vehicle types, e.g. [\"CARRO\",\"MOTO\"]" },
-                  quantity: { type: "integer", default: 1, example: 5 },
-                  startDate: { type: "string", format: "date", example: "2026-01-01" },
-                  endDate: { type: "string", format: "date", example: "2026-07-10" },
-                  startTime: { type: "string", example: "08:00:00" },
-                  endTime: { type: "string", example: "10:00:00" },
-                  weekdays: { type: "integer", description: "Bitwise representation of active weekdays (e.g., 127 for all days)", example: 127 },
-                  images: { type: "array", items: { type: "string", format: "binary" } }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Batch spots created and awaiting admin review" }
-        }
-      }
+        tags: ["Spots"],
+        summary: "Generate spots for a property",
+        security: auth,
+        parameters: [idParam("propId", "Property ID")],
+        requestBody: multipartBody({ $ref: "#/components/schemas/GenerateSpotsMultipart" }),
+        responses: { 201: created("Spots generated") },
+      },
     },
     "/spots/{id}/status": {
       patch: {
-        tags: ["Spots (Parking)"],
-        summary: "Manually toggle spot status",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["status"],
-                properties: {
-                  status: { type: "string", enum: ["DISPONIVEL", "ALUGADA", "MANUTENCAO"], example: "DISPONIVEL" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Status adjusted successfully" }
-        }
-      }
+        tags: ["Spots"],
+        summary: "Update spot operational status",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/UpdateSpotStatusRequest" }),
+        responses: { 200: ok("Spot status updated") },
+      },
     },
     "/spots/properties/{propId}/spots/{id}": {
       put: {
-        tags: ["Spots (Parking)"],
-        summary: "Update detailed spot configurations",
-        security: [{ BearerAuth: [] }],
-        parameters: [
-          { name: "propId", in: "path", required: true, schema: { type: "integer" } },
-          { name: "id", in: "path", required: true, schema: { type: "integer" } }
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                properties: {
-                  price: { type: "string" },
-                  size: { type: "string" },
-                  isCovered: { type: "boolean" },
-                  image: { type: "string", format: "binary" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Spot configurations adjusted" }
-        }
+        tags: ["Spots"],
+        summary: "Update spot data",
+        security: auth,
+        parameters: [idParam("propId", "Property ID"), idParam()],
+        requestBody: multipartBody({ $ref: "#/components/schemas/UpdateSpotMultipart" }, false),
+        responses: { 200: ok("Spot updated") },
       },
       delete: {
-        tags: ["Spots (Parking)"],
-        summary: "Remove spot configuration",
-        security: [{ BearerAuth: [] }],
-        parameters: [
-          { name: "propId", in: "path", required: true, schema: { type: "integer" } },
-          { name: "id", in: "path", required: true, schema: { type: "integer" } }
-        ],
-        responses: {
-          200: { description: "Spot deleted successfully" }
-        }
-      }
+        tags: ["Spots"],
+        summary: "Delete spot",
+        security: auth,
+        parameters: [idParam("propId", "Property ID"), idParam()],
+        responses: { 200: ok("Spot deleted") },
+      },
     },
 
-    // RESERVATIONS
-    "/reservations": {
-      get: {
-        tags: ["Reservations"],
-        summary: "Get current user reservation list",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "List of user bookings" }
-        }
-      },
-      post: {
-        tags: ["Reservations"],
-        summary: "Book a spot reservation",
-        security: [{ BearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["spotId", "vehicleId", "startDate", "endDate"],
-                properties: {
-                  spotId: { type: "integer", example: 2 },
-                  vehicleId: { type: "integer", example: 1 },
-                  startDate: { type: "string", format: "date", example: "2026-05-15" },
-                  endDate: { type: "string", format: "date", example: "2026-05-20" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Reservation booked, pending owner's approval" }
-        }
-      }
-    },
     "/reservations/search/address": {
       get: {
         tags: ["Reservations"],
-        summary: "Find spots by geolocation address",
-        description: "Uses Google Maps API integration to geocode location strings, finding surrounding approved active parking spots.",
+        summary: "Search spots by address, CEP, or coordinates",
         parameters: [
-          { name: "address", in: "query", required: true, schema: { type: "string" }, example: "Avenida Paulista, Sao Paulo" },
-          { name: "radius", in: "query", schema: { type: "number", default: 5 }, description: "Search radius in kilometers" }
+          { name: "address", in: "query", schema: { type: "string", minLength: 3 } },
+          { name: "cep", in: "query", schema: { type: "string", minLength: 8, maxLength: 8 } },
+          { name: "lat", in: "query", schema: { type: "number", minimum: -90, maximum: 90 } },
+          { name: "lng", in: "query", schema: { type: "number", minimum: -180, maximum: 180 } },
+          { name: "startDate", in: "query", schema: { type: "string", format: "date" } },
+          { name: "endDate", in: "query", schema: { type: "string", format: "date" } },
+          { name: "radius", in: "query", schema: { type: "number", minimum: 0, maximum: 50, default: 10 } },
         ],
-        responses: {
-          200: { description: "List of matching properties and spots" }
-        }
-      }
+        responses: { 200: ok("Search results") },
+      },
+    },
+    "/reservations": {
+      get: {
+        tags: ["Reservations"],
+        summary: "List current user's reservations",
+        security: auth,
+        responses: { 200: ok("Reservations listed") },
+      },
+      post: {
+        tags: ["Reservations"],
+        summary: "Create reservation",
+        security: auth,
+        requestBody: jsonBody({ $ref: "#/components/schemas/CreateReservationRequest" }),
+        responses: { 201: created("Reservation created") },
+      },
+    },
+    "/reservations/all": {
+      get: {
+        tags: ["Reservations"],
+        summary: "List all reservations",
+        security: auth,
+        responses: { 200: ok("Reservations listed") },
+      },
     },
     "/reservations/owner": {
       get: {
         tags: ["Reservations"],
-        summary: "List booking requests sent to owner's spots",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "List of incoming reservation requests" }
-        }
-      }
+        summary: "List reservation requests for owned properties",
+        security: auth,
+        responses: { 200: ok("Owner reservations listed") },
+      },
     },
     "/reservations/{id}/{action}": {
       patch: {
         tags: ["Reservations"],
-        summary: "Approve, Reject, or Cancel a reservation",
-        description: "Applies action to reservation. Valid actions: `approve`, `reject`, `cancel`.",
-        security: [{ BearerAuth: [] }],
+        summary: "Approve, reject, or cancel a reservation",
+        security: auth,
         parameters: [
-          { name: "id", in: "path", required: true, schema: { type: "integer" } },
-          { name: "action", in: "path", required: true, schema: { type: "string", enum: ["approve", "reject", "cancel"] } }
+          idParam(),
+          { name: "action", in: "path", required: true, schema: { type: "string", enum: ["approve", "reject", "cancel"] } },
         ],
-        responses: {
-          200: { description: "Reservation status updated successfully" }
-        }
-      }
+        responses: { 200: ok("Reservation status updated") },
+      },
+    },
+    "/reservations/{id}": {
+      delete: {
+        tags: ["Reservations"],
+        summary: "Delete reservation",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Reservation deleted") },
+      },
     },
 
-    // REVIEWS
     "/reviews": {
       get: {
         tags: ["Reviews"],
-        summary: "List all reviews in the system (Manager/Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all reviews" }
-        }
+        summary: "List all reviews",
+        security: auth,
+        parameters: [
+          { name: "propertyId", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "spotId", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "reviewerId", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "minRating", in: "query", schema: { type: "integer", minimum: 1, maximum: 5 } },
+          { name: "maxRating", in: "query", schema: { type: "integer", minimum: 1, maximum: 5 } },
+        ],
+        responses: { 200: ok("Reviews listed") },
       },
       post: {
         tags: ["Reviews"],
-        summary: "Create property/spot review",
-        security: [{ BearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["reservationId", "rating", "comment"],
-                properties: {
-                  reservationId: { type: "integer", example: 2 },
-                  rating: { type: "integer", minimum: 1, maximum: 5, example: 5 },
-                  comment: { type: "string", example: "Estacionamento espaçoso e muito seguro." }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Review saved successfully" }
-        }
-      }
+        summary: "Create review",
+        security: auth,
+        requestBody: jsonBody({ $ref: "#/components/schemas/CreateReviewRequest" }),
+        responses: { 201: created("Review created") },
+      },
     },
     "/reviews/my": {
       get: {
         tags: ["Reviews"],
-        summary: "Get current user authored reviews",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "List of matching reviews" }
-        }
-      }
+        summary: "List current user's reviews",
+        security: auth,
+        responses: { 200: ok("Reviews listed") },
+      },
     },
     "/reviews/properties/{propertyId}": {
       get: {
         tags: ["Reviews"],
-        summary: "List all reviews of a property",
-        parameters: [{ name: "propertyId", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Array of property reviews" }
-        }
-      }
+        summary: "List property reviews",
+        parameters: [idParam("propertyId", "Property ID")],
+        responses: { 200: ok("Reviews listed") },
+      },
     },
     "/reviews/spots/{spotId}": {
       get: {
         tags: ["Reviews"],
-        summary: "List all reviews of a spot",
-        parameters: [{ name: "spotId", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Array of spot reviews" }
-        }
-      }
+        summary: "List spot reviews",
+        parameters: [idParam("spotId", "Spot ID")],
+        responses: { 200: ok("Reviews listed") },
+      },
     },
     "/reviews/{id}": {
       put: {
         tags: ["Reviews"],
-        summary: "Update existing review comment",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["rating", "comment"],
-                properties: {
-                  rating: { type: "integer", example: 4 },
-                  comment: { type: "string", example: "Boa vaga, mas o portão demorou a abrir." }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Review updated" }
-        }
+        summary: "Update review",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/UpdateReviewRequest" }),
+        responses: { 200: ok("Review updated") },
       },
       delete: {
         tags: ["Reviews"],
-        summary: "Delete review record",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Review removed" }
-        }
-      }
+        summary: "Delete review",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Review deleted") },
+      },
     },
 
-    // REPORTS
     "/reports": {
       post: {
         tags: ["Reports"],
-        summary: "File an abuse report (complaint)",
-        description: "Submit abuse complaints regarding offensive chat dialogs or unapproved spot activity. Supports attaching image proof files.",
-        security: [{ BearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                required: ["description", "reason", "targetType", "targetId"],
-                properties: {
-                  description: { type: "string", example: "Linguagem altamente agressiva no chat." },
-                  reason: { type: "string", example: "Linguagem ofensiva" },
-                  targetType: { type: "string", enum: ["CHAT", "SPOT"], example: "CHAT" },
-                  targetId: { type: "integer", example: 1, description: "ID of message or spot target" },
-                  images: { type: "array", items: { type: "string", format: "binary" } }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Report received, pending admin moderation" }
-        }
-      }
+        summary: "Create report",
+        security: auth,
+        requestBody: multipartBody({ $ref: "#/components/schemas/CreateReportMultipart" }),
+        responses: { 201: created("Report created") },
+      },
     },
     "/reports/my": {
       get: {
         tags: ["Reports"],
-        summary: "Get list of filed complaints by this user",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "List of user's filed reports" }
-        }
-      }
+        summary: "List current user's reports",
+        security: auth,
+        responses: { 200: ok("Reports listed") },
+      },
     },
     "/reports/{id}/reanalysis": {
       patch: {
         tags: ["Reports"],
         summary: "Request report reanalysis",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["description"],
-                properties: {
-                  description: { type: "string", example: "Por favor, revise as capturas de tela novamente." }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Report set back to PENDING for admin reevaluation" }
-        }
-      }
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/RequestReportReanalysisRequest" }),
+        responses: { 200: ok("Reanalysis requested") },
+      },
     },
 
-    // CHATS
     "/chats": {
       get: {
         tags: ["Chats"],
-        summary: "Get active chat conversation list",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "List of active chat threads" }
-        }
-      }
+        summary: "List conversations",
+        security: auth,
+        responses: { 200: ok("Chats listed") },
+      },
     },
     "/chats/block": {
       post: {
         tags: ["Chats"],
         summary: "Block user in chat",
-        security: [{ BearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["blockedUserId"],
-                properties: {
-                  blockedUserId: { type: "integer", example: 1 }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "User blocked successfully" }
-        }
-      }
+        security: auth,
+        requestBody: jsonBody({ $ref: "#/components/schemas/BlockUserRequest" }),
+        responses: { 201: created("User blocked") },
+      },
     },
     "/chats/block/{userId}": {
       delete: {
         tags: ["Chats"],
         summary: "Unblock user in chat",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "userId", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "User unblocked successfully" }
-        }
-      }
-    },
-    "/chats/{conversationId}": {
-      get: {
-        tags: ["Chats"],
-        summary: "Get full dialogue text history",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "conversationId", in: "path", required: true, schema: { type: "string" } }],
-        responses: {
-          200: { description: "Full thread conversation logs" }
-        }
-      }
+        security: auth,
+        parameters: [idParam("userId", "Blocked user ID")],
+        responses: { 200: ok("User unblocked") },
+      },
     },
     "/chats/{conversationId}/search": {
       get: {
         tags: ["Chats"],
-        summary: "Search messages inside conversation",
-        security: [{ BearerAuth: [] }],
+        summary: "Search messages in a conversation",
+        security: auth,
         parameters: [
-          { name: "conversationId", in: "path", required: true, schema: { type: "string" } },
-          { name: "query", in: "query", required: true, schema: { type: "string" } }
+          idParam("conversationId", "Conversation ID"),
+          { name: "q", in: "query", required: true, schema: { type: "string", minLength: 1, maxLength: 100 } },
+          { name: "page", in: "query", schema: { type: "integer", minimum: 1, default: 1 } },
+          { name: "limit", in: "query", schema: { type: "integer", minimum: 1, maximum: 100, default: 30 } },
         ],
-        responses: {
-          200: { description: "Matching text messages list" }
-        }
-      }
+        responses: { 200: ok("Messages found") },
+      },
+    },
+    "/chats/{conversationId}": {
+      get: {
+        tags: ["Chats"],
+        summary: "Get conversation detail",
+        security: auth,
+        parameters: [
+          idParam("conversationId", "Conversation ID"),
+          { name: "page", in: "query", schema: { type: "integer", minimum: 1, default: 1 } },
+          { name: "limit", in: "query", schema: { type: "integer", minimum: 1, maximum: 100, default: 30 } },
+        ],
+        responses: { 200: ok("Conversation loaded") },
+      },
     },
     "/chats/{conversationId}/messages": {
       post: {
         tags: ["Chats"],
-        summary: "Send message inside conversation",
-        description: "Creates message. Supports optionally attaching single image file via upload.",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "conversationId", in: "path", required: true, schema: { type: "string" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                properties: {
-                  content: { type: "string", example: "Olá! Tudo bem com a reserva?" },
-                  file: { type: "string", format: "binary" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Message dispatched" }
-        }
-      }
+        summary: "Create chat message",
+        security: auth,
+        parameters: [idParam("conversationId", "Conversation ID")],
+        requestBody: multipartBody({ $ref: "#/components/schemas/CreateChatMessageMultipart" }),
+        responses: { 201: created("Message created") },
+      },
     },
     "/chats/messages/{messageId}": {
       put: {
         tags: ["Chats"],
-        summary: "Edit text content of a message",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "messageId", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["content"],
-                properties: {
-                  content: { type: "string", example: "Mensagem editada." }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Message updated" }
-        }
+        summary: "Update chat message",
+        security: auth,
+        parameters: [idParam("messageId", "Message ID")],
+        requestBody: jsonBody({ $ref: "#/components/schemas/UpdateChatMessageRequest" }),
+        responses: { 200: ok("Message updated") },
       },
       delete: {
         tags: ["Chats"],
-        summary: "Delete message locally",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "messageId", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Message removed from thread view" }
-        }
-      }
+        summary: "Delete chat message",
+        security: auth,
+        parameters: [idParam("messageId", "Message ID")],
+        responses: { 200: ok("Message deleted") },
+      },
     },
     "/chats/delete-multiple": {
       post: {
         tags: ["Chats"],
-        summary: "Batch delete messages",
-        security: [{ BearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["messageIds"],
-                properties: {
-                  messageIds: { type: "array", items: { type: "integer" }, example: [1, 2, 3] }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Selected messages removed" }
-        }
-      }
+        summary: "Delete multiple conversations locally",
+        security: auth,
+        requestBody: jsonBody({ $ref: "#/components/schemas/DeleteMultipleChatsRequest" }),
+        responses: { 200: ok("Conversations deleted") },
+      },
     },
     "/chats/{conversationId}/for-everyone": {
       delete: {
         tags: ["Chats"],
-        summary: "Delete conversation thread for both users",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "conversationId", in: "path", required: true, schema: { type: "string" } }],
-        responses: {
-          200: { description: "Thread purged from system" }
-        }
-      }
+        summary: "Delete conversation for everyone",
+        security: auth,
+        parameters: [idParam("conversationId", "Conversation ID")],
+        responses: { 200: ok("Conversation deleted") },
+      },
     },
 
-    // LOCATIONS
     "/locations/states": {
       get: {
         tags: ["Locations"],
-        summary: "List all Brazilian states",
-        responses: {
-          200: { description: "List of states" }
-        }
-      }
+        summary: "List Brazilian states",
+        responses: { 200: ok("States listed") },
+      },
     },
     "/locations/states/{stateId}/cities": {
       get: {
         tags: ["Locations"],
         summary: "List cities by state ID",
-        parameters: [{ name: "stateId", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "List of cities in the specified state" }
-        }
-      }
+        parameters: [idParam("stateId", "State ID")],
+        responses: { 200: ok("Cities listed") },
+      },
     },
 
-    // ADMINISTRATIVE CONTROLS & DASHBOARD (ADMIN ONLY)
     "/admin/dashboard/stats": {
       get: {
-        tags: ["Admin Dashboard"],
-        summary: "Get overall platform metrics",
-        description: "Returns general counts of users (active, blocked), total active parking spots, properties, reports, and reservations.",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Statistics object" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Get dashboard statistics",
+        security: auth,
+        responses: { 200: ok("Statistics returned") },
+      },
     },
     "/admin/users": {
       get: {
-        tags: ["Users"],
-        summary: "List all registered users (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all users" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "List all users",
+        security: auth,
+        responses: { 200: ok("Users listed") },
+      },
     },
     "/admin/users/blocked/count": {
       get: {
-        tags: ["Users"],
-        summary: "Count blocked users (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Total count number" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Count blocked users",
+        security: auth,
+        responses: { 200: ok("Blocked user count") },
+      },
     },
     "/admin/users/{id}": {
       put: {
-        tags: ["Users"],
-        summary: "Update user profile details as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  role: { type: "string", enum: ["USER", "MANAGER", "ADMIN"] },
-                  isActive: { type: "boolean" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "User modified successfully" }
-        }
+        tags: ["Admin"],
+        summary: "Update user as admin",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/AdminUpdateUserRequest" }, false),
+        responses: { 200: ok("User updated") },
       },
       delete: {
-        tags: ["Users"],
-        summary: "Force delete user account as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Account removed permanently" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Delete user as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("User deleted") },
+      },
     },
     "/admin/users/{id}/block": {
       patch: {
-        tags: ["Users"],
-        summary: "Toggle block status of a user (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Block toggled successfully" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Set user block state",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/ToggleUserBlockRequest" }),
+        responses: { 200: ok("User block state updated") },
+      },
     },
     "/admin/vehicles": {
       get: {
-        tags: ["Vehicles"],
-        summary: "List all vehicles registered on platform (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all vehicles" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "List all vehicles",
+        security: auth,
+        responses: { 200: ok("Vehicles listed") },
+      },
     },
     "/admin/vehicles/search": {
       get: {
-        tags: ["Vehicles"],
-        summary: "Advanced search vehicle list (Admin)",
-        security: [{ BearerAuth: [] }],
+        tags: ["Admin"],
+        summary: "Search vehicles",
+        security: auth,
         parameters: [
-          { name: "id", in: "query", schema: { type: "integer" } },
-          { name: "email", in: "query", schema: { type: "string" }, description: "Search by owner email" },
-          { name: "plate", in: "query", schema: { type: "string" } }
+          { name: "id", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "licensePlate", in: "query", schema: { type: "string" } },
+          { name: "email", in: "query", schema: { type: "string" } },
         ],
-        responses: {
-          200: { description: "Array of matching vehicles" }
-        }
-      }
+        responses: { 200: ok("Vehicles found") },
+      },
     },
     "/admin/vehicles/{id}": {
       get: {
-        tags: ["Vehicles"],
-        summary: "Get specific vehicle details as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Vehicle object" }
-        }
+        tags: ["Admin"],
+        summary: "Get vehicle as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Vehicle found") },
       },
       put: {
-        tags: ["Vehicles"],
-        summary: "Force edit vehicle details as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  plate: { type: "string" },
-                  brand: { type: "string" },
-                  model: { type: "string" },
-                  color: { type: "string" }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Vehicle details updated" }
-        }
+        tags: ["Admin"],
+        summary: "Update vehicle as admin",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/UpdateVehicleRequest" }),
+        responses: { 200: ok("Vehicle updated") },
       },
       delete: {
-        tags: ["Vehicles"],
-        summary: "Force delete vehicle profile as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Vehicle record removed" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Delete vehicle as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Vehicle deleted") },
+      },
     },
     "/admin/properties": {
       get: {
-        tags: ["Properties"],
-        summary: "List all properties in database (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all properties" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "List all properties",
+        security: auth,
+        responses: { 200: ok("Properties listed") },
+      },
     },
     "/admin/properties/search": {
       get: {
-        tags: ["Properties"],
-        summary: "Advanced search property directory (Admin)",
-        security: [{ BearerAuth: [] }],
+        tags: ["Admin"],
+        summary: "Search properties",
+        security: auth,
         parameters: [
-          { name: "id", in: "query", schema: { type: "integer" } },
-          { name: "ownerName", in: "query", schema: { type: "string" }, description: "Partial or full owner name" },
-          { name: "name", in: "query", schema: { type: "string" }, description: "Partial property name search" }
+          { name: "id", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "name", in: "query", schema: { type: "string" } },
+          { name: "email", in: "query", schema: { type: "string" } },
+          { name: "ownerName", in: "query", schema: { type: "string" } },
         ],
-        responses: {
-          200: { description: "Array of matching properties" }
-        }
-      }
+        responses: { 200: ok("Properties found") },
+      },
     },
     "/admin/properties/{id}": {
       get: {
-        tags: ["Properties"],
-        summary: "Get specific property details as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Property profile object" }
-        }
+        tags: ["Admin"],
+        summary: "Get property as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Property found") },
       },
       put: {
-        tags: ["Properties"],
-        summary: "Modify property configs as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          content: {
-            "multipart/form-data": {
-              schema: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  cep: { type: "string" },
-                  street: { type: "string" },
-                  number: { type: "string" },
-                  imagesToRemove: { type: "array", items: { type: "string" } },
-                  images: { type: "array", items: { type: "string", format: "binary" } }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Property altered" }
-        }
+        tags: ["Admin"],
+        summary: "Update property as admin",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/AdminUpdatePropertyRequest" }, false),
+        responses: { 200: ok("Property updated") },
       },
       delete: {
-        tags: ["Properties"],
-        summary: "Force purge property profile as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Property deleted" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Delete property as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Property deleted") },
+      },
     },
     "/admin/spots": {
       get: {
-        tags: ["Spots (Parking)"],
-        summary: "List all parking spots in database (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all parking spots" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "List all spots",
+        security: auth,
+        responses: { 200: ok("Spots listed") },
+      },
     },
     "/admin/spots/search": {
       get: {
-        tags: ["Spots (Parking)"],
-        summary: "Advanced search spot list (Admin)",
-        security: [{ BearerAuth: [] }],
+        tags: ["Admin"],
+        summary: "Search spots",
+        security: auth,
         parameters: [
-          { name: "id", in: "query", schema: { type: "integer" } },
-          { name: "email", in: "query", schema: { type: "string" }, description: "Search by owner email" },
-          { name: "status", in: "query", schema: { type: "string", enum: ["DISPONIVEL", "ALUGADA", "MANUTENCAO"] } }
+          { name: "id", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "email", in: "query", schema: { type: "string" } },
+          { name: "status", in: "query", schema: { type: "string", enum: ["PENDENTE", "APROVADA", "RECUSADA"] } },
         ],
-        responses: {
-          200: { description: "Array of matching parking spots" }
-        }
-      }
+        responses: { 200: ok("Spots found") },
+      },
     },
     "/admin/spots/{id}/evaluate": {
       patch: {
-        tags: ["Spots (Parking)"],
-        summary: "Evaluate and approve/reject spot (Admin)",
-        description: "Enforces registration checks. If it is the user's first spot approval, sends SMS/Push notifications.",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["status"],
-                properties: {
-                  status: { type: "string", enum: ["APROVADA", "REJEITADA"], example: "APROVADA" },
-                  rejectionReason: { type: "string", example: "Imagem desfocada." }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Evaluation submitted" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Approve or reject spot",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/EvaluateSpotRequest" }),
+        responses: { 200: ok("Spot evaluated") },
+      },
     },
     "/admin/spots/{id}/active": {
       patch: {
-        tags: ["Spots (Parking)"],
-        summary: "Toggle active state of a spot (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Spot active status changed" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Set spot active state",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/ToggleSpotActiveRequest" }),
+        responses: { 200: ok("Spot active state updated") },
+      },
     },
     "/admin/spots/{id}": {
       delete: {
-        tags: ["Spots (Parking)"],
-        summary: "Force delete a parking spot (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Spot record deleted" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Delete spot as admin",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/DeleteSpotAdminRequest" }),
+        responses: { 200: ok("Spot deleted") },
+      },
     },
     "/admin/reservations": {
       get: {
-        tags: ["Reservations"],
-        summary: "List all bookings in system (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all bookings" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "List all reservations",
+        security: auth,
+        responses: { 200: ok("Reservations listed") },
+      },
     },
     "/admin/reservations/search": {
       get: {
-        tags: ["Reservations"],
-        summary: "Advanced search reservation database (Admin)",
-        security: [{ BearerAuth: [] }],
+        tags: ["Admin"],
+        summary: "Search reservations",
+        security: auth,
         parameters: [
-          { name: "id", in: "query", schema: { type: "integer" } },
-          { name: "email", in: "query", schema: { type: "string" }, description: "Search by booking user's email" },
-          { name: "status", in: "query", schema: { type: "string" } }
+          { name: "id", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "email", in: "query", schema: { type: "string" } },
+          { name: "startDate", in: "query", schema: { type: "string", format: "date" } },
+          { name: "endDate", in: "query", schema: { type: "string", format: "date" } },
+          { name: "status", in: "query", schema: { type: "string", enum: ["PENDENTE", "APROVADA", "RECUSADA", "CANCELADA"] } },
+          { name: "city", in: "query", schema: { type: "string" } },
         ],
-        responses: {
-          200: { description: "Array of matching bookings" }
-        }
-      }
+        responses: { 200: ok("Reservations found") },
+      },
     },
     "/admin/reservations/{id}": {
       get: {
-        tags: ["Reservations"],
-        summary: "Get specific reservation detail (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Detailed booking record object" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Get reservation as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Reservation found") },
+      },
     },
     "/admin/reservations/{id}/force-cancel": {
       patch: {
-        tags: ["Reservations"],
-        summary: "Administratively force cancel a reservation (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Reservation status updated to CANCELADA" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Force cancel reservation",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Reservation canceled") },
+      },
     },
     "/admin/reports": {
       get: {
-        tags: ["Reports"],
-        summary: "List all complaints/abuse reports (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all reports" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "List all reports",
+        security: auth,
+        responses: { 200: ok("Reports listed") },
+      },
     },
     "/admin/reports/search": {
       get: {
-        tags: ["Reports"],
-        summary: "Advanced search reports (Admin)",
-        security: [{ BearerAuth: [] }],
+        tags: ["Admin"],
+        summary: "Search reports",
+        security: auth,
         parameters: [
-          { name: "id", in: "query", schema: { type: "integer" } },
-          { name: "email", in: "query", schema: { type: "string" }, description: "Search by reporter user email" },
-          { name: "status", in: "query", schema: { type: "string", enum: ["PENDENTE", "RESOLVIDA", "REJEITADA"] } }
+          { name: "id", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "email", in: "query", schema: { type: "string" } },
+          { name: "status", in: "query", schema: { type: "string", enum: ["PENDENTE", "EM_ANALISE", "RESOLVIDA", "RECUSADA", "REANALISE"] } },
+          { name: "targetType", in: "query", schema: { type: "string", enum: ["CHAT", "SPOT"] } },
         ],
-        responses: {
-          200: { description: "Array of matching reports" }
-        }
-      }
+        responses: { 200: ok("Reports found") },
+      },
     },
     "/admin/reports/{id}": {
       get: {
-        tags: ["Reports"],
-        summary: "Get complaint details (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Report object details" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Get report as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Report found") },
+      },
     },
     "/admin/reports/{id}/status": {
       patch: {
-        tags: ["Reports"],
-        summary: "Resolve and conclude report review (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["status"],
-                properties: {
-                  status: { type: "string", enum: ["RESOLVIDA", "REJEITADA"], example: "RESOLVIDA" },
-                  adminNote: { type: "string", example: "O usuário reportado foi devidamente advertido." }
-                }
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Report moderated successfully" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "Update report status",
+        security: auth,
+        parameters: [idParam()],
+        requestBody: jsonBody({ $ref: "#/components/schemas/UpdateReportStatusRequest" }),
+        responses: { 200: ok("Report updated") },
+      },
     },
     "/admin/reviews": {
       get: {
-        tags: ["Reviews"],
-        summary: "List all property evaluations in system (Admin)",
-        security: [{ BearerAuth: [] }],
-        responses: {
-          200: { description: "Array of all reviews" }
-        }
-      }
+        tags: ["Admin"],
+        summary: "List all reviews",
+        security: auth,
+        responses: { 200: ok("Reviews listed") },
+      },
     },
     "/admin/reviews/search": {
       get: {
-        tags: ["Reviews"],
-        summary: "Advanced search evaluations (Admin)",
-        security: [{ BearerAuth: [] }],
+        tags: ["Admin"],
+        summary: "Search reviews",
+        security: auth,
         parameters: [
-          { name: "id", in: "query", schema: { type: "integer" } },
-          { name: "email", in: "query", schema: { type: "string" }, description: "Search by author email" }
+          { name: "id", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "email", in: "query", schema: { type: "string" } },
+          { name: "propertyId", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "spotId", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "reviewerId", in: "query", schema: { type: "integer", minimum: 1 } },
+          { name: "minRating", in: "query", schema: { type: "integer", minimum: 1, maximum: 5 } },
+          { name: "maxRating", in: "query", schema: { type: "integer", minimum: 1, maximum: 5 } },
         ],
-        responses: {
-          200: { description: "Array of matching reviews" }
-        }
-      }
+        responses: { 200: ok("Reviews found") },
+      },
     },
     "/admin/reviews/{id}": {
       get: {
-        tags: ["Reviews"],
-        summary: "Get specific evaluation (Admin)",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Review detail object" }
-        }
+        tags: ["Admin"],
+        summary: "Get review as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Review found") },
       },
       delete: {
-        tags: ["Reviews"],
-        summary: "Force delete a review as Admin",
-        security: [{ BearerAuth: [] }],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
-        responses: {
-          200: { description: "Review record removed permanently" }
-        }
-      }
-    }
+        tags: ["Admin"],
+        summary: "Delete review as admin",
+        security: auth,
+        parameters: [idParam()],
+        responses: { 200: ok("Review deleted") },
+      },
+    },
   },
   components: {
     securitySchemes: {
@@ -1517,8 +1269,8 @@ export const swaggerDocument = {
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
-        description: "Enter your valid stateless Access Token (JWT) to access secured endpoints."
-      }
-    }
-  }
+      },
+    },
+    schemas,
+  },
 };
