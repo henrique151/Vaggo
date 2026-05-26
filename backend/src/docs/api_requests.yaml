@@ -1,0 +1,3238 @@
+type: spec.insomnia.rest/5.0
+schema_version: "5.1"
+name: Vaggo
+meta:
+  id: wrk_3f9ef1e186f34a32925be6aedb22310a
+  created: 1773183195664
+  modified: 1773250465068
+  description: ""
+collection:
+  - name: users
+    meta:
+      id: fld_61488ed5b9ec432f9201fd7d269f7a24
+      created: 1773250595607
+      modified: 1779494671154
+      sortKey: -1773994823843.25
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/users/{{ _.userId }}"
+        name: Get user profile by ID
+        meta:
+          id: req_f99f1d27ec1d429dbaa4aa34bfd93603
+          created: 1773183627709
+          modified: 1779496790109
+          isPrivate: false
+          description: Register a user with basic data and mandatory acceptance of terms
+            of use.
+          sortKey: -1773250599160
+        method: GET
+        body:
+          mimeType: application/json
+          text: ""
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/users/1"
+        name: Delete user account
+        meta:
+          id: req_830a244aaa7b43e7a47306968e5f5e8e
+          created: 1773250791141
+          modified: 1779737563031
+          isPrivate: false
+          description: ""
+          sortKey: -1773250599360
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/users/{{ _.userId }}"
+        name: Update user profile
+        meta:
+          id: req_5ddf61ca24a24b97a807c73f2fb3ef0e
+          created: 1773250792484
+          modified: 1779226718799
+          isPrivate: false
+          description: ""
+          sortKey: -1773250599260
+        method: PUT
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: name
+              value: Pedro Sousa
+            - name: phone
+              value: "11999999999"
+              description: ""
+              disabled: false
+            - name: avatarUrl
+              value: ""
+              description: ""
+              disabled: false
+              multiline: true
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\foto2.webp
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/users/"
+        name: Register a new user
+        meta:
+          id: req_acc7091c575e4de19318b806d965a43c
+          created: 1773250793813
+          modified: 1779807355741
+          isPrivate: false
+          description: ""
+          sortKey: -1773250599460
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: name
+              value: Gui
+              description: ""
+              disabled: false
+            - name: cpf
+              value: "12345178904"
+              description: ""
+              disabled: false
+            - name: gender
+              value: M
+              description: ""
+              disabled: false
+            - name: phone
+              value: "5511912494624"
+              description: ""
+              disabled: false
+            - name: birthDate
+              value: 1998-05-20
+              description: ""
+              disabled: false
+            - name: email
+              value: guilherme9@email.com
+              description: ""
+              disabled: false
+            - name: password
+              value: 12345678A!
+              description: ""
+              disabled: false
+            - name: avatarUrl
+              value: ""
+              description: ""
+              disabled: false
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: vechicles
+    meta:
+      id: fld_83d82362ec874a7090be1a108de92eb6
+      created: 1774573668027
+      modified: 1774573673668
+      sortKey: -1774573668027
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/vehicles/"
+        name: Register a new vehicle
+        meta:
+          id: req_677fa1c68eeb4476824185423b388f85
+          created: 1774573766882
+          modified: 1779812461325
+          isPrivate: false
+          description: ""
+          sortKey: -1774573793161
+        method: POST
+        body:
+          mimeType: application/json
+          text: |
+            {
+                "brand": "Honda",
+                "model": "CB 500",
+                "color": "Preto",
+                "licensePlate": "BBA2B38",
+                "manufactureYear": "2023",
+                "type": "CARRO",
+            	  "size": "MEDIO"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/vehicles/1"
+        name: Get vehicle details by ID
+        meta:
+          id: req_d7df316bdaeb41c58dc69dd6d8be163e
+          created: 1774573835963
+          modified: 1775329455493
+          isPrivate: false
+          description: ""
+          sortKey: -1774573793086
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/vehicles/1"
+        name: Update vehicle details
+        meta:
+          id: req_14bb8cb88f334cbbb956e90424c4c823
+          created: 1774573872654
+          modified: 1775324267686
+          isPrivate: false
+          description: ""
+          sortKey: -1774573793067.25
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "brand": "Toyota 222",
+              "model": "Corolla",
+              "color": "Prata",
+              "licensePlate": "ABC1D24",
+              "manufactureYear": "2025"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/vehicles/1"
+        name: Delete a vehicle
+        meta:
+          id: req_1f6124d939bf42db9c9ec4bd37781966
+          created: 1774573909377
+          modified: 1777147403728
+          isPrivate: false
+          description: ""
+          sortKey: -1774573793061
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/vehicles/my-vehicles"
+        name: Get all vehicles details by ID
+        meta:
+          id: req_220f3b545a1e4707b21d66f62d38d0f2
+          created: 1775160455352
+          modified: 1775253320684
+          isPrivate: false
+          description: ""
+          sortKey: -1774573793111
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: locations
+    meta:
+      id: fld_dda71b76fad04f039ef022499638ad58
+      created: 1775170913633
+      modified: 1775171130339
+      sortKey: -1775170913633
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/locations/states/"
+        name: Get all states
+        meta:
+          id: req_57c6a569bc554f71b3dbf46aa43d3c62
+          created: 1775170916590
+          modified: 1775171273731
+          isPrivate: false
+          description: ""
+          sortKey: -1775170917712
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/locations/states/35/cities"
+        name: Get all cities by states
+        meta:
+          id: req_9967cdb86ee94df0a40fdcd0ca08aa43
+          created: 1775171328064
+          modified: 1775325775922
+          isPrivate: false
+          description: ""
+          sortKey: -1775170917812
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: properties
+    meta:
+      id: fld_6b7bfe689b6f40a5b95ee084d28eca78
+      created: 1775253062195
+      modified: 1775253062195
+      sortKey: -1775253062195
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/properties/"
+        name: Register a new property
+        meta:
+          id: req_346f095685024e00907704debf6a5ca5
+          created: 1775253064375
+          modified: 1779312381849
+          isPrivate: false
+          description: ""
+          sortKey: -1775253064575
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: name
+              value: Casa Nova
+              description: ""
+              disabled: false
+            - name: type
+              value: Residencial
+              description: ""
+              disabled: false
+            - name: description
+              value: teste
+              description: ""
+              disabled: false
+            - name: totalCapacity
+              value: "10"
+              description: ""
+              disabled: false
+            - name: zipCode
+              value: "08050150"
+              description: ""
+              disabled: false
+            - name: number
+              value: "48"
+              description: ""
+              disabled: false
+            - name: complement
+              value: Casa N
+              description: ""
+              disabled: false
+            - name: images
+              value: ""
+              description: ""
+              disabled: false
+              multiline: true
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\foto2.webp
+              type: file
+            - name: images
+              value: ""
+              description: ""
+              disabled: false
+              multiline: true
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+            - name: images
+              value: ""
+              description: ""
+              disabled: false
+              multiline: true
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/properties/"
+        name: Get all properties
+        meta:
+          id: req_a6fe8e2d07e241679d5c6697349f238e
+          created: 1775253634334
+          modified: 1777228836764
+          isPrivate: false
+          description: ""
+          sortKey: -1775242796142.125
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: none
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/properties/1"
+        name: Delete a property
+        meta:
+          id: req_e2cbd130e29d4cf0b0a102908854aaf0
+          created: 1775254582041
+          modified: 1777923954428
+          isPrivate: false
+          description: ""
+          sortKey: -1775191454377.75
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/properties/my-properties"
+        name: "Get all my properties "
+        meta:
+          id: req_58615b05313c42a3a4c53ed9e0352f8e
+          created: 1775329968018
+          modified: 1775329981457
+          isPrivate: false
+          description: ""
+          sortKey: -1775232527809.25
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/properties/{{ _.userId }}"
+        name: Update property details
+        meta:
+          id: req_163f4068b59845789b524576dc6c7ba5
+          created: 1777072321298
+          modified: 1779495152123
+          isPrivate: false
+          description: ""
+          sortKey: -1775191454277.75
+        method: PUT
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: name
+              value: "A casa 23 "
+              description: ""
+              disabled: false
+            - name: type
+              value: Comercial
+              description: ""
+              disabled: false
+            - name: description
+              value: teste
+              description: ""
+              disabled: false
+            - name: totalCapacity
+              value: "10"
+              description: ""
+              disabled: false
+            - name: zipCode
+              value: "01001000"
+              description: ""
+              disabled: false
+            - name: number
+              value: "48"
+              description: ""
+              disabled: false
+            - name: complement
+              value: Casa N
+              description: ""
+              disabled: false
+            - name: street
+              value: Rua das Flores
+              description: ""
+              disabled: false
+            - name: neighborhood
+              value: Centro
+              description: ""
+              disabled: false
+            - name: imagesToRemove
+              value: '["https://res.cloudinary.com/dabf2vbrl/image/upload/v1777924991/vaggo/users/user_1/properties/property_1_img_0_1777924991026.jpg"]'
+              description: ""
+              disabled: false
+              multiline: false
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: text
+            - name: files
+              value: ""
+              description: ""
+              disabled: false
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: spots
+    meta:
+      id: fld_22eb31e0366b41dfb57cc09c780f2e44
+      created: 1775256931377
+      modified: 1775256931377
+      sortKey: -1775256931377
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/spots/properties/1/spots"
+        name: Get all by spots
+        meta:
+          id: req_fbe6ed5a06af47859f8ac9c70af389f7
+          created: 1775257593093
+          modified: 1779750515456
+          isPrivate: false
+          description: ""
+          sortKey: -1775256933991
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/spots/properties/{{ _.userId }}/spots/3"
+        name: Update spots detatils by id
+        meta:
+          id: req_0c1c4de7738b4d379237bb7bda2b0bcc
+          created: 1775257666014
+          modified: 1779740172882
+          isPrivate: false
+          description: ""
+          sortKey: -1775256933953.5
+        method: PUT
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: size
+              value: "21.5"
+              description: ""
+              disabled: false
+            - name: price
+              value: "20.00"
+              description: ""
+              disabled: false
+            - name: isCovered
+              value: "false"
+              description: ""
+              disabled: false
+            - name: allowedVehicles
+              value: '["CARRO", "MOTO"]'
+              description: ""
+              disabled: false
+              multiline: true
+              type: text
+            - name: image
+              value: ""
+              description: ""
+              disabled: true
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\foto2.webp
+              type: file
+            - name: availability
+              value: '{"startDate":"2026-01-01","endDate":"2026-05-18","weekdays":62,"startTime":"12:00:00","endTime":"14:00:00"}'
+              description: ""
+              disabled: false
+              multiline: true
+              type: text
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/spots/1/status"
+        name: Mudar Status
+        meta:
+          id: req_52388066090147f5a4390f8980a79a3b
+          created: 1775324735667
+          modified: 1779750623006
+          isPrivate: false
+          description: ""
+          sortKey: -1775256933966
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+               "status": "DISPONIVEL"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/spots/properties/2/spots/2"
+        name: Delete a property
+        meta:
+          id: req_b6503c36616c4ee186a47ac6370269be
+          created: 1776468110454
+          modified: 1779746607328
+          isPrivate: false
+          description: ""
+          sortKey: -1775256933941
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/spots/properties/1/spots"
+        name: Generate spots
+        meta:
+          id: req_52d8c4fea3ee4f839adeee998a3bb05b
+          created: 1777135160835
+          modified: 1779810686883
+          isPrivate: false
+          description: ""
+          sortKey: -1775256934041
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: count
+              value: "1"
+            - name: size
+              value: "12.5"
+              description: ""
+              disabled: false
+            - name: price
+              value: "20.00"
+              description: ""
+              disabled: false
+            - name: isCovered
+              value: "false"
+              description: ""
+              disabled: false
+            - name: prefix
+              value: Vaga-A
+              description: ""
+              disabled: false
+            - name: allowedVehicles
+              value: '["CARRO", "MOTO"]'
+              description: ""
+              disabled: false
+            - name: files
+              value: ""
+              description: ""
+              disabled: false
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+            - name: files
+              value: ""
+              description: ""
+              disabled: false
+              multiline: true
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\foto2.webp
+              type: file
+            - name: files
+              value: ""
+              description: ""
+              disabled: false
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+            - name: availability
+              value: '{"startDate":"2026-01-01","endDate":"2026-05-10","weekdays":127,"startTime":"08:00:00","endTime":"10:00:00"}'
+              description: ""
+              disabled: false
+              multiline: true
+              type: text
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: reservations
+    meta:
+      id: fld_b9821c05c8284ece92ec896344c55ebd
+      created: 1777146083164
+      modified: 1779224006019
+      sortKey: -1779223172074.5
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/reservations/owner/"
+        name: List the owner's reservations.
+        meta:
+          id: req_dee03457e3e345ed9a3119c089317e4c
+          created: 1777146154733
+          modified: 1779495712240
+          isPrivate: false
+          description: ""
+          sortKey: -1777146514521
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reservations/"
+        name: Register a new reservation
+        meta:
+          id: req_7d15184ef98246c094dc48e9ec7b2cf5
+          created: 1777147116624
+          modified: 1779814753767
+          isPrivate: false
+          description: ""
+          sortKey: -1777146334727
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "spotId": 2,
+              "vehicleId": 2,
+              "startDate": "2026-01-01",
+              "endDate": "2026-05-10"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reservations/1/reject"
+        name: Reject reservation
+        meta:
+          id: req_5429d8059e564a208fb20abaf06acaac
+          created: 1777147516795
+          modified: 1779750697522
+          isPrivate: false
+          description: ""
+          sortKey: -1777146154933
+        method: PATCH
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reservations/2/approve"
+        name: Approve reservation
+        meta:
+          id: req_fffa6a6902934654a77588853aa4b44b
+          created: 1777147567374
+          modified: 1779814770763
+          isPrivate: false
+          description: ""
+          sortKey: -1777146154883
+        method: PATCH
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url
+          }}/reservations/search/address?address=08050150&startDate=2026-05-10&\
+          endDate=2026-05-10"
+        name: Search properties
+        meta:
+          id: req_2f01f8ebc9654f6da63c6d8429d3c74a
+          created: 1777147593285
+          modified: 1779750679060
+          isPrivate: false
+          description: >
+            GET /reservations/search/address?cep=08210090
+
+            GET /reservations/search/address?address=Rua Guamirim, Vila Jacuí,
+            São Paulo, São Paulo
+
+            GET /reservations/search/address?address=Rua Guamirim, Vila Jacuí,
+            São Paulo, São Paulo&startDate=2026-05-10&endDate=2026-05-20
+          sortKey: -1777147593285
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          disabled: true
+          token: ""
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reservations/"
+        name: Get all my reseravtions
+        meta:
+          id: req_73d6dcfc03044be8824997cfe7e23004
+          created: 1777915610169
+          modified: 1779495708728
+          isPrivate: false
+          description: ""
+          sortKey: -1777146874109
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: reports
+    meta:
+      id: fld_2634c2facc244e35a8dadd8dce7d7fc1
+      created: 1779223168231
+      modified: 1779749441835
+      sortKey: -1779268147297.5
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/reports/my"
+        name: Get my reports
+        meta:
+          id: req_bac5adce6abb40cb8d5b69b03332c8af
+          created: 1779223240677
+          modified: 1779223990202
+          isPrivate: false
+          description: ""
+          sortKey: -1779223292317
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reports/"
+        name: Register a new report
+        meta:
+          id: req_7b3fa35ffeb8425e9b9852cf3ea01c12
+          created: 1779223286283
+          modified: 1779813039452
+          isPrivate: false
+          description: |-
+            {
+              "reportedUserId": 2,
+              "targetType": "CHAT",
+              "targetId": 1,
+              "reason": "Linguagem ofensiva"
+            }
+
+            targetType = CHAT
+            targetId = ID da conversa
+
+            targetType = SPOT
+            targetId = ID da vaga
+
+            {
+              "reportedUserId": 1,
+              "targetType": "SPOT",
+              "targetId": 10,
+              "reason": "Linguagem ofensiva"
+            }
+          sortKey: -1779223292367
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: reportedUserId
+              value: "1"
+              description: ""
+              disabled: false
+            - name: targetType
+              value: CHAT
+              description: ""
+              disabled: false
+            - name: targetId
+              value: "1"
+              description: ""
+              disabled: false
+            - name: reason
+              value: Linguagem ofensiva
+              description: ""
+              disabled: false
+            - name: images
+              value: ""
+              description: ""
+              disabled: false
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+            - name: images
+              value: ""
+              description: ""
+              disabled: false
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\foto2.webp
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reports/1/reanalysis"
+        name: User requests reanalysis
+        meta:
+          id: req_3fc3bef97b744ee28bc816eb755bc791
+          created: 1779227394067
+          modified: 1779318927051
+          isPrivate: false
+          description: ""
+          sortKey: -1779223287655
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "description": "Tenho novas informações sobre a denúncia.",
+              "reason": "A vaga continua irregular."
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: reviews
+    meta:
+      id: fld_b0ee6783994849a99c0c161951dab090
+      created: 1779223175918
+      modified: 1779496196823
+      sortKey: -1779290632987.25
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/reviews"
+        name: Register a new review
+        meta:
+          id: req_6abf4c9e81b24463b705dc0900c16e26
+          created: 1779227656568
+          modified: 1779814785593
+          isPrivate: false
+          description: ""
+          sortKey: -1779231420849
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "reservationId": 2,
+              "rating": 5,
+              "comment": "Vaga segura e bem localizada."
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reviews/my"
+        name: Get all my reviews
+        meta:
+          id: req_ff56474deeb2447b92583ceaedb4fa9f
+          created: 1779231047476
+          modified: 1779496206833
+          isPrivate: false
+          description: ""
+          sortKey: -1779231420799
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reviews/properties/2"
+        name: Get all public the propertie
+        meta:
+          id: req_45d576b655364d47a72e013145212d83
+          created: 1779231074642
+          modified: 1779747779040
+          isPrivate: false
+          description: ""
+          sortKey: -1779231251218.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reviews/spots/3"
+        name: Lists public reviews for a job posting and returns the average rating
+        meta:
+          id: req_9c9b16bc846b456e8cef3bf8eadb46be
+          created: 1779231150062
+          modified: 1779747789351
+          isPrivate: false
+          description: ""
+          sortKey: -1779231150062
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reviews/1"
+        name: Update review
+        meta:
+          id: req_d1d0dc0170284001b9218d4771184def
+          created: 1779231352375
+          modified: 1779743834367
+          isPrivate: false
+          description: ""
+          sortKey: -1779231149962
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "rating": 4,
+              "comment": "Atualizando meu comentário."
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/reviews/1"
+        name: Delete review
+        meta:
+          id: req_1f1653d43afe4abaaecb3ffad4cf27ba
+          created: 1779231420749
+          modified: 1779743836188
+          isPrivate: false
+          description: ""
+          sortKey: -1779231149862
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: admin
+    meta:
+      id: fld_4caf506852324b2ab1dc52be263da6f8
+      created: 1779223226314
+      modified: 1779494029267
+      sortKey: -1773746747764.5
+      description: ""
+    children:
+      - name: users
+        meta:
+          id: fld_d8d5608ca76e41af8607306ff4a3675a
+          created: 1779494045200
+          modified: 1779743053808
+          sortKey: -1779494045400
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/users/admin/search?email=9@email.com"
+            name: "Search users using filters "
+            meta:
+              id: req_f3caa29b93434a5b92d1b9b6640d03c0
+              created: 1773252262532
+              modified: 1779807992298
+              isPrivate: false
+              description: |
+                ## Busca de Usuários (Admin Only)
+
+                ### Exemplo 1: Buscar usuário por email
+                ```bash
+                GET /users/search?email=user@test.com
+                Authorization: Bearer {token}
+                X-Role: MANAGER or ADMIN
+                ```
+
+                ### Exemplo 2: Buscar usuário por nome
+                ```bash
+                GET /users/search?name=João
+                Authorization: Bearer {token}
+                X-Role: MANAGER or ADMIN
+                ```
+
+                ### Exemplo 3: Buscar usuário por telefone
+                ```bash
+                GET /users/search?phone=11912345678
+                Authorization: Bearer {token}
+                X-Role: MANAGER or ADMIN
+                ```
+              sortKey: -1779494047780
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/users/blocked/count"
+            name: Returns the total number of blocked users
+            meta:
+              id: req_bdb761a568c2474b9bc3a94bdf1d738f
+              created: 1779736513228
+              modified: 1779741547792
+              isPrivate: false
+              description: ""
+              sortKey: -1779489506733.5
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/users/1/block"
+            name: Blocks or unblocks a user account
+            meta:
+              id: req_b2189ddfbf784b67a1455343f2df41b6
+              created: 1779736736430
+              modified: 1779808735883
+              isPrivate: false
+              description: ""
+              sortKey: -1779486100948.625
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                { 
+                	"blocked": false
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/users/2"
+            name: Updates user information by admin
+            meta:
+              id: req_6164907d20044ce9a263275781dc35fa
+              created: 1779736895762
+              modified: 1779741553008
+              isPrivate: false
+              description: ""
+              sortKey: -1779486100848.625
+            method: PUT
+            body:
+              mimeType: multipart/form-data
+              params:
+                - name: name
+                  value: Pedro Sousa
+                - name: phone
+                  value: "11999999999"
+                  description: ""
+                  disabled: false
+                - name: avatarUrl
+                  value: ""
+                  description: ""
+                  disabled: false
+                  multiline: true
+                  fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                    2\Vaggo\backend\foto2.webp
+                  type: file
+            headers:
+              - name: Content-Type
+                value: multipart/form-data
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/users/1"
+            name: Delete user account
+            meta:
+              id: req_91be962c6a124aefb9e9926a3bddacc4
+              created: 1779737657895
+              modified: 1779737669446
+              isPrivate: false
+              description: ""
+              sortKey: -1779486100748.625
+            method: DELETE
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/users"
+            name: Returns all registered users
+            meta:
+              id: req_4815bfda8922497ca670a5cff0b19c20
+              created: 1779743059790
+              modified: 1779743059790
+              isPrivate: false
+              description: ""
+              sortKey: -1779491777256.75
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: vehicles
+        meta:
+          id: fld_f5eebc8c41464925a3b2c2d3873e4309
+          created: 1779494570235
+          modified: 1779495032412
+          sortKey: -1779494045375
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/admin/vehicles/search??licensePlate=BBA"
+            name: Search vehicles
+            meta:
+              id: req_469d789485424d9fa34387a7a46e5d94
+              created: 1774573792761
+              modified: 1779809440778
+              isPrivate: false
+              description: ""
+              sortKey: -1779494584508
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/vehicles/1"
+            name: Returns vehicle details by ID
+            meta:
+              id: req_8b51776659264e96b1235e1eec5d526c
+              created: 1779737736691
+              modified: 1779741557833
+              isPrivate: false
+              description: ""
+              sortKey: -1779494584408
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/vehicles/1"
+            name: Updates vehicle information
+            meta:
+              id: req_19aa330aa88445ee9f8566a22ec0d588
+              created: 1779737878393
+              modified: 1779741561929
+              isPrivate: false
+              description: ""
+              sortKey: -1779494584308
+            method: PUT
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/vehicles/1"
+            name: Deletes a vehicle
+            meta:
+              id: req_c31d071a800946f6a131eed91795cf23
+              created: 1779737921928
+              modified: 1779741564164
+              isPrivate: false
+              description: ""
+              sortKey: -1779494584208
+            method: DELETE
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/vehicles"
+            name: Returns all registered vehicles
+            meta:
+              id: req_0aef9d7746764a03810a3cc3b22c0189
+              created: 1779749794763
+              modified: 1779749794763
+              isPrivate: false
+              description: ""
+              sortKey: -1779494584458
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.4.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: properties
+        meta:
+          id: fld_03f4341425a04b7bb024c56f155122f5
+          created: 1779495027587
+          modified: 1779495335837
+          sortKey: -1779494045368.75
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/admin/properties/search?ownerName=teste"
+            name: Search properties using filters
+            meta:
+              id: req_62cdb96477c54658a963844f078a8ea6
+              created: 1775254039209
+              modified: 1779811434311
+              isPrivate: false
+              description: |-
+                ?id=5 (ID da propriedade)
+                ?name=Edificio (Nome da propriedade parcial)
+                ?email=joao (E-mail do dono parcial)
+                ?ownerName=Silva (Nome do dono parcial)
+              sortKey: -1779495217195
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/properties/1"
+            name: Deletes a property
+            meta:
+              id: req_1b176dd1ea764efa8dd701b03eee21d8
+              created: 1779738196877
+              modified: 1779741575598
+              isPrivate: false
+              description: ""
+              sortKey: -1779494979937.375
+            method: DELETE
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/properties/1"
+            name: Returns property details by ID
+            meta:
+              id: req_509db32f02a84f1a9a5b9694ea9a15cb
+              created: 1779738199615
+              modified: 1779741571565
+              isPrivate: false
+              description: ""
+              sortKey: -1779495138109.125
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/properties/1"
+            name: Updates property information
+            meta:
+              id: req_23ad361ef13d41219d63dfcdfb819f6d
+              created: 1779738277571
+              modified: 1779811470106
+              isPrivate: false
+              description: ""
+              sortKey: -1779495098566.1875
+            method: PUT
+            body:
+              mimeType: multipart/form-data
+              params:
+                - name: name
+                  value: "A casa 23 "
+                  description: ""
+                  disabled: false
+                - name: type
+                  value: Comercial
+                  description: ""
+                  disabled: false
+                - name: description
+                  value: teste
+                  description: ""
+                  disabled: false
+                - name: totalCapacity
+                  value: "10"
+                  description: ""
+                  disabled: false
+                - name: zipCode
+                  value: "08050150"
+                  description: ""
+                  disabled: false
+                - name: number
+                  value: "48"
+                  description: ""
+                  disabled: false
+                - name: complement
+                  value: Casa N
+                  description: ""
+                  disabled: false
+                - name: street
+                  value: Rua das Flores
+                  description: ""
+                  disabled: false
+                - name: neighborhood
+                  value: Centro
+                  description: ""
+                  disabled: false
+                - name: imagesToRemove
+                  value: '["https://res.cloudinary.com/dabf2vbrl/image/upload/v1779808771/vaggo/users/user_1/properties/property_1_img_0_1779808772797.jpg"]'
+                  description: ""
+                  disabled: false
+                  multiline: false
+                  fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                    2\Vaggo\backend\perfil.jpg
+                  type: text
+                - name: files
+                  value: ""
+                  description: ""
+                  disabled: false
+                  fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                    2\Vaggo\backend\perfil.jpg
+                  type: file
+            headers:
+              - name: Content-Type
+                value: multipart/form-data
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/properties"
+            name: Returns all registered properties
+            meta:
+              id: req_31c5291c061d480c848279bd965db20b
+              created: 1779744787224
+              modified: 1779810861299
+              isPrivate: false
+              description: ""
+              sortKey: -1779495177652.0625
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: spots
+        meta:
+          id: fld_3556e93b2eb643379127e72f429d483a
+          created: 1779495327273
+          modified: 1779741346042
+          sortKey: -1779494045368.6523
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/admin/spots/2/evaluate"
+            name: Approves or rejects a parking spot
+            meta:
+              id: req_b7de9021d8d04051a77ec7d02afc188c
+              created: 1775256933841
+              modified: 1779811235044
+              isPrivate: false
+              description: |-
+                {
+                  "status": "RECUSADA",
+                  "rejectionReason": "Informações incompletas"
+                }
+              sortKey: -1779725767777.3125
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                   "status": "APROVADA"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/spots/2/evaluate"
+            name: Activates or deactivates a parking spot
+            meta:
+              id: req_7d594b9acfd04186ba8da7ebffed7493
+              created: 1779739102803
+              modified: 1779810873766
+              isPrivate: false
+              description: ""
+              sortKey: -1779711166806.125
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "isActive": false
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/spots/1"
+            name: Deletes a parking spot
+            meta:
+              id: req_fee10e22051b4d468ea18434f5506c1a
+              created: 1779739193153
+              modified: 1779746472164
+              isPrivate: false
+              description: ""
+              sortKey: -1779495249040.5
+            method: DELETE
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/spots/search?id=1"
+            name: Search get spots
+            meta:
+              id: req_eebed672192b424688da3e799e9bbfcb
+              created: 1779744171626
+              modified: 1779818216920
+              isPrivate: false
+              description: |-
+                ?id=25
+                ?status=PENDENTE, RECUSADA, APROVADA
+              sortKey: -1779744171626
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/spots"
+            name: Returns all registered properties
+            meta:
+              id: req_418b8d4e1ba741a192a08abb7ec7aa6f
+              created: 1779810833731
+              modified: 1779815964583
+              isPrivate: false
+              description: ""
+              sortKey: -1779740368748.5
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: reservations
+        meta:
+          id: fld_ecd41fc78abb484fb89096d5e0d02fe9
+          created: 1779495570124
+          modified: 1779741344433
+          sortKey: -1779494045368.5547
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/reservations/1"
+            name: Delete resevation
+            meta:
+              id: req_fa4990d818834715a181ef73425d9ab9
+              created: 1779495649127
+              modified: 1779495740821
+              isPrivate: false
+              description: ""
+              sortKey: -1779495649127
+            method: DELETE
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reservations"
+            name: Returns all reservations
+            meta:
+              id: req_0bea0f9b31834c10ba9c0ea0feb8dd17
+              created: 1779739453937
+              modified: 1779812656759
+              isPrivate: false
+              description: ""
+              sortKey: -1779495649177
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reservations/1"
+            name: Returns reservation details by ID
+            meta:
+              id: req_7a835927916544a9b6ba91d219ca3c48
+              created: 1779739915925
+              modified: 1779739998927
+              isPrivate: false
+              description: ""
+              sortKey: -1779495649152
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reservations/1/force-cancel"
+            name: Force cancels a reservation
+            meta:
+              id: req_cb84fd696e2c447a8ca10a2ad41a20b1
+              created: 1779739949028
+              modified: 1779740000639
+              isPrivate: false
+              description: ""
+              sortKey: -1779495649139.5
+            method: PATCH
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reservations/search?status=APROVADA"
+            name: Search reservations
+            meta:
+              id: req_e8847d87b8e84926b6ec8032e2cdf596
+              created: 1779812611832
+              modified: 1779814611916
+              isPrivate: false
+              description: |
+                ?id=2
+                ?email=9@email.com
+                ?status
+              sortKey: -1779495649277
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: reports
+        meta:
+          id: fld_5c410f688e4a4d83a2c77cedd2b18475
+          created: 1779496041760
+          modified: 1779740606101
+          sortKey: -1779494045368.164
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/admin/reports/1/status"
+            name: Updates the report status
+            meta:
+              id: req_2603570b9c7f42eca297b8b2758bce84
+              created: 1779223287755
+              modified: 1779741526167
+              isPrivate: false
+              description: '"PENDENTE, EM_ANALISE, RESOLVIDA, RECUSADA, REANALISE"'
+              sortKey: -1779496064553
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "status": "RESOLVIDA", 
+                  "adminNote": "Denúncia confirmada após análise.",
+                  "suspendSpot": true
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reports/1"
+            name: Returns report details by ID
+            meta:
+              id: req_287abd4831cd47beb9a17b0cdc667bc5
+              created: 1779223289556
+              modified: 1779748609446
+              isPrivate: false
+              description: ""
+              sortKey: -1779496064603
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reports"
+            name: Returns all user reports
+            meta:
+              id: req_f4d1215879f1482d8c9190fd1b9991bb
+              created: 1779743678048
+              modified: 1779743699896
+              isPrivate: false
+              description: ""
+              sortKey: -1779496064678
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reports/search?email=9@email.com"
+            name: Search reports
+            meta:
+              id: req_4178f7e9a86e457aa68d43741b59af04
+              created: 1779813178511
+              modified: 1779814002753
+              isPrivate: false
+              description: |-
+                ?id=1
+                ?email=9@email.com
+              sortKey: -1779496064778
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.5.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: reviews
+        meta:
+          id: fld_6ba646565d9843a49ff37af5b809252a
+          created: 1779496316125
+          modified: 1779815191979
+          sortKey: -1779494045367.871
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/admin/reviews"
+            name: Get all reviews
+            meta:
+              id: req_5e667675812e41d5b069380d43e273d3
+              created: 1779496331383
+              modified: 1779743649406
+              isPrivate: false
+              description: ""
+              sortKey: -1779496331383
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reviews/1"
+            name: Deletes a review
+            meta:
+              id: req_aec2970faea74b7485c4a05f9bb3f0e6
+              created: 1779741485491
+              modified: 1779741520934
+              isPrivate: false
+              description: ""
+              sortKey: -1779496198018
+            method: DELETE
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.base_url }}/admin/reviews/search?email=9@email.com"
+            name: Get reviews with advanced filters
+            meta:
+              id: req_465f4d3293a44218830d336f29f8af56
+              created: 1779743634403
+              modified: 1779814925147
+              isPrivate: false
+              description: |-
+                ?id=1
+                ?email=9@email.com
+              sortKey: -1779496331483
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: dashboard
+        meta:
+          id: fld_d517bc2f27734493a2286192a1fff3c6
+          created: 1779736564004
+          modified: 1779736564004
+          sortKey: -1779736564004
+          description: ""
+        children:
+          - url: "{{ _.base_url }}/admin/dashboard/stats"
+            name: Returns dashboard statistics and platform metrics
+            meta:
+              id: req_5c02a4d353e94159a8b4b0ca23d635bd
+              created: 1779736565871
+              modified: 1779741539459
+              isPrivate: false
+              description: ""
+              sortKey: -1779736565871
+            method: GET
+            headers:
+              - name: User-Agent
+                value: insomnia/12.6.0
+                description: ""
+                disabled: false
+            authentication:
+              type: bearer
+              token: "{{ _.bearer_token }}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+  - name: auth
+    meta:
+      id: fld_2b66b74471af45f2aa02fad71251b28d
+      created: 1779300689374
+      modified: 1779818167281
+      sortKey: -1773870785803.875
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/auth/login"
+        name: User login and authentication
+        meta:
+          id: req_e774fe6864ff4a67ae6fa9dd16ef9bbc
+          created: 1773250787237
+          modified: 1779814775838
+          isPrivate: false
+          description: ""
+          sortKey: -1779484965687
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"email": "guilherme9@email.com",
+            	"password": "12345678A!"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.4.0
+            description: ""
+            disabled: false
+        authentication:
+          type: none
+        scripts:
+          afterResponse: >-
+            const jsonBody = insomnia.response.json();
+
+
+            if (jsonBody?.data?.accessToken) {
+              insomnia.baseEnvironment.set('bearer_token', jsonBody.data.accessToken);
+              insomnia.baseEnvironment.set('userId', jsonBody.data.user.id);
+            }
+
+
+            const setCookie = insomnia.response.headers.get('set-cookie');
+
+
+            if (setCookie) {
+              const match = setCookie.match(/refreshToken=([^;]+)/);
+
+              if (match?.[1]) {
+                insomnia.baseEnvironment.set('refresh_token', match[1]);
+              }
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/refresh"
+        name: Refresh Access Token
+        meta:
+          id: req_0f7545f776a94109a4f98152c6a72059
+          created: 1779300666858
+          modified: 1779747961957
+          isPrivate: false
+          description: ""
+          sortKey: -1779300720197
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+          - name: Authorization
+            value: Bearer {{ bearer_token }}
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          disabled: true
+          token: "{{ _.bearer_token }}"
+        scripts:
+          afterResponse: >-
+            const jsonBody = insomnia.response.json();
+
+
+            if (jsonBody?.data?.accessToken) {
+              insomnia.baseEnvironment.set('bearer_token', jsonBody.data.accessToken);
+            } else {
+              console.log('Resposta inesperada:', jsonBody);
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/logout"
+        name: Logout User
+        meta:
+          id: req_65818f848331459da669b684225906ca
+          created: 1779300764755
+          modified: 1779308514342
+          isPrivate: false
+          description: ""
+          sortKey: -1779300764755
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{{ _.bearer_token }}"
+        scripts:
+          afterResponse: >-
+            if (insomnia.response.statusCode >= 200 &&
+            insomnia.response.statusCode < 300) {
+              insomnia.baseEnvironment.unset('bearer_token');
+              insomnia.baseEnvironment.unset('userId');
+              insomnia.baseEnvironment.unset('refresh_token');
+            }
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/register/confirm"
+        name: Confirm Code
+        meta:
+          id: req_db9bac89b0224f3e8dea7895e8baf922
+          created: 1779478673667
+          modified: 1779807380553
+          isPrivate: false
+          description: ""
+          sortKey: -1779478673667
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "email": "guilherme9@email.com",
+              "code": "935009"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/register/resend"
+        name: Resend Code
+        meta:
+          id: req_1f2a2883c8874ce6a0b7f5bac61b5e52
+          created: 1779480581630
+          modified: 1779485094582
+          isPrivate: false
+          description: ""
+          sortKey: -1779480581630
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "identifier": "5511912494624"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/forgot-password/confirm"
+        name: Confirm Code Forgot Passoword
+        meta:
+          id: req_69775f2efda745cd8e126a94980118f2
+          created: 1779481133993
+          modified: 1779485041272
+          isPrivate: false
+          description: ""
+          sortKey: -1779482911699.25
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "code": "444498"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/forgot-password"
+        name: Forgot Password
+        meta:
+          id: req_4a547b789e5a4cc3b85c898550693f29
+          created: 1779482173977
+          modified: 1779484887614
+          isPrivate: false
+          description: ""
+          sortKey: -1779480857811.5
+        method: POST
+        body:
+          mimeType: application/json
+          text: |
+            { 
+            	"identifier": "guilherme9@email.com"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/auth/forgot-password/reset"
+        name: Reset Forgot Password
+        meta:
+          id: req_ea046e42752e41668975a4eb19ff49f9
+          created: 1779484965587
+          modified: 1779485050811
+          isPrivate: false
+          description: ""
+          sortKey: -1779484965587
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+            	"resetToken": "20ed006d01617a0bdbb456e8684008c4ec51cf36fb8c417a553ee9861690c74e",
+              "newPassword": "NovaSenha@123",
+              "confirmPassword": "NovaSenha@123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.6.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: chats
+    meta:
+      id: fld_3c25835b395b4152bf5e0bbd2e1c00fd
+      created: 1779313118677
+      modified: 1779313118677
+      sortKey: -1779313118677
+      description: ""
+    children:
+      - url: "{{ _.base_url }}/chats"
+        name: Get all user conversations with last message and participant details
+        meta:
+          id: req_35add18c63874f70ac6955197c857118
+          created: 1779313132153
+          modified: 1779818410546
+          isPrivate: false
+          description: >-
+            Lista todas as conversas do usuário logado.
+
+            Serve para montar a tela de lista de chats, com última mensagem,
+            dados do outro participante, avatar, nome, lastOnline e subtítulo.
+
+
+            Lista as conversas do usuário logado.
+
+            Use na tela inicial de chats.
+          sortKey: -1779313133964
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/1?page=1&limit=30"
+        name: Get conversation details and paginated messages
+        meta:
+          id: req_32484579d68a4945b0cbf877b260ce95
+          created: 1779313195281
+          modified: 1779818417022
+          isPrivate: false
+          description: >-
+            Retorna os detalhes de uma conversa específica.
+
+            Serve para abrir a tela do chat com dados da conversa, usuários
+            participantes e histórico de mensagens paginado.
+
+
+            Abre uma conversa específica.
+
+            Ela já retorna:
+          sortKey: -1779306949359.5
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/1/messages"
+        name: Send text and/or image message
+        meta:
+          id: req_d00a27b276d14788856a962827642314
+          created: 1779313305935
+          modified: 1779818420492
+          isPrivate: false
+          description: |+
+            Envia uma nova mensagem.
+            Serve para mandar texto, imagem ou texto + imagem no chat.
+
+            Envia mensagem com texto, imagem ou os dois.
+            Tipo: multipart/form-data.
+
+          sortKey: -1779303857057.25
+        method: POST
+        body:
+          mimeType: multipart/form-data
+          params:
+            - name: content
+              value: Teste 4
+              description: ""
+              disabled: false
+            - name: image
+              value: ""
+              description: ""
+              disabled: true
+              fileName: C:\Users\Guilherme\Desktop\Henrique\FATEC\Semestre
+                2\Vaggo\backend\perfil.jpg
+              type: file
+        headers:
+          - name: Content-Type
+            value: multipart/form-data
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/messages/1"
+        name: Edit user's own message
+        meta:
+          id: req_08f9fa7dad78452588089eabb52abfe1
+          created: 1779315044057
+          modified: 1779818423528
+          isPrivate: false
+          description: >-
+            Edita uma mensagem existente.
+
+            Serve para alterar o texto de uma mensagem enviada pelo próprio
+            usuário. Marca isEdited como true.
+
+
+            Edita uma mensagem do próprio usuário.
+          sortKey: -1779302310906.125
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "content": "Mensagem editada"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/messages/5"
+        name: Soft delete message for both users
+        meta:
+          id: req_3c4b3ffb6a12475586956975a607bf41
+          created: 1779315567358
+          modified: 1779818427004
+          isPrivate: false
+          description: >-
+            Apaga uma mensagem com soft delete.
+
+            Serve para marcar a mensagem como apagada, limpar o conteúdo e
+            exibir no front como "Mensagem apagada".
+
+
+            Apaga uma mensagem para ambos dentro do chat.
+
+            Faz soft delete: isDeleted: true, content: null, imageUrl: null.
+          sortKey: -1779301537830.5625
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/delete-multiple"
+        name: Hide conversations for logged user only
+        meta:
+          id: req_cf7f0e26eeb54ed2ae1cd532f53dcfbf
+          created: 1779315836109
+          modified: 1779818481324
+          isPrivate: false
+          description: >-
+            Remove várias conversas da caixa do usuário logado.
+
+            Não apaga a conversa para o outro usuário; apenas adiciona o usuário
+            atual no campo deletedBy.
+
+
+            Oculta conversas só para o usuário logado.
+
+            Não apaga para o outro participante.
+          sortKey: -1779301537730.5625
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "conversationIds": [1]
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/1/for-everyone"
+        name: Hide conversation for both participants
+        meta:
+          id: req_02ce5291f1b0414a9a50b1104a19fc1a
+          created: 1779317422348
+          modified: 1779818499673
+          isPrivate: false
+          description: >-
+            Oculta a conversa para os dois participantes.
+
+            Preserva o histórico no banco, mas remove da lista de ambos via
+            deletedBy.
+          sortKey: -1779301151242.7812
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/1/search?q=teste&page=1&limit=20"
+        name: Search messages inside conversation
+        meta:
+          id: req_284f181a7f58400fa76cb6dfc2303b72
+          created: 1779318171700
+          modified: 1779818506747
+          isPrivate: false
+          description: Busca mensagens dentro da conversa.
+          sortKey: -1779301151142.7812
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/block"
+        name: Block user
+        meta:
+          id: req_8f593d2e7ff6413684f975a70be3b553
+          created: 1779318218985
+          modified: 1779818513999
+          isPrivate: false
+          description: Bloqueia usuário.
+          sortKey: -1779301151042.7812
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "blockedUserId": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.base_url }}/chats/block/1"
+        name: conversation for both participants
+        meta:
+          id: req_651cc8590aa14922a3fb85770f3aa0d3
+          created: 1779319245046
+          modified: 1779818438531
+          isPrivate: false
+          description: Desbloqueia usuário.
+          sortKey: -1779300957898.8906
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        authentication:
+          type: bearer
+          token: "{{ _.bearer_token }}"
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_6c3ab309d86734af40c756073f80b978963e3204
+    created: 1773183195670
+    modified: 1779818167278
+  cookies:
+    - id: cbc56d42-2f32-4ce7-b978-edd004b9373c
+      key: refreshToken
+      value: 3938e09a815714875985909b73b44902efd065f281d77139ab4e58538ff7b103
+      domain: localhost
+      path: /
+      secure: false
+      httpOnly: true
+      hostOnly: true
+    - id: c9e2c972-c02c-4a28-b81c-aadad0e8864a
+      key: refreshToken
+      value: e31b74f65e057f84c908d3ce8617d662867228b3541a26046f5988b0ca2cebd7
+      domain: localhost
+      path: /
+      secure: false
+      httpOnly: true
+      hostOnly: true
+environments:
+  name: Base Environment
+  meta:
+    id: env_6c3ab309d86734af40c756073f80b978963e3204
+    created: 1773183195669
+    modified: 1779818167280
+    isPrivate: false
+  data:
+    base_url: http://localhost:3000
+    bearer_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzc5ODE4MTY3LCJleHAiOjE3Nzk4MTg3Njd9.E3uFJrv0alLnrFDcoDQurgxcqf4E3uGw3oioJnRBN0Q
+    userId: 2
+spec:
+  contents:
+    openapi: 3.0.0
+    info:
+      title: Veggo Parking System API
+      version: 1.0.0
+      description: >
+        API for Vaggo Parking System based on provided requirements and business
+        rules.
+
+        This system manages user registration, vehicle registration, parking
+        spot and establishment management,
+
+        reservation workflows, chat, reports, and evaluations.
+      contact:
+        name: Veggo
+        email: veggo@gmail.com
+    servers:
+      - url: http://localhost:3000
+        description: Live
+    paths:
+      /:
+        get:
+          summary: Base endpoint
+          description: API base route
+          responses:
+            "200":
+              description: API is running
+  meta:
+    id: spc_98ea52111e244c698343db64992cbd0e
+    created: 1773250860783
+    modified: 1779484503471
+testSuites:
+  - name: New Suite
+    meta:
+      id: uts_6b3d23de83af4611a0c73a0a97e64deb
+      created: 1778017438778
+      modified: 1778017438778
+      sortKey: -1778017438778
