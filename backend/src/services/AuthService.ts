@@ -7,6 +7,7 @@ import Person from '../models/Person';
 import { TokenUtils } from '../utils/tokenUtils';
 import TwilioWhatsAppService from './TwilioWhatsAppService';
 import { UserService } from './UserService';
+import { normalizeRole } from '../types/Roles';
 
 const SALT_ROUNDS = 10;
 const OTP_TTL_SECONDS = 10 * 60;
@@ -25,7 +26,8 @@ export class AuthService {
 
         await user.update({ lastLogin: new Date() });
 
-        const accessToken = TokenUtils.generateAccessToken(user.id);
+        const role = normalizeRole(user.permissionLevel);
+        const accessToken = TokenUtils.generateAccessToken(user.id, role);
         const refreshToken = TokenUtils.generateRefreshToken();
         const refreshTokenHash = await TokenUtils.hashRefreshToken(refreshToken);
         const refreshTokenExpiresAt = TokenUtils.getRefreshTokenExpiresAt();
@@ -70,7 +72,8 @@ export class AuthService {
         const isValidToken = await TokenUtils.verifyRefreshTokenHash(refreshToken, user.refreshTokenHash);
         if (!isValidToken) throw new Error('INVALID_REFRESH_TOKEN');
 
-        const newAccessToken = TokenUtils.generateAccessToken(user.id);
+        const role = normalizeRole(user.permissionLevel);
+        const newAccessToken = TokenUtils.generateAccessToken(user.id, role);
 
         return {
             accessToken: newAccessToken,

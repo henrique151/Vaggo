@@ -102,6 +102,48 @@ class TwilioWhatsAppService {
         }
     }
 
+    async sendRentalRejectedAlert(
+        to: string,
+        tenantName: string,
+        spotName: string,
+        ownerName: string
+    ): Promise<TwilioWhatsAppMessageResult> {
+        try {
+            return await this.sendTemplateMessage(
+                to,
+                this.getRequiredEnv('TWILIO_TEMPLATE_RENTAL_REJECTED'),
+                {
+                    '1': tenantName,
+                    '2': spotName,
+                    '3': ownerName,
+                }
+            );
+        } catch (error) {
+            this.logTwilioError(error);
+            throw error;
+        }
+    }
+
+    async sendSpotApprovedAlert(
+        to: string,
+        ownerName: string,
+        spotName: string
+    ): Promise<TwilioWhatsAppMessageResult> {
+        try {
+            return await this.sendTemplateMessage(
+                to,
+                this.getRequiredEnv('TWILIO_TEMPLATE_SPOT_APPROVED'),
+                {
+                    '1': ownerName,
+                    '2': spotName,
+                }
+            );
+        } catch (error) {
+            this.logTwilioError(error);
+            throw error;
+        }
+    }
+
     dispatchInBackground(sendNotification: () => Promise<TwilioWhatsAppMessageResult>): void {
         setImmediate(() => {
             void sendNotification().catch((error) => this.logTwilioError(error));

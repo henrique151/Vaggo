@@ -34,5 +34,14 @@ export const updateReviewSchema = z.object({
     message: 'Informe nota ou comentario para atualizar'
 });
 
+export const getReviewsFilterSchema = z.object({
+    propertyId: z.preprocess(parseNumberInput, z.number().int().positive().optional()),
+    spotId: z.preprocess(parseNumberInput, z.number().int().positive().optional()),
+    reviewerId: z.preprocess(parseNumberInput, z.number().int().positive().optional()),
+    minRating: z.preprocess(parseNumberInput, z.number().int().min(1).max(5).optional()),
+    maxRating: z.preprocess(parseNumberInput, z.number().int().min(1).max(5).optional())
+}).strict();
+
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
 export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
+export type GetReviewsFilterInput = z.infer<typeof getReviewsFilterSchema>;

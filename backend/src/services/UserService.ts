@@ -4,9 +4,13 @@ import sequelize from '../database';
 import User from '../models/User';
 import Person from '../models/Person';
 import Vehicle from '../models/Vehicle';
-import { CreateUserInput, UpdateUserInput } from '../schemas/usersSchema';
+import PropertyUser from '../models/PropertyUser';
+import Spot from '../models/Spot';
+import { CreateUserInput, UpdateUserInput, SearchUsersInput } from '../schemas/usersSchema';
 import { FileData, ImageService } from './ImageService';
 import TwilioWhatsAppService from './TwilioWhatsAppService';
+import { Roles } from '../types/Roles';
+import { Op } from 'sequelize';
 
 const SALT_ROUNDS = 10;
 const REGISTRATION_OTP_TTL_SECONDS = 10 * 60;
@@ -135,7 +139,6 @@ export class UserService {
                     personId: person.id,
                     lastLogin: new Date(),
                     isBlocked: false,
-                    isAdmin: false,
                     permissionLevel: pendingRegistration.permissionLevel,
                     avatarUrl: 'pending',
                 },
@@ -180,6 +183,18 @@ export class UserService {
         });
         if (!user) throw new Error('USER_NOT_FOUND');
         return user;
+    }
+
+    static async toggleBlockUser(id: number, blocked: boolean) {
+        const user = await User.findByPk(id);
+        if (!user) throw new Error('USER_NOT_FOUND');
+
+        await user.update({ isBlocked: blocked });
+        return this.getUserById(id);
+    }
+
+    static async getBlockedUsersCount() {
+        return User.count({ where: { isBlocked: true } });
     }
 
     static async updateAccount(id: number, updateData: UpdateUserInput, fileData: { buffer: Buffer; mimetype: string }) {
@@ -308,5 +323,26 @@ export class UserService {
         }
 
         return Array.from(candidates);
+    }
+
+    static async searchUsers(filters: SearchUsersInput) {
+        const where: any = {};
+        const personWhere: any = {};
+
+        if (filters.email) where.email = { [Op.iLike]: `%${filters.email}%` };
+        if (filters.name) personWhere.name = { [Op.iLike]: `%${filters.name}%` };
+        if (filters.phone) personWhere.phone = { [Op.iLike]: `%${filters.phone}%` };
+
+        return User.findAll({
+            where,
+            include: [
+                {
+                    model: Person,
+                    as: 'person',
+                    where: Object.keys(personWhere).length > 0 ? personWhere : undefined
+                }
+            ],
+            order: [['email', 'ASC']]
+        });
     }
 }

@@ -17,6 +17,11 @@ export const reportTargetTypeSchema = z.enum(['CHAT', 'SPOT'], {
     error: 'Tipo de alvo da denuncia invalido'
 });
 
+export const listReportsFilterSchema = z.object({
+    status: reportStatusSchema.optional(),
+    targetType: reportTargetTypeSchema.optional()
+}).strict();
+
 const parseTargetTypeInput = (value: unknown) => {
     if (typeof value !== 'string') {
         return value;
@@ -53,3 +58,4 @@ export type CreateReportInput = z.infer<typeof createReportSchema>;
 export type UpdateReportStatusInput = z.infer<typeof updateReportStatusSchema>;
 export type RequestReportReanalysisInput = z.infer<typeof requestReportReanalysisSchema>;
 export type ReportStatusInput = z.infer<typeof reportStatusSchema>;
+export type ListReportsFilterInput = z.infer<typeof listReportsFilterSchema>;

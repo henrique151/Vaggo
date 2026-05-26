@@ -45,6 +45,12 @@ const setupAssociantos = () => {
         as: 'residentsAndOwners'
     });
 
+    PropertyUser.belongsTo(Property, { foreignKey: 'PRO_INT_ID', as: 'property' });
+    Property.hasMany(PropertyUser, { foreignKey: 'PRO_INT_ID', as: 'propertyUsers' });
+
+    PropertyUser.belongsTo(User, { foreignKey: 'USU_INT_ID', as: 'user' });
+    User.hasMany(PropertyUser, { foreignKey: 'USU_INT_ID', as: 'propertyUsers' });
+
     // 5. Property and Spot (1:N)
     Property.hasMany(Spot, { foreignKey: 'PRO_INT_ID', as: 'spots' });
     Spot.belongsTo(Property, { foreignKey: 'PRO_INT_ID', as: 'property' });

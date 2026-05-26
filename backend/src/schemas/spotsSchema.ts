@@ -290,3 +290,11 @@ export type SpotAvailabilityPatchInput = z.infer<typeof spotAvailabilityPatchObj
 export type GenerateSpotsInput = z.infer<typeof generateSpotsSchema>;
 export type UpdateSpotInput = z.infer<typeof updateSpotSchema>;
 export type UpadateSpotInput = UpdateSpotInput;
+
+export const getAdminSpotsSchema = z.object({
+    status: z.enum(['pending', 'available'], {
+        error: 'Status invalido. Use: pending ou available'
+    }).optional()
+}).strict();
+
+export type GetAdminSpotsInput = z.infer<typeof getAdminSpotsSchema>;
