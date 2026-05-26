@@ -19,6 +19,8 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { globalLimiter } from "./middlewares/rateLimiter";
 import { initSocket } from "./utils/socket";
+import swaggerUi from "swagger-ui-express";
+import { swaggerDocument } from "./config/swagger";
 
 setupAssociantos();
 
@@ -26,7 +28,7 @@ const app = express();
 const server = http.createServer(app);
 initSocket(server);
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
@@ -46,6 +48,11 @@ app.use('/reports', reportsRoutes);
 app.use('/reviews', reviewsRoutes);
 app.use('/chats', chatsRoutes);
 app.use('/admin', adminRoutes);
+
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+    customSiteTitle: "Veggo API - Documentation",
+}));
 
 app.use(errorHandler);
 

@@ -1,5 +1,11 @@
 # 🚀 Vaggo (Plataforma de compartilhamento de vagas de estacionamento) - Backend
 
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-5.2-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Render](https://img.shields.io/badge/Deploy-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
+[![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](#licença)
+
 > Este diretório contém o core do projeto Vaggo (Plataforma de Compartilhamento de Vagas). Trata-se de uma API REST desenvolvida para o gerenciamento completo de estacionamentos, vagas, reservas, chats em tempo real e administração da plataforma. O projeto foi construído com foco em segurança, escalabilidade e alta performance, utilizando as melhores práticas de desenvolvimento em Node.js.
 
 ---
@@ -12,10 +18,14 @@
 - [Arquitetura](#arquitetura)
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação e Execução](#instalação-e-execução)
+- [Scripts](#scripts)
+- [Testes Automatizados](#testes-automatizados)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Swagger](#swagger)
 - [Rotas da API](#rotas-da-api)
 - [Autenticação](#autenticação)
 - [Estrutura de Pastas](#estrutura-de-pastas)
+- [Licença](#licença)
 - [Contribuindo](#contribuindo)
 
 ---
@@ -40,6 +50,7 @@ O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que
 | ---------------------------- | ---------------------------------------------- |
 | **Node.js** + **TypeScript** | Runtime e linguagem principal                  |
 | **Express**                  | Framework HTTP                                 |
+| **Socket.io**                | WebSockets para chat e eventos em tempo real   |
 | **Sequelize**                | ORM para banco de dados relacional             |
 | **PostgreSQL**               | Banco de dados principal                       |
 | **JWT**                      | Autenticação e autorização                     |
@@ -69,10 +80,10 @@ O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que
 | Membro                          | Responsabilidades                       |
 | ------------------------------- | --------------------------------------- |
 | **Henrique Porto de Sousa**     | Líder Backend e Desenvolvedor Backend   |
-| **DIEGO FARIA AMORIM**          | Líder Frontend e Desenvolvedor Frontend |
-| **ANTHONY PIRES DE ARAUJO**     | Desenvolvedor Full Stack                |
-| **MOISES DOS SANTOS CRUZ**      | Desenvolvedor Full Stack e QA           |
-| **GUILHERME OTAVIO DOS SANTOS** | Documentação do projeto                 |
+| **Diego Faria Amorim**          | Líder Frontend e Desenvolvedor Frontend |
+| **Anthony Pires de Araujo**     | Desenvolvedor Full Stack                |
+| **Moises dos Santos Cruz**      | Desenvolvedor Full Stack e QA           |
+| **Guilherme Otavio dos Santos** | Documentação do projeto                 |
 
 ---
 
@@ -136,13 +147,13 @@ docker-compose up -d
 ### 5. Execute as migrations
 
 ```bash
-npm run db:migrate
+npx sequelize-cli db:migrate
 ```
 
 ### 6. Execute as seeds do banco de dados
 
 ```bash
-npm run db:migrate:seed:all
+npx sequelize-cli db:seed:all
 ```
 
 ### 7. Inicie o servidor
@@ -154,6 +165,28 @@ npm run dev
 # produção
 npm run build && npm start
 ```
+
+---
+
+## Scripts
+
+| Comando | Descrição |
+| ------- | --------- |
+| `npm run dev` | Inicia o servidor em modo desenvolvimento com reload automático via `ts-node-dev`. |
+| `npm run build` | Compila o TypeScript para `dist/` e copia arquivos JavaScript necessários. |
+| `npm start` | Executa a versão compilada em `dist/server.js`. |
+| `npx sequelize-cli db:migrate` | Executa as migrations do banco de dados. |
+| `npx sequelize-cli db:seed:all` | Executa os seeders do banco de dados. |
+
+> No momento, o `package.json` não possui scripts `lint` ou `test` configurados.
+
+---
+
+## Testes Automatizados
+
+Atualmente o backend não possui uma suíte automatizada configurada no `package.json`.
+
+Para evolução do projeto, recomenda-se adicionar testes unitários e de integração com ferramentas como **Jest** e **Supertest**, cobrindo principalmente autenticação, validação Zod, reservas, permissões administrativas e upload de imagens.
 
 ---
 
@@ -202,7 +235,30 @@ TWILIO_TEMPLATE_RENTAL_REJECTED=
 TWILIO_TEMPLATE_SPOT_APPROVED=
 TWILIO_TEMPLATE_APPROVED=
 TWILIO_TEMPLATE_CHAT=
+
+# Api do Neon
+DATABASE_URL=
 ```
+
+---
+
+## Documentação e Testes da API
+
+### Swagger (Interface Gráfica)
+
+A especificação da API foi desenvolvida em formato **YAML** (OpenAPI 3.0). Para visualizar as rotas, parâmetros e testar os endpoints pelo navegador:
+
+1. Inicie o servidor localmente (`npm run dev`).
+2. Acesse a URL: `http://localhost:3000/api-docs`
+
+### Massa de Testes (Insomnia / Bruno / Postman)
+
+Disponibilizamos o arquivo de histórico de requisições da API em formato **.har** para facilitar os seus testes de integração.
+
+1. Na raiz do projeto, localize o arquivo: [`api_requests.har`](./api_requests.har)
+2. Abra o seu cliente de API favorito (**Insomnia**, **Postman** ou **Bruno**).
+3. Vá em **Importar (Import)** e selecione o arquivo `.har`.
+4. Todas as requisições de cadastro, login, rotas de administrador e proprietário serão carregadas automaticamente com os corpos (payloads) de teste prontos.
 
 ---
 
@@ -445,6 +501,14 @@ Authorization: Bearer <access_token>
 ```
 
 O **refresh token** é armazenado via `httpOnly cookie` e utilizado na rota `/auth/refresh` para renovar o access token sem necessidade de novo login.
+
+---
+
+## Licença
+
+Este projeto está licenciado sob a licença **ISC**, conforme definido no `package.json`.
+
+Copyright (c) Equipe Vaggo - FATEC Zona Leste.
 
 ---
 
