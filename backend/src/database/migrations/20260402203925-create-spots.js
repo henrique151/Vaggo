@@ -53,6 +53,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      VAG_STR_MOTIVO_REPROVACAO: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
       PRO_INT_ID: {
         type: Sequelize.INTEGER,
         allowNull: false,

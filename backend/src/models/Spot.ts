@@ -18,6 +18,7 @@ class Spot extends Model<SpotAttributes, SpotCreationAttributes> implements Spot
     public isActive!: boolean;
     public propertyId!: number;
     public imageUrl!: string;
+    public rejectionReason?: string | null;
     public property?: Property;
     public availability?: SpotAvailability;
 }
@@ -80,6 +81,11 @@ Spot.init({
         type: DataTypes.INTEGER,
         allowNull: false,
         field: 'PRO_INT_ID'
+    },
+    rejectionReason: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'VAG_STR_MOTIVO_REPROVACAO'
     }
 }, {
     sequelize,

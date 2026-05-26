@@ -64,3 +64,12 @@ export const updatePropertySchema = createPropertySchema.extend({
 }).strict();
 
 export type CreatePropertyInput = z.infer<typeof createPropertySchema>;
+
+export const searchPropertiesSchema = z.object({
+    name: z.string().trim().optional(),
+    city: z.string().trim().optional(),
+    neighborhood: z.string().trim().optional(),
+    ownerId: z.coerce.number().int().positive().optional()
+}).strict();
+
+export type SearchPropertiesInput = z.infer<typeof searchPropertiesSchema>;

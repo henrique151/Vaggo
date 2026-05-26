@@ -10,4 +10,5 @@ export interface SpotAttributes {
     isActive: boolean;
     propertyId: number;
     imageUrl: string;
+    rejectionReason?: string | null;
 }

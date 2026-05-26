@@ -10,8 +10,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public password!: string;
     public lastLogin!: Date;
     public isBlocked!: boolean;
-    public isAdmin!: boolean;
-    public permissionLevel!: '1' | '2' | '3';
+    public permissionLevel!: string;
     public avatarUrl!: string;
     public personId!: number;
     public lastOnline?: Date | null;
@@ -48,11 +47,6 @@ User.init({
         type: DataTypes.BOOLEAN,
         allowNull: false,
         field: 'USU_BOL_BLOQUEADO'
-    },
-    isAdmin: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        field: 'USU_BOL_ADMINISTRADOR'
     },
     permissionLevel: {
         type: DataTypes.ENUM('1', '2', '3'),

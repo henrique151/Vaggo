@@ -1,11 +1,12 @@
+import { Roles } from './Roles';
+
 export interface UserAttributes {
     id: number;
     email: string;
     password: string;
     lastLogin: Date;
     isBlocked: boolean;
-    isAdmin: boolean;
-    permissionLevel: '1' | '2' | '3';
+    permissionLevel: string;
     avatarUrl: string;
     personId: number;
     lastOnline?: Date | null;

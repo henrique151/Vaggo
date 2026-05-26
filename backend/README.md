@@ -1,233 +1,463 @@
-# 🚀 Vaggo - Backend
+# 🚀 Vaggo (Plataforma de compartilhamento de vagas de estacionamento) - Backend
 
-Este diretório contém o core do projeto Vaggo, uma API RESTful desenvolvida com foco em segurança, escalabilidade e performance, utilizando as melhores práticas de desenvolvimento Node.js.
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Runtime & Framework**: Node.js & Express.js
-- **Linguagem**: TypeScript
-- **Banco de Dados**: PostgreSQL & Supabase
-- **ORM**: Sequelize (com suporte a Migrations)
-- **Segurança**: Bcrypt (Hash) & JWT (Autenticação)
-- **Validação**: Zod
-- **Observabilidade**: Winston (Logging)
-- **Infraestrutura**: Docker
+> Este diretório contém o core do projeto Vaggo (Plataforma de Compartilhamento de Vagas). Trata-se de uma API REST desenvolvida para o gerenciamento completo de estacionamentos, vagas, reservas, chats em tempo real e administração da plataforma. O projeto foi construído com foco em segurança, escalabilidade e alta performance, utilizando as melhores práticas de desenvolvimento em Node.js.
 
 ---
 
-## 📂 Estrutura de Pastas (Arquitetura)
+## 📋 Sumário
 
-O projeto segue o padrão **MVC (Model-View-Controller)** para garantir a separação de responsabilidades:
+- [Sobre o Projeto](#sobre-o-projeto)
+- [Tecnologias](#tecnologias)
+- [Equipe](#equipe)
+- [Arquitetura](#arquitetura)
+- [Pré-requisitos](#pré-requisitos)
+- [Instalação e Execução](#instalação-e-execução)
+- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Rotas da API](#rotas-da-api)
+- [Autenticação](#autenticação)
+- [Estrutura de Pastas](#estrutura-de-pastas)
+- [Contribuindo](#contribuindo)
 
-```bash
-backend/
- ┣ migrations/      # Histórico de alterações do banco de dados (Sequelize)
- ┣ src/
- ┃ ┣ config/        # Configurações de ambiente e variáveis globais
- ┃ ┣ controllers/   # Lógica de negócio e tratamento de requisições
- ┃ ┣ database/      # Inicialização e conexão do Sequelize
- ┃ ┣ middlewares/   # Auth (JWT), Validação (Zod) e Error Handler global
- ┃ ┣ models/        # Definição das entidades do banco de dados
- ┃ ┣ routes/        # Definição dos endpoints e mapeamento de rotas
- ┃ ┣ schemas/       # Contratos de validação de dados (Zod)
- ┃ ┣ services/      # Lógica de negócios da aplicação
- ┃ ┣ types/         # Definições de tipos e interfaces TypeScript
- ┃ ┣ utils/         # Helpers, Loggers (Winston) e Wrappers (asyncHandler)
- ┃ ┗ server.ts      # Entry point da aplicação
- ┣ .env             # Variáveis sensíveis (não commitado)
- ┣ Dockerfile       # Configuração de container
- ┗ package.json     # Scripts e dependências
+---
+
+## Sobre o Projeto
+
+O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que conecta proprietários de espaços ociosos a motoristas que precisam de vagas. A plataforma oferece:
+
+- Cadastro e gerenciamento de proprietários, motoristas e veículos
+- Publicação e busca geolocalizada de vagas disponíveis
+- Sistema de reservas com controle de conflitos e disponibilidade por horário/dia da semana
+- Chat em tempo real entre locatário e proprietário
+- Painel administrativo para gestão da plataforma
+
+---
+
+## Tecnologias
+
+### Backend
+
+| Tecnologia                   | Uso                                            |
+| ---------------------------- | ---------------------------------------------- |
+| **Node.js** + **TypeScript** | Runtime e linguagem principal                  |
+| **Express**                  | Framework HTTP                                 |
+| **Sequelize**                | ORM para banco de dados relacional             |
+| **PostgreSQL**               | Banco de dados principal                       |
+| **JWT**                      | Autenticação e autorização                     |
+| **Zod v4**                   | Validação de schemas e request bodies          |
+| **Cloudinary**               | Upload e gestão de imagens                     |
+| **Google Maps API**          | Geocodificação e busca geoespacial (Haversine) |
+| **Docker**                   | Containerização                                |
+| **Twilio (WhatsApp & SMS)**  | Envio de notificações via WhatsApp e SMS       |
+| **Render**                   | Plataforma de deploy e hospedagem do backend   |
+| **Neon**                     | Banco de dados PostgreSQL serverless           |
+
+### Frontend
+
+| Tecnologia              | Uso                                       |
+| ----------------------- | ----------------------------------------- |
+| **Next.js** + **React** | Interface web e renderização da aplicação |
+| **Tailwind CSS**        | Estilização responsiva                    |
+| **TypeScript**          | Tipagem e escalabilidade do frontend      |
+| **Docker**              | Containerização da aplicação              |
+
+### Repositório do Frontend
+
+> Frontend: https://github.com/DiegoG784/vaggo-web
+
+### Equipe
+
+| Membro                          | Responsabilidades                       |
+| ------------------------------- | --------------------------------------- |
+| **Henrique Porto de Sousa**     | Líder Backend e Desenvolvedor Backend   |
+| **DIEGO FARIA AMORIM**          | Líder Frontend e Desenvolvedor Frontend |
+| **ANTHONY PIRES DE ARAUJO**     | Desenvolvedor Full Stack                |
+| **MOISES DOS SANTOS CRUZ**      | Desenvolvedor Full Stack e QA           |
+| **GUILHERME OTAVIO DOS SANTOS** | Documentação do projeto                 |
+
+---
+
+## Arquitetura
+
+A API segue uma arquitetura em camadas com separação clara de responsabilidades:
+
+```
+Request → Router → Middleware (Zod) → Controller → Service → Repository → DB
 ```
 
----
-
-## 🛠️ Endpoints da API
-
-### Usuários `/users`
-
-| Método     | Endpoint       | Descrição                      | Autenticação     |
-| :--------- | :------------- | :----------------------------- | :--------------- |
-| **POST**   | `/users`       | Cria um novo usuário           | Não              |
-| **POST**   | `/users/login` | Login com retorno de Token JWT | Não              |
-| **GET**    | `/users`       | Lista todos os usuários        | **Sim (Bearer)** |
-| **GET**    | `/users/:id`   | Consulta um único usuário      | **Sim (Bearer)** |
-| **PUT**    | `/users/:id`   | Atualiza dados do usuário      | **Sim (Bearer)** |
-| **DELETE** | `/users/:id`   | Remove um usuário              | **Sim (Bearer)** |
-
-### Veículos `/vehicles`
-
-| Método     | Endpoint                | Descrição                    | Autenticação     |
-| :--------- | :---------------------- | :--------------------------- | :--------------- |
-| **POST**   | `/vehicles`             | Cadastra um veículo          | **Sim (Bearer)** |
-| **GET**    | `/vehicles`             | Lista todos os veículos      | **Sim (Bearer)** |
-| **GET**    | `/vehicles/my-vehicles` | Consulta veículos do usuário | **Sim (Bearer)** |
-| **GET**    | `/vehicles/:userId/:id` | Consulta um único veículo    | **Sim (Bearer)** |
-| **PUT**    | `/vehicles/:id`         | Atualiza dados do veículo    | **Sim (Bearer)** |
-| **DELETE** | `/vehicles/:id`         | Remove um veículo            | **Sim (Bearer)** |
-
-### Localização `/states`
-
-| Método  | Endpoint             | Descrição                  | Autenticação |
-| :------ | :------------------- | :------------------------- | :----------- |
-| **GET** | `/states`            | Lista todos os estados     | Não          |
-| **GET** | `/states/:id/cities` | Lista cidades de um estado | Não          |
-
-### Propriedades `/properties`
-
-| Método     | Endpoint                    | Descrição                                    | Autenticação     |
-| :--------- | :-------------------------- | :------------------------------------------- | :--------------- |
-| **POST**   | `/properties`               | Cadastra um novo estacionamento              | **Sim (Bearer)** |
-| **GET**    | `/properties`               | Lista todos os estacionamentos               | **Sim (Bearer)** |
-| **GET**    | `/properties/my-properties` | Lista estacionamentos do usuário autenticado | **Sim (Bearer)** |
-| **GET**    | `/properties/:id`           | Detalhes da propriedade (somente as suas)    | **Sim (Bearer)** |
-| **PUT**    | `/properties/:id`           | Atualiza dados (endereço, nome, etc)         | **Dono**         |
-| **DELETE** | `/properties/:id`           | Remove uma propriedade                       | **Dono**         |
-
-### Vagas `/spots`
-
-| Método     | Endpoint                        | Descrição                                   | Autenticação     |
-| :--------- | :------------------------------ | :------------------------------------------ | :--------------- |
-| **POST**   | `/properties/:propId/spots`     | Gera vagas para uma propriedade             | **Dono**         |
-| **GET**    | `/properties/:propId/spots`     | Lista vagas de um estacionamento específico | **Sim (Bearer)** |
-| **PUT**    | `/properties/:propId/spots/:id` | Atualiza dados da vaga (cobertura, tamanho) | **Dono**         |
-| **DELETE** | `/properties/:propId/spots/:id` | Remove uma vaga da propriedade              | **Dono**         |
-| **PATCH**  | `/spots/:id/status`             | Altera status da vaga (Ocupar/Liberar)      | **Sim (Bearer)** |
-| **PATCH**  | `/spots/:id/evaluate`           | Aprova ou recusa uma vaga                   | **Sim (Bearer)** |
-
-### Reservas `/reservations`
-
-| Método    | Endpoint                                | Descrição                 | Autenticação     |
-| :-------- | :-------------------------------------- | :------------------------ | :--------------- |
-| **GET**   | `/reservations/search/(address ou cep)` | Buscar uma vaga           | **Sim (Bearer)** |
-| **PATCH** | `/reservations::id/reject`              | Rejectar a reserva        | **Dono**         |
-| **PATCH** | `/reservations/:id/cancel`              | Cancela uma reserva       | **Dono**         |
-| **PATCH** | `/reservations/:id/approve`             | Aprova a reserva          | **Dono**         |
-| **GET**   | `/reservations`                         | Lista reservas do usuário | **Sim (Bearer)** |
-| **GET**   | `/reservations/owner`                   | Lista reservas do dono    | **Dono**         |
-| **POST**  | `/reservations`                         | Reserva uma vaga          | **Sim (Bearer)** |
+- **Controllers** — finos, apenas orquestram request/response
+- **Services** — toda a lógica de negócio; erros retornados como string-keys
+- **Middleware de validação** — Zod v4 centralizado por rota
+- **Error handler global** — captura erros de serviço, Sequelize e runtime
+- **Ownership validation** — `userId` propagado via `res.locals` após autenticação JWT
 
 ---
 
-## 📌 Próximas Etapas (Backlog)
+## 📋 Pré-requisitos
 
-### Avaliações `/reviews`
-
-| Método     | Endpoint                  | Descrição                       | Autenticação     |
-| :--------- | :------------------------ | :------------------------------ | :--------------- |
-| **POST**   | `/properties/:id/reviews` | Avalia um estacionamento        | **Sim (Bearer)** |
-| **GET**    | `/properties/:id/reviews` | Lista avaliações da propriedade | **Sim (Bearer)** |
-| **DELETE** | `/reviews/:id`            | Remove avaliação própria        | **Sim (Bearer)** |
-
-### Denúncias `/reports`
-
-| Método   | Endpoint                  | Descrição                | Autenticação     |
-| :------- | :------------------------ | :----------------------- | :--------------- |
-| **POST** | `/properties/:id/reports` | Denuncia uma propriedade | **Sim (Bearer)** |
-| **GET**  | `/reports`                | Lista denúncias          | **Admin**        |
+- [Node.js](https://nodejs.org/) >= 18
+- [Docker](https://www.docker.com/) e Docker Compose
+- [PostgreSQL](https://www.postgresql.org/)
+- Conta no [Cloudinary](https://cloudinary.com/)
+- Chave da [Google Maps API](https://developers.google.com/maps)
+- Conta no [Twilio](https://www.twilio.com/) (WhatsApp & SMS)
+- Conta no [Neon](https://neon.com)
+- Conta no [Render](https://render.com/)
 
 ---
 
-## 🚀 Como Rodar o Projeto
+## Instalação e Execução
 
-### Pré-requisitos
-
-- Docker & Docker Compose
-
-### Subir o ambiente
+### 1. Clone o repositório
 
 ```bash
-# Constrói as imagens e sobe os containers (API + banco)
-docker-compose up --build
-
-# Rodar em background
-docker-compose up -d
-
-# Rodar as migrations dentro do container
-docker exec -it vaggo_api npx sequelize-cli db:migrate --migrations-path src/database/migrations
-
-# Rodar o seed no Docker
-docker exec -it vaggo_api npx sequelize-cli db:seed:all
+git clone https://github.com/henrique151/Vaggo
+cd Vaggo
 ```
 
-### Comandos úteis Docker
+### 2. Instale as dependências
 
 ```bash
-docker-compose down          # Para e remove containers e redes
-docker-compose stop          # Apenas para os containers
-docker-compose logs -f       # Logs em tempo real
-docker ps                    # Containers rodando
-docker ps -a                 # Todos os containers (incluindo parados)
-```
-
-### Rodar localmente (sem Docker)
-
-```bash
-# Clone o repositório
-git clone https://github.com/henrique151/Vaggo.git
-cd backend
-
-# Instale as dependências
 npm install
-
-# Configure o ambiente
-cp .env.example .env
-# Edite o .env com suas credenciais do banco e JWT_SECRET
-
-# Criação da tabela
-npx sequelize-cli migration:generate --name create-users
-
-# Sincronize o banco
-npx sequelize-cli db:migrate
-
-# Deleta o banco
-npx sequelize-cli db:drop
-
-# Rodar o seed
-npx sequelize-cli db:seed:all
-
-# Gera o arquivo de seed
-npx sequelize-cli seed:generate --name seed-states-cities
-
-# Resetar o banco
-npx sequelize-cli db:migrate:undo:all
-
-# Inicie em modo desenvolvimento
-npm run dev
 ```
 
----
-
-## 🌿 Fluxo de Contribuição
-
-Seguimos o padrão **Git Flow Avançado** para organização:
-
-- `main` — código em produção (estável, sem erros)
-- `develop` — integração das features antes de ir para a main
-- `feature/nome-da-tarefa` — onde o desenvolvimento acontece no dia a dia
-
-### Passo a passo
+### 3. Configure as variáveis de ambiente
 
 ```bash
-# 1. Criar a branch da feature a partir da develop
-git checkout develop
-git checkout -b feature/nome-da-feature
-
-# 2. Salvar as alterações
-git add .
-git commit -m "feat(scope): descrição da mudança"
-
-# 3. Enviar para o GitHub
-git push origin feature/nome-da-feature
+cp .env.example .env
+# edite o .env com suas credenciais (veja a seção Variáveis de Ambiente)
 ```
 
-> No GitHub, abra um Pull Request de `feature/nome-da-feature` → `develop`. Ao final do semestre, abre-se um PR de `develop` → `main` para a entrega final.
+### 4. Suba o banco de dados com Docker
+
+```bash
+docker-compose up -d
+```
+
+### 5. Execute as migrations
+
+```bash
+npm run db:migrate
+```
+
+### 6. Execute as seeds do banco de dados
+
+```bash
+npm run db:migrate:seed:all
+```
+
+### 7. Inicie o servidor
+
+```bash
+# desenvolvimento
+npm run dev
+
+# produção
+npm run build && npm start
+```
 
 ---
 
-## 📝 Licença
+## Variáveis de Ambiente
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Copie o `.env.example` e preencha com suas credenciais:
+
+```bash
+cp .env.example .env
+```
+
+```env
+# Servidor
+PORT=3000
+
+# Banco de Dados
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=sua_senha
+DB_NAME=vaggo
+
+# JWT
+JWT_SECRET=seu_jwt_secret
+JWT_ACCESS_TOKEN_EXPIRES=600    # 10 minutos (em segundos)
+JWT_REFRESH_TOKEN_EXPIRES=604800 # 7 dias (em segundos)
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+# Google Maps
+GOOGLE_MAPS_API_KEY=
+
+# Twilio (WhatsApp / OTP)
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_WHATSAPP_NUMBER=
+
+# Templates Twilio (WhatsApp)
+TWILIO_TEMPLATE_EMAIL_VERIFICATION=
+TWILIO_TEMPLATE_OTP=
+TWILIO_TEMPLATE_RENTAL=
+TWILIO_TEMPLATE_RENTAL_REJECTED=
+TWILIO_TEMPLATE_SPOT_APPROVED=
+TWILIO_TEMPLATE_APPROVED=
+TWILIO_TEMPLATE_CHAT=
+```
 
 ---
 
-**Desenvolvido por [Henrique](https://github.com/henrique151)**
+## Estrutura de Pastas
+
+```bash
+backend
+├── src/
+│   ├── config/           # Configurações (DB, Cloudinary, Twilio, etc.)
+│   ├── controllers/      # Handlers de request/response (finos, sem lógica)
+│   ├── database/         # Migrations, seeders e conexão Sequelize
+│   ├── middlewares/      # Auth JWT, validação Zod, error handler global
+│   ├── models/           # Models Sequelize
+│   ├── routes/           # Definição e agrupamento das rotas
+│   ├── schemas/          # Schemas Zod por domínio
+│   ├── services/         # Lógica de negócio
+│   ├── types/            # Tipagens globais e augmentations do Express
+│   ├── utils/            # Funções utilitárias (haversine, bitmask, etc.)
+│   └── server.ts         # Entry point da aplicação
+├── dist/                 # Build de produção (gerado)
+├── .env.example          # Modelo de variáveis de ambiente
+├── .sequelizerc          # Configuração de paths do Sequelize CLI
+├── docker-compose.yml    # Serviços Docker (PostgreSQL)
+├── Dockerfile
+├── tsconfig.json
+└── package.json
+```
+
+---
+
+## Rotas da API
+
+Base URL: `http://localhost:3000`
+
+### 🔐 Auth
+
+| Método | Rota                            | Descrição                                                | Auth |
+| ------ | ------------------------------- | -------------------------------------------------------- | ---- |
+| `POST` | `/auth/login`                   | Login e geração de access token + refresh token (cookie) | —    |
+| `POST` | `/auth/logout`                  | Logout e invalidação do token                            | ✅   |
+| `POST` | `/auth/refresh`                 | Renova o access token via refresh token                  | —    |
+| `POST` | `/auth/register/confirm`        | Confirma o código de verificação enviado no cadastro     | —    |
+| `POST` | `/auth/register/resend`         | Reenvio do código de verificação                         | —    |
+| `POST` | `/auth/forgot-password`         | Solicita o fluxo de recuperação de senha                 | —    |
+| `POST` | `/auth/forgot-password/confirm` | Valida o código de recuperação de senha                  | —    |
+| `POST` | `/auth/forgot-password/reset`   | Redefine a senha com o token de reset                    | —    |
+
+### 👤 Usuários
+
+| Método   | Rota         | Descrição                                                        | Auth |
+| -------- | ------------ | ---------------------------------------------------------------- | ---- |
+| `POST`   | `/users/`    | Cadastro de novo usuário (`multipart/form-data`)                 | —    |
+| `GET`    | `/users/:id` | Buscar perfil de usuário por ID                                  | ✅   |
+| `PUT`    | `/users/:id` | Atualizar perfil (`multipart/form-data`: name, phone, avatarUrl) | ✅   |
+| `DELETE` | `/users/:id` | Deletar conta                                                    | ✅   |
+
+### 🚗 Veículos
+
+| Método   | Rota                    | Descrição                                       | Auth |
+| -------- | ----------------------- | ----------------------------------------------- | ---- |
+| `POST`   | `/vehicles/`            | Cadastrar novo veículo                          | ✅   |
+| `GET`    | `/vehicles/my-vehicles` | Listar todos os veículos do usuário autenticado | ✅   |
+| `GET`    | `/vehicles/:id`         | Detalhes de um veículo por ID                   | ✅   |
+| `PUT`    | `/vehicles/:id`         | Atualizar dados do veículo                      | ✅   |
+| `DELETE` | `/vehicles/:id`         | Remover veículo                                 | ✅   |
+
+> **Body (POST/PUT):** `brand`, `model`, `color`, `licensePlate`, `manufactureYear`, `type` (`CARRO` \| `MOTO`), `size` (`PEQUENO` \| `MEDIO` \| `GRANDE`)
+
+### 📍 Localidades
+
+| Método | Rota                                | Descrição                   | Auth |
+| ------ | ----------------------------------- | --------------------------- | ---- |
+| `GET`  | `/locations/states/`                | Listar todos os estados     | —    |
+| `GET`  | `/locations/states/:stateId/cities` | Listar cidades de um estado | —    |
+
+### 🏠 Propriedades
+
+| Método   | Rota                        | Descrição                                                               | Auth |
+| -------- | --------------------------- | ----------------------------------------------------------------------- | ---- |
+| `POST`   | `/properties/`              | Cadastrar nova propriedade (`multipart/form-data`)                      | ✅   |
+| `GET`    | `/properties/`              | Listar todas as propriedades                                            | —    |
+| `GET`    | `/properties/my-properties` | Listar propriedades do usuário autenticado                              | ✅   |
+| `PUT`    | `/properties/:id`           | Atualizar propriedade (`multipart/form-data`, suporta `imagesToRemove`) | ✅   |
+| `DELETE` | `/properties/:id`           | Remover propriedade                                                     | ✅   |
+
+> **Body (POST):** `name`, `type`, `description`, `totalCapacity`, `zipCode`, `number`, `complement`, `images[]` (arquivos)
+
+### 🅿️ Vagas
+
+| Método   | Rota                                          | Descrição                                                   | Auth |
+| -------- | --------------------------------------------- | ----------------------------------------------------------- | ---- |
+| `POST`   | `/spots/properties/:propertyId/spots`         | Gerar vagas para uma propriedade (`multipart/form-data`)    | ✅   |
+| `GET`    | `/spots/properties/:propertyId/spots`         | Listar vagas de uma propriedade                             | ✅   |
+| `PUT`    | `/spots/properties/:propertyId/spots/:spotId` | Atualizar dados de uma vaga                                 | ✅   |
+| `PATCH`  | `/spots/:id/status`                           | Alterar status da vaga (`DISPONIVEL`, `INDISPONIVEL`, etc.) | ✅   |
+| `DELETE` | `/spots/properties/:propertyId/spots/:spotId` | Remover vaga                                                | ✅   |
+
+> **Body (POST):** `count`, `size`, `price`, `isCovered`, `prefix`, `allowedVehicles[]`, `files[]`, `availability` (JSON: `startDate`, `endDate`, `weekdays` (bitmask), `startTime`, `endTime`)
+
+### 📅 Reservas
+
+| Método  | Rota                           | Descrição                                          | Auth |
+| ------- | ------------------------------ | -------------------------------------------------- | ---- |
+| `POST`  | `/reservations/`               | Criar nova reserva                                 | ✅   |
+| `GET`   | `/reservations/`               | Listar reservas do usuário autenticado (locatário) | ✅   |
+| `GET`   | `/reservations/owner/`         | Listar reservas recebidas (proprietário)           | ✅   |
+| `GET`   | `/reservations/search/address` | Buscar vagas disponíveis por endereço/CEP e datas  | —    |
+| `PATCH` | `/reservations/:id/approve`    | Aprovar reserva (proprietário)                     | ✅   |
+| `PATCH` | `/reservations/:id/reject`     | Rejeitar reserva (proprietário)                    | ✅   |
+
+> **Query params (search):** `address` ou `cep`, `startDate`, `endDate`
+
+> **Body (POST):** `spotId`, `vehicleId`, `startDate`, `endDate`
+
+### 💬 Chat
+
+| Método   | Rota                                   | Descrição                                       | Auth |
+| -------- | -------------------------------------- | ----------------------------------------------- | ---- |
+| `GET`    | `/chats`                               | Listar conversas do usuário com última mensagem | ✅   |
+| `GET`    | `/chats/:id?page=1&limit=30`           | Abrir conversa com histórico paginado           | ✅   |
+| `POST`   | `/chats/:id/messages`                  | Enviar mensagem (texto e/ou imagem)             | ✅   |
+| `PUT`    | `/chats/messages/:id`                  | Editar mensagem própria                         | ✅   |
+| `DELETE` | `/chats/messages/:id`                  | Soft delete de mensagem (para ambos)            | ✅   |
+| `POST`   | `/chats/delete-multiple`               | Ocultar conversas apenas para o usuário logado  | ✅   |
+| `DELETE` | `/chats/:id/for-everyone`              | Ocultar conversa para ambos os participantes    | ✅   |
+| `GET`    | `/chats/:id/search?q=&page=1&limit=20` | Buscar mensagens dentro da conversa             | ✅   |
+| `POST`   | `/chats/block`                         | Bloquear usuário                                | ✅   |
+| `DELETE` | `/chats/block/:userId`                 | Desbloquear usuário                             | ✅   |
+
+### 🚩 Denúncias
+
+| Método  | Rota                      | Descrição                                       | Auth |
+| ------- | ------------------------- | ----------------------------------------------- | ---- |
+| `POST`  | `/reports/`               | Registrar nova denúncia (`multipart/form-data`) | ✅   |
+| `GET`   | `/reports/my`             | Listar minhas denúncias                         | ✅   |
+| `PATCH` | `/reports/:id/reanalysis` | Solicitar reanálise de uma denúncia             | ✅   |
+
+> **Body (POST):** `reportedUserId`, `targetType` (`CHAT` \| `SPOT`), `targetId`, `reason`, `images[]`
+
+### ⭐ Avaliações
+
+| Método   | Rota                      | Descrição                                       | Auth |
+| -------- | ------------------------- | ----------------------------------------------- | ---- |
+| `POST`   | `/reviews`                | Registrar avaliação de uma reserva              | ✅   |
+| `GET`    | `/reviews/my`             | Listar minhas avaliações                        | ✅   |
+| `GET`    | `/reviews/properties/:id` | Avaliações públicas de uma propriedade          | ✅   |
+| `GET`    | `/reviews/spots/:id`      | Avaliações públicas de uma vaga (retorna média) | ✅   |
+| `PUT`    | `/reviews/:id`            | Atualizar avaliação                             | ✅   |
+| `DELETE` | `/reviews/:id`            | Remover avaliação                               | ✅   |
+
+> **Body (POST):** `reservationId`, `rating` (1–5), `comment`
+
+---
+
+### 🛠️ Admin
+
+> Todas as rotas abaixo exigem autenticação com role `ADMIN` ou `MANAGER`.
+
+#### Usuários
+
+| Método   | Rota                         | Descrição                                      |
+| -------- | ---------------------------- | ---------------------------------------------- |
+| `GET`    | `/admin/users`               | Listar todos os usuários                       |
+| `GET`    | `/users/admin/search`        | Buscar usuários por `email`, `name` ou `phone` |
+| `GET`    | `/admin/users/blocked/count` | Total de usuários bloqueados                   |
+| `PUT`    | `/admin/users/:id`           | Atualizar dados de um usuário                  |
+| `PATCH`  | `/admin/users/:id/block`     | Bloquear ou desbloquear usuário                |
+| `DELETE` | `/admin/users/:id`           | Deletar conta de usuário                       |
+
+#### Veículos
+
+| Método   | Rota                     | Descrição                 |
+| -------- | ------------------------ | ------------------------- |
+| `GET`    | `/admin/vehicles`        | Listar todos os veículos  |
+| `GET`    | `/admin/vehicles/search` | Buscar por `licensePlate` |
+| `GET`    | `/admin/vehicles/:id`    | Detalhes de um veículo    |
+| `PUT`    | `/admin/vehicles/:id`    | Atualizar veículo         |
+| `DELETE` | `/admin/vehicles/:id`    | Deletar veículo           |
+
+#### Propriedades
+
+| Método   | Rota                       | Descrição                                       |
+| -------- | -------------------------- | ----------------------------------------------- |
+| `GET`    | `/admin/properties`        | Listar todas as propriedades                    |
+| `GET`    | `/admin/properties/search` | Buscar por `id`, `name`, `email` ou `ownerName` |
+| `GET`    | `/admin/properties/:id`    | Detalhes de uma propriedade                     |
+| `PUT`    | `/admin/properties/:id`    | Atualizar propriedade                           |
+| `DELETE` | `/admin/properties/:id`    | Deletar propriedade                             |
+
+#### Vagas
+
+| Método   | Rota                        | Descrição                                                                                |
+| -------- | --------------------------- | ---------------------------------------------------------------------------------------- |
+| `GET`    | `/admin/spots`              | Listar todas as vagas                                                                    |
+| `GET`    | `/admin/spots/search`       | Buscar por `id` ou `status` (`PENDENTE`, `APROVADA`, `RECUSADA`)                         |
+| `PATCH`  | `/admin/spots/:id/evaluate` | Aprovar ou recusar vaga (`status`, `rejectionReason`) / Ativar ou desativar (`isActive`) |
+| `DELETE` | `/admin/spots/:id`          | Deletar vaga                                                                             |
+
+#### Reservas
+
+| Método   | Rota                                   | Descrição                            |
+| -------- | -------------------------------------- | ------------------------------------ |
+| `GET`    | `/admin/reservations`                  | Listar todas as reservas             |
+| `GET`    | `/admin/reservations/search`           | Buscar por `id`, `email` ou `status` |
+| `GET`    | `/admin/reservations/:id`              | Detalhes de uma reserva              |
+| `PATCH`  | `/admin/reservations/:id/force-cancel` | Forçar cancelamento de reserva       |
+| `DELETE` | `/reservations/:id`                    | Deletar reserva                      |
+
+#### Denúncias
+
+| Método  | Rota                        | Descrição                                                                         |
+| ------- | --------------------------- | --------------------------------------------------------------------------------- |
+| `GET`   | `/admin/reports`            | Listar todas as denúncias                                                         |
+| `GET`   | `/admin/reports/search`     | Buscar por `id` ou `email`                                                        |
+| `GET`   | `/admin/reports/:id`        | Detalhes de uma denúncia                                                          |
+| `PATCH` | `/admin/reports/:id/status` | Atualizar status (`PENDENTE`, `EM_ANALISE`, `RESOLVIDA`, `RECUSADA`, `REANALISE`) |
+
+#### Avaliações
+
+| Método   | Rota                    | Descrição                  |
+| -------- | ----------------------- | -------------------------- |
+| `GET`    | `/admin/reviews`        | Listar todas as avaliações |
+| `GET`    | `/admin/reviews/search` | Buscar por `id` ou `email` |
+| `DELETE` | `/admin/reviews/:id`    | Deletar avaliação          |
+
+#### Dashboard
+
+| Método | Rota                     | Descrição                                    |
+| ------ | ------------------------ | -------------------------------------------- |
+| `GET`  | `/admin/dashboard/stats` | Estatísticas e métricas gerais da plataforma |
+
+---
+
+## Autenticação
+
+A API utiliza **JWT (JSON Web Token)**. Após o login, inclua o access token no header de todas as rotas protegidas:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+O **refresh token** é armazenado via `httpOnly cookie` e utilizado na rota `/auth/refresh` para renovar o access token sem necessidade de novo login.
+
+---
+
+## Contribuindo
+
+1. Fork o projeto
+2. Crie sua branch: `git checkout -b feat/minha-feature`
+3. Commit suas mudanças: `git commit -m "feat: minha feature"`
+4. Push para a branch: `git push origin feat/minha-feature`
+5. Abra um Pull Request
+
+---
+
+<p align="center">
+  Desenvolvido por <strong>Henrique Porto de Sousa</strong> — Projeto Integrador · FATEC Zona Leste · DSM
+</p>

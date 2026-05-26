@@ -1,7 +1,10 @@
 import sequelize from "../database";
 import User from "../models/User";
+import Person from "../models/Person";
 import Vehicle from "../models/Vehicle";
 import { CreateVehicleInput, UpdateVehicleInput } from "../schemas/vehiclesSchema";
+import { Roles } from "../types/Roles";
+import { Op } from "sequelize";
 
 export class VehicleService {
     static async createVehicle(vehicleData: CreateVehicleInput, authUserId: number) {
@@ -47,7 +50,39 @@ export class VehicleService {
         return Vehicle.findAll({
             attributes: { exclude: ['USU_INT_ID'] },
             where: { isActive: true },
-            include: [{ model: User, as: 'user', attributes: ['id', 'email'] }]
+            include: [{ 
+                model: User, 
+                as: 'user', 
+                attributes: ['id', 'email'],
+                include: [{ model: Person, as: 'person', attributes: ['name'] }]
+            }]
+        });
+    }
+
+    static async searchVehicles(filters: { id?: number, licensePlate?: string, email?: string }) {
+        const where: any = { isActive: true };
+        const userWhere: any = {};
+
+        if (filters.id) {
+            where.id = filters.id;
+        }
+        if (filters.licensePlate) {
+            where.licensePlate = { [Op.iLike]: `%${filters.licensePlate}%` };
+        }
+        if (filters.email) {
+            userWhere.email = { [Op.iLike]: `%${filters.email}%` };
+        }
+
+        return Vehicle.findAll({
+            attributes: { exclude: ['USU_INT_ID'] },
+            where,
+            include: [{ 
+                model: User, 
+                as: 'user', 
+                attributes: ['id', 'email'],
+                where: Object.keys(userWhere).length > 0 ? userWhere : undefined,
+                include: [{ model: Person, as: 'person', attributes: ['name'] }]
+            }]
         });
     }
 
@@ -58,24 +93,24 @@ export class VehicleService {
         });
     }
 
-    static async getVehicleById(vehicleId: number, authUserId: number) {
+    static async getVehicleById(vehicleId: number, authUserId: number, role?: Roles) {
         const vehicle = await Vehicle.findByPk(vehicleId, {
             attributes: { exclude: ['USU_INT_ID'] }
         });
 
         if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
-        if (vehicle.userId !== authUserId) throw new Error('FORBIDDEN');
+        if (vehicle.userId !== authUserId && role !== Roles.ADMIN && role !== Roles.MANAGER) throw new Error('FORBIDDEN');
 
         return vehicle;
     }
 
-    static async updateVehicle(id: number, updateData: UpdateVehicleInput, authUserId: number) {
+    static async updateVehicle(id: number, updateData: UpdateVehicleInput, authUserId: number, role?: Roles) {
         const transaction = await sequelize.transaction();
         try {
             const vehicle = await Vehicle.findByPk(id, { transaction });
             if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
 
-            if (vehicle.userId !== authUserId) throw new Error('FORBIDDEN');
+            if (vehicle.userId !== authUserId && role !== Roles.ADMIN) throw new Error('FORBIDDEN');
 
             if (updateData.licensePlate && updateData.licensePlate !== vehicle.licensePlate) {
                 const existingPlate = await Vehicle.findOne({
@@ -88,19 +123,19 @@ export class VehicleService {
             await vehicle.update(updateData, { transaction });
             await transaction.commit();
 
-            return this.getVehicleById(id, authUserId);
+            return this.getVehicleById(id, authUserId, role);
         } catch (error) {
             await transaction.rollback();
             throw error;
         }
     }
 
-    static async deleteVehicle(id: number, authUserId: number) {
+    static async deleteVehicle(id: number, authUserId: number, role?: Roles) {
         const transaction = await sequelize.transaction();
         try {
             const vehicle = await Vehicle.findByPk(id, { transaction });
             if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
-            if (vehicle.userId !== authUserId) throw new Error('FORBIDDEN');
+            if (vehicle.userId !== authUserId && role !== Roles.ADMIN) throw new Error('FORBIDDEN');
 
             await vehicle.destroy({ transaction });
             await transaction.commit();

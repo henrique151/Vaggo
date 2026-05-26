@@ -16,6 +16,15 @@ import { getCurrentDateString, isRangeWithinAvailability } from '../utils/dateRa
 import { ChatService } from './ChatService';
 import TwilioWhatsAppService from './TwilioWhatsAppService';
 
+export interface AdminReservationFilters {
+    id?: number;
+    email?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    city?: string;
+}
+
 function generateReservationCode(): string {
     return crypto.randomBytes(4).toString('hex').toUpperCase();
 }
@@ -167,6 +176,103 @@ export class ReservationService {
         });
     }
 
+    static async getAllReservations() {
+        return Reservation.findAll({
+            include: [
+                {
+                    model: Spot,
+                    as: 'spot',
+                    attributes: ['id', 'identifier', 'price'],
+                    include: [{
+                        model: Property,
+                        as: 'property',
+                        attributes: ['name'],
+                        include: [{
+                            model: PropertyUser,
+                            as: 'propertyUsers',
+                            where: { role: 'DONO' },
+                            include: [{
+                                model: User,
+                                as: 'user',
+                                attributes: ['id', 'email'],
+                                include: [{ model: Person, as: 'person', attributes: ['name'] }]
+                            }]
+                        }]
+                    }]
+                },
+                { model: Vehicle, as: 'vehicle', attributes: ['brand', 'model', 'licensePlate'] },
+                { model: User, as: 'user', attributes: ['id', 'email'] },
+            ],
+            order: [['startDate', 'DESC']],
+        });
+    }
+
+    static async searchAdminReservations(filters: AdminReservationFilters = {}) {
+        const whereClause: any = {};
+        const userWhere: any = {};
+
+        if (filters.id) {
+            whereClause.id = filters.id;
+        }
+
+        if (filters.status) {
+            whereClause.status = filters.status;
+        }
+
+        if (filters.startDate) {
+            whereClause.startDate = { [Op.gte]: filters.startDate };
+        }
+
+        if (filters.endDate) {
+            whereClause.endDate = { [Op.lte]: filters.endDate };
+        }
+
+        if (filters.email) {
+            userWhere.email = { [Op.iLike]: `%${filters.email}%` };
+        }
+
+        const hasUserFilter = Object.keys(userWhere).length > 0;
+
+        return Reservation.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Spot,
+                    as: 'spot',
+                    attributes: ['id', 'identifier', 'price'],
+                    include: [
+                        {
+                            model: Property,
+                            as: 'property',
+                            attributes: ['name'],
+                            include: [{
+                                model: PropertyUser,
+                                as: 'propertyUsers',
+                                where: { role: 'DONO' },
+                                include: [{
+                                    model: User,
+                                    as: 'user',
+                                    attributes: ['id', 'email'],
+                                    include: [{ model: Person, as: 'person', attributes: ['name'] }]
+                                }]
+                            }]
+                        }
+                    ]
+                },
+                { model: Vehicle, as: 'vehicle', attributes: ['brand', 'model', 'color', 'licensePlate'] },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'email'],
+                    where: hasUserFilter ? userWhere : undefined,
+                    required: hasUserFilter,
+                    include: [{ model: Person, as: 'person', attributes: ['name', 'phone'] }]
+                },
+            ],
+            order: [['startDate', 'DESC']],
+        });
+    }
+
     static async getOwnerReservationRequests(userId: number) {
         const properties = await PropertyUser.findAll({
             where: { userId, role: 'DONO' },
@@ -204,6 +310,41 @@ export class ReservationService {
                 { model: User, as: 'user', attributes: ['id', 'email'] },
             ]
         });
+    }
+
+    static async deleteReservation(id: number) {
+        const transaction = await sequelize.transaction();
+        try {
+            const reservation = await Reservation.findByPk(id, { transaction });
+            if (!reservation) throw new Error('RESERVATION_NOT_FOUND');
+
+            const spotId = reservation.spotId;
+
+            await reservation.destroy({ transaction });
+            await this.syncSpotStatus(spotId, transaction);
+            await transaction.commit();
+            return true;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    static async forceCancelReservation(id: number) {
+        const transaction = await sequelize.transaction();
+        try {
+            const reservation = await Reservation.findByPk(id, { transaction });
+            if (!reservation) throw new Error('RESERVATION_NOT_FOUND');
+
+            const spotId = reservation.spotId;
+            await reservation.update({ status: 'CANCELADA' }, { transaction });
+            await this.syncSpotStatus(spotId, transaction);
+            await transaction.commit();
+            return true;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
     }
 
     private static notifyOwner(ownerId: number, reservationId: number, conversationId: number): void {
@@ -256,6 +397,43 @@ export class ReservationService {
 
     private static notifyReservationRejected(userId: number, reservationId: number): void {
         console.log(`[NOTIFY USER ${userId}] Event: RESERVATION_REJECTED, Reservation: ${reservationId}`);
+        TwilioWhatsAppService.dispatchInBackground(async () => {
+            const [user, reservation] = await Promise.all([
+                User.findByPk(userId, { include: [{ model: Person, as: 'person' }] }),
+                Reservation.findByPk(reservationId, {
+                    include: [
+                        {
+                            model: Spot,
+                            as: 'spot',
+                            include: [
+                                {
+                                    model: Property,
+                                    as: 'property'
+                                }
+                            ]
+                        }
+                    ]
+                }),
+            ]);
+
+            if (!user?.person?.phone || !reservation?.spot) {
+                throw new Error('NOTIFICATION_CONTEXT_NOT_FOUND');
+            }
+
+            const propertyOwner = await PropertyUser.findOne({
+                where: { propertyId: reservation.spot.propertyId, role: 'DONO' },
+                include: [{ model: User, as: 'user', include: [{ model: Person, as: 'person' }] }]
+            });
+
+            const ownerName = (propertyOwner as any)?.user?.person?.name || 'O Proprietário';
+
+            return TwilioWhatsAppService.sendRentalRejectedAlert(
+                user.person.phone,
+                user.person.name,
+                reservation.spot.identifier,
+                ownerName
+            );
+        });
     }
 
     private static async syncSpotStatus(spotId: number, transaction: Transaction) {

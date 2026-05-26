@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validateBody } from '../middlewares/validateBody';
-import { createProperty, deleteProperty, getAllProperties, getMyProperties, getPropertyById, updateProperty } from '../controllers/propertiesController';
+import { createProperty, deleteProperty, getAllProperties, getMyProperties, getPropertyById, updateProperty, searchProperties } from '../controllers/propertiesController';
 import { createPropertySchema, updatePropertySchema } from '../schemas/propertiesSchema';
 import { uploadLimiter } from '../middlewares/rateLimiter';
 import { uploadMultiple } from '../middlewares/upload';
+import { permissionMiddleware } from '../middlewares/permissionMiddleware';
+import { Roles } from '../types/Roles';
 
 const router = Router();
 
