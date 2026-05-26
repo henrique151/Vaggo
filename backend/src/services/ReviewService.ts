@@ -3,8 +3,10 @@ import Reservation from '../models/Reservation';
 import Spot from '../models/Spot';
 import Property from '../models/Property';
 import User from '../models/User';
-import { CreateReviewInput, UpdateReviewInput } from '../schemas/reviewsSchema';
+import { CreateReviewInput, UpdateReviewInput, GetReviewsFilterInput } from '../schemas/reviewsSchema';
 import { getCurrentDateString } from '../utils/dateRange';
+import { Roles } from '../types/Roles';
+import { Op, WhereOptions } from 'sequelize';
 
 type ReviewListResult = {
     averageRating: number;
@@ -58,6 +60,78 @@ export class ReviewService {
         });
     }
 
+    static async getAllReviews(filters?: GetReviewsFilterInput) {
+        const where: WhereOptions = {};
+
+        if (filters?.propertyId) where.propertyId = filters.propertyId;
+        if (filters?.spotId) where.spotId = filters.spotId;
+        if (filters?.reviewerId) where.userId = filters.reviewerId;
+        if (filters?.minRating) {
+            where.rating = { [Op.gte]: filters.minRating };
+        }
+        if (filters?.maxRating) {
+            where.rating = { ...where.rating, [Op.lte]: filters.maxRating };
+        }
+
+        return Review.findAll({
+            where,
+            include: this.defaultInclude,
+            order: [['reviewDate', 'DESC']]
+        });
+    }
+
+    static async getAllReviewsAdmin() {
+        return Review.findAll({
+            include: this.defaultInclude,
+            order: [['reviewDate', 'DESC']]
+        });
+    }
+
+    static async searchReviewsAdmin(filters: GetReviewsFilterInput & { id?: number, email?: string }) {
+        const where: any = {};
+        const userWhere: any = {};
+
+        if (filters.id) where.id = filters.id;
+        if (filters.propertyId) where.propertyId = filters.propertyId;
+        if (filters.spotId) where.spotId = filters.spotId;
+        if (filters.reviewerId) where.userId = filters.reviewerId;
+        if (filters.minRating) where.rating = { [Op.gte]: filters.minRating };
+        if (filters.maxRating) where.rating = { ...where.rating, [Op.lte]: filters.maxRating };
+
+        if (filters.email) {
+            userWhere.email = { [Op.iLike]: `%${filters.email}%` };
+        }
+
+        const hasUserFilter = Object.keys(userWhere).length > 0;
+
+        return Review.findAll({
+            where,
+            include: [
+                {
+                    model: User,
+                    as: 'author',
+                    attributes: ['id', 'email', 'avatarUrl'],
+                    where: hasUserFilter ? userWhere : undefined,
+                    required: hasUserFilter
+                },
+                { model: Spot, as: 'spot', attributes: ['id', 'identifier', 'propertyId'] },
+                { model: Property, as: 'property', attributes: ['id', 'name'] },
+                { model: Reservation, as: 'reservation', attributes: ['id', 'startDate', 'endDate', 'status'] }
+            ],
+            order: [['reviewDate', 'DESC']]
+        });
+    }
+
+    static async getReviewById(id: number) {
+        const review = await Review.findByPk(id, {
+            include: this.defaultInclude
+        });
+
+        if (!review) throw new Error('REVIEW_NOT_FOUND');
+
+        return review;
+    }
+
     static async getReviewsByProperty(propertyId: number): Promise<ReviewListResult> {
         const reviews = await Review.findAll({
             where: { propertyId },
@@ -87,10 +161,12 @@ export class ReviewService {
         return this.getById(review.id, userId);
     }
 
-    static async deleteReview(id: number, userId: number) {
+    static async deleteReview(id: number, userId: number, role?: Roles) {
         const review = await Review.findByPk(id);
         if (!review) throw new Error('REVIEW_NOT_FOUND');
-        if (review.userId !== userId) throw new Error('FORBIDDEN');
+        if (review.userId !== userId && role !== Roles.ADMIN && role !== Roles.MANAGER) {
+            throw new Error('FORBIDDEN');
+        }
 
         await review.destroy();
         return true;

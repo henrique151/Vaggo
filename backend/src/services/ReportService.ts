@@ -1,4 +1,4 @@
-import type { WhereOptions } from 'sequelize';
+import { Op, type WhereOptions } from 'sequelize';
 import sequelize from '../database';
 import Report from '../models/Report';
 import Spot from '../models/Spot';
@@ -71,12 +71,44 @@ export class ReportService {
         });
     }
 
-    static async listReports(status?: ReportStatusInput) {
-        const where: WhereOptions = status ? { status } : {};
+    static async getAllReportsAdmin() {
+        return Report.findAll({
+            include: this.defaultInclude,
+            order: [['createdAt', 'DESC']]
+        });
+    }
+
+    static async searchReportsAdmin(filters: { id?: number, email?: string, status?: string, targetType?: string }) {
+        const where: any = {};
+        const userWhere: any = {};
+
+        if (filters.id) where.id = filters.id;
+        if (filters.status) where.status = filters.status;
+        if (filters.targetType) where.targetType = filters.targetType;
+
+        if (filters.email) {
+            userWhere.email = { [Op.iLike]: `%${filters.email}%` };
+        }
+
+        const hasUserFilter = Object.keys(userWhere).length > 0;
 
         return Report.findAll({
             where,
-            include: this.defaultInclude,
+            include: [
+                {
+                    model: User,
+                    as: 'reporter',
+                    attributes: ['id', 'email', 'avatarUrl'],
+                    where: hasUserFilter ? userWhere : undefined,
+                    required: hasUserFilter
+                },
+                {
+                    model: Spot,
+                    as: 'spot',
+                    attributes: ['id', 'identifier', 'status', 'isActive', 'propertyId'],
+                    include: [{ model: Property, as: 'property', attributes: ['id', 'name'] }]
+                }
+            ],
             order: [['createdAt', 'DESC']]
         });
     }

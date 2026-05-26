@@ -9,13 +9,9 @@ import {
 
 const router = Router();
 
-
 router.post('/', authMiddleware, validateBody(createVehicleSchema), createVehicle);
-
-router.get('/', authMiddleware, getAllVehicles);
 router.get('/my-vehicles', authMiddleware, getMyVehicles);
 router.get('/:id', authMiddleware, getVehicleById);
-
 router.put('/:id', authMiddleware, validateBody(updateVehicleSchema), updateVehicle);
 router.delete('/:id', authMiddleware, deleteVehicle);
 
