@@ -7,9 +7,11 @@ const JWT_ACCESS_TOKEN_EXPIRES = parseInt(process.env.JWT_ACCESS_TOKEN_EXPIRES |
 const JWT_REFRESH_TOKEN_EXPIRES = parseInt(process.env.JWT_REFRESH_TOKEN_EXPIRES || '604800', 10);
 const BCRYPT_SALT_ROUNDS = 10;
 
+import { Roles } from '../types/Roles';
+
 export class TokenUtils {
-    static generateAccessToken(userId: number): string {
-        return jwt.sign({ id: userId }, JWT_ACCESS_SECRET, {
+    static generateAccessToken(userId: number, role: Roles): string {
+        return jwt.sign({ id: userId, role }, JWT_ACCESS_SECRET, {
             expiresIn: JWT_ACCESS_TOKEN_EXPIRES,
         });
     }

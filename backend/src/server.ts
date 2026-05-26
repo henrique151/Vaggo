@@ -12,6 +12,7 @@ import reportsRoutes from './routes/reportsRoutes';
 import reviewsRoutes from './routes/reviewsRoutes';
 import authRoutes from './routes/authRoutes';
 import chatsRoutes from './routes/chatsRoutes';
+import adminRoutes from './routes/adminRoutes';
 import setupAssociantos from './models/Associations';
 import cors from "cors";
 import helmet from "helmet";
@@ -44,6 +45,7 @@ app.use('/reservations', reservationsRoutes);
 app.use('/reports', reportsRoutes);
 app.use('/reviews', reviewsRoutes);
 app.use('/chats', chatsRoutes);
+app.use('/admin', adminRoutes);
 
 app.use(errorHandler);
 

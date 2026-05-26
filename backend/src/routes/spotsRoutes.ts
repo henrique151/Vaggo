@@ -1,10 +1,14 @@
 import { Router } from "express";
-import { listByProperty, evaluateSpots, updateSpot, deleteSpot, updateSpotData, generateSpots } from '../controllers/spotsController';
+import { listByProperty, updateSpot, deleteSpot, updateSpotData, generateSpots, getAdminSpots } from '../controllers/spotsController';
 import { validateBody } from "../middlewares/validateBody";
-import { evaluateSpotSchema, generateSpotsSchema, updateSpotSchema, updateSpotStatusSchema } from '../schemas/spotsSchema';
+import { generateSpotsSchema, updateSpotSchema, updateSpotStatusSchema } from '../schemas/spotsSchema';
 import { authMiddleware } from "../middlewares/authMiddleware";
+import { permissionMiddleware } from "../middlewares/permissionMiddleware";
 import { uploadMultiple, uploadSpotSingle } from "../middlewares/upload";
 import { uploadLimiter } from "../middlewares/rateLimiter";
+import { Roles } from "../types/Roles";
+
+
 const router = Router();
 
 router.post(
@@ -20,13 +24,6 @@ router.get(
     '/properties/:propId/spots',
     authMiddleware,
     listByProperty
-);
-
-router.patch(
-    '/:id/evaluate',
-    authMiddleware,
-    validateBody(evaluateSpotSchema),
-    evaluateSpots
 );
 
 router.patch(

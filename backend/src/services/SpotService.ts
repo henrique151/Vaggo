@@ -1,4 +1,4 @@
-import type { Transaction } from 'sequelize';
+import { Op, type Transaction } from 'sequelize';
 import sequelize from '../database';
 import Spot from '../models/Spot';
 import Property from '../models/Property';
@@ -13,13 +13,17 @@ import {
     UpdateSpotInput
 } from '../schemas/spotsSchema';
 import { FileData, ImageService } from './ImageService';
+import { Roles } from '../types/Roles';
+import TwilioWhatsAppService from './TwilioWhatsAppService';
+import Person from '../models/Person';
+import User from '../models/User';
 
 export class SpotService {
     private static readonly defaultInclude = [
         { model: SpotAvailability, as: 'availability', required: false }
     ];
 
-    static async generateSpots(propId: number, spotData: GenerateSpotsInput, files?: FileData[]) {
+    static async generateSpots(propId: number, spotData: GenerateSpotsInput, authUserId: number, role?: Roles, files?: FileData[]) {
         const transaction = await sequelize.transaction();
         const uploadedPublicIds: string[] = [];
 
@@ -38,6 +42,10 @@ export class SpotService {
                     transaction
                 })
             ]);
+
+            if (ownerUserId !== authUserId && role !== Roles.ADMIN) {
+                throw new Error('PROPERTY_ACCESS_DENIED');
+            }
 
             if (currentCount + spotData.count > property.totalCapacity) {
                 throw new Error('PROPERTY_CAPACITY_EXCEEDED');
@@ -101,17 +109,62 @@ export class SpotService {
         }
     }
 
-    static async evaluateSpot(spotId: number, status: 'APROVADA' | 'RECUSADA') {
-        const spot = await Spot.findByPk(spotId);
+    static async evaluateSpot(spotId: number, status: 'APROVADA' | 'RECUSADA', rejectionReason?: string) {
+        const spot = await Spot.findByPk(spotId, {
+            include: [{ model: Property, as: 'property' }]
+        });
         if (!spot) throw new Error('SPOT_NOT_FOUND');
 
         const operationalStatus = status === 'APROVADA' ? 'DISPONIVEL' : 'INDISPONIVEL';
 
         await spot.update({
             approvalStatus: status,
-            status: operationalStatus
+            status: operationalStatus,
+            rejectionReason: status === 'RECUSADA' ? (rejectionReason || null) : null
         });
 
+        if (status === 'APROVADA') {
+            const propertyOwner = await PropertyUser.findOne({
+                where: { propertyId: spot.propertyId, role: 'DONO' },
+                include: [{ model: User, as: 'user', include: [{ model: Person, as: 'person' }] }]
+            });
+
+            const userId = propertyOwner?.userId;
+            const phone = (propertyOwner as any)?.user?.person?.phone;
+            const ownerName = (propertyOwner as any)?.user?.person?.name || 'Proprietário';
+
+            if (userId && phone) {
+                const existingApprovedSpots = await Spot.count({
+                    where: { approvalStatus: 'APROVADA' },
+                    include: [{
+                        model: Property,
+                        as: 'property',
+                        required: true,
+                        include: [{
+                            model: PropertyUser,
+                            as: 'propertyUsers',
+                            where: { userId, role: 'DONO' },
+                            required: true
+                        }]
+                    }]
+                });
+
+                if (existingApprovedSpots <= 1) { // 1 because this spot was just approved
+                    TwilioWhatsAppService.dispatchInBackground(() =>
+                        TwilioWhatsAppService.sendSpotApprovedAlert(phone, ownerName, spot.identifier)
+                    );
+                }
+            }
+        }
+
+        return this.getSpotWithAvailability(spot.id);
+    }
+
+    static async toggleActive(spotId: number, isActive: boolean) {
+        const spot = await Spot.findByPk(spotId);
+        if (!spot) throw new Error('SPOT_NOT_FOUND');
+
+        await spot.update({ isActive });
         return this.getSpotWithAvailability(spot.id);
     }
 
@@ -124,7 +177,76 @@ export class SpotService {
         });
     }
 
-    static async updateSpotData(spotId: number, updateData: UpdateSpotInput, file?: FileData) {
+    static async getAdminSpots(status?: string) {
+        const where: any = { isActive: true };
+        if (status) {
+            where.approvalStatus = status.toUpperCase();
+        }
+
+        return Spot.findAll({
+            where,
+            attributes: { exclude: ['PRO_INT_ID'] },
+            include: [
+                this.defaultInclude[0],
+                { model: Property, as: 'property', attributes: ['id', 'name'] }
+            ],
+            order: [['id', 'DESC']]
+        });
+    }
+
+    static async searchAdminSpots(filters: { id?: number, email?: string, status?: string }) {
+        const where: any = { isActive: true };
+        const userWhere: any = {};
+
+        if (filters.id) where.id = filters.id;
+
+        if (filters.status) {
+            where.approvalStatus = filters.status.toUpperCase();
+        }
+
+        if (filters.email) {
+            userWhere.email = { [Op.iLike]: `%${filters.email}%` };
+        }
+
+        const hasUserFilter = Object.keys(userWhere).length > 0;
+
+        const propertyInclude: any = {
+            model: Property,
+            as: 'property',
+            attributes: ['id', 'name'],
+            required: hasUserFilter
+        };
+
+        if (hasUserFilter) {
+            propertyInclude.include = [
+                {
+                    model: PropertyUser,
+                    as: 'propertyUsers',
+                    where: { role: 'DONO' },
+                    include: [{
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'email'],
+                        where: userWhere,
+                        required: true
+                    }],
+                    required: true
+                }
+            ];
+        }
+
+        return Spot.findAll({
+            where,
+            attributes: { exclude: ['PRO_INT_ID'] },
+            include: [
+                this.defaultInclude[0],
+                propertyInclude
+            ],
+            order: [['id', 'DESC']]
+        });
+    }
+
+    static async updateSpotData(spotId: number, updateData: UpdateSpotInput, authUserId: number, role?: Roles, file?: FileData) {
         const transaction = await sequelize.transaction();
         let newPublicId: string | null = null;
 
@@ -135,10 +257,14 @@ export class SpotService {
             });
             if (!spot) throw new Error('SPOT_NOT_FOUND');
 
+            const ownerUserId = await this.getOwnerUserId(spot.propertyId, transaction);
+            if (ownerUserId !== authUserId && role !== Roles.ADMIN) {
+                throw new Error('PROPERTY_ACCESS_DENIED');
+            }
+
             const { availability, ...spotUpdateData } = updateData;
 
             if (file) {
-                const ownerUserId = await this.getOwnerUserId(spot.propertyId, transaction);
                 const upload = await ImageService.uploadSpotImage(file, ownerUserId, spot.id);
                 newPublicId = upload.public_id;
 
@@ -165,7 +291,7 @@ export class SpotService {
         }
     }
 
-    static async deleteSpot(spotId: number, propId: number) {
+    static async deleteSpot(spotId: number, propId: number, authUserId: number, role?: Roles) {
         const transaction = await sequelize.transaction();
 
         try {
@@ -174,6 +300,11 @@ export class SpotService {
                 transaction
             });
             if (!spot) throw new Error('SPOT_NOT_FOUND');
+
+            const ownerUserId = await this.getOwnerUserId(propId, transaction);
+            if (ownerUserId !== authUserId && role !== Roles.ADMIN) {
+                throw new Error('PROPERTY_ACCESS_DENIED');
+            }
 
             const folderPath = spot.imageUrl
                 ? ImageService.extractFolderPath(spot.imageUrl)
@@ -193,12 +324,17 @@ export class SpotService {
         }
     }
 
-    static async updateSpot(spotId: number, updateData: { status: 'DISPONIVEL' | 'INDISPONIVEL' | 'OCUPADA' }) {
+    static async updateSpot(spotId: number, updateData: { status: 'DISPONIVEL' | 'INDISPONIVEL' | 'OCUPADA' }, authUserId: number, role?: Roles) {
         const spot = await Spot.findOne({
             where: { id: spotId },
             attributes: { exclude: ['PRO_INT_ID'] }
         });
         if (!spot) throw new Error('SPOT_NOT_FOUND');
+
+        const ownerUserId = await this.getOwnerUserId(spot.propertyId, null as any);
+        if (ownerUserId !== authUserId && role !== Roles.ADMIN) {
+            throw new Error('PROPERTY_ACCESS_DENIED');
+        }
 
         if (spot.approvalStatus !== 'APROVADA') {
             throw new Error('SPOT_NOT_APPROVED');
@@ -211,7 +347,7 @@ export class SpotService {
     private static async getOwnerUserId(propertyId: number, transaction: Transaction) {
         const propertyUser = await PropertyUser.findOne({
             where: { propertyId, role: 'DONO' },
-            transaction
+            transaction: transaction || undefined
         });
 
         const userId = propertyUser?.userId;

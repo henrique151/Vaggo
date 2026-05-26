@@ -80,3 +80,11 @@ export const updateUserSchema = createUserSchema
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+export const searchUsersSchema = z.object({
+    email: z.string().email().trim().optional(),
+    name: z.string().trim().optional(),
+    phone: z.string().trim().optional()
+}).strict();
+
+export type SearchUsersInput = z.infer<typeof searchUsersSchema>;

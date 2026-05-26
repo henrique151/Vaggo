@@ -28,11 +28,6 @@ module.exports = {
         allowNull: false,
         defaultValue: false,
       },
-      USU_BOL_ADMINISTRADOR: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
       USU_STATUS_NIVELPERM: {
         type: Sequelize.ENUM("1", "2", "3"),
         allowNull: false,
