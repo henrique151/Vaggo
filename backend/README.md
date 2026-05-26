@@ -69,10 +69,10 @@ O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que
 | Membro                          | Responsabilidades                       |
 | ------------------------------- | --------------------------------------- |
 | **Henrique Porto de Sousa**     | Líder Backend e Desenvolvedor Backend   |
-| **DIEGO FARIA AMORIM**          | Líder Frontend e Desenvolvedor Frontend |
-| **ANTHONY PIRES DE ARAUJO**     | Desenvolvedor Full Stack                |
-| **MOISES DOS SANTOS CRUZ**      | Desenvolvedor Full Stack e QA           |
-| **GUILHERME OTAVIO DOS SANTOS** | Documentação do projeto                 |
+| **Diego Faria Amorim**          | Líder Frontend e Desenvolvedor Frontend |
+| **Anthony Pires de Araujo**     | Desenvolvedor Full Stack                |
+| **Moises dos Santos Cruz**      | Desenvolvedor Full Stack e QA           |
+| **Guilherme Otavio dos Santos** | Documentação do projeto                 |
 
 ---
 
@@ -202,6 +202,9 @@ TWILIO_TEMPLATE_RENTAL_REJECTED=
 TWILIO_TEMPLATE_SPOT_APPROVED=
 TWILIO_TEMPLATE_APPROVED=
 TWILIO_TEMPLATE_CHAT=
+
+# Api do Neon
+DATABASE_URL=
 ```
 
 ---
