@@ -409,7 +409,7 @@ export const swaggerDocument = {
     description: "OpenAPI documentation aligned with the current Express routes, Zod schemas, and Multer upload field names.",
   },
   servers: [
-    { url: "http://localhost:3000", description: "Local Development Server" },
+    { url: "/", description: "Current API host" },
   ],
   tags: [
     { name: "Authentication" },

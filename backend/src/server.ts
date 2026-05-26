@@ -26,6 +26,8 @@ setupAssociantos();
 
 const app = express();
 const server = http.createServer(app);
+const PORT = Number(process.env.PORT) || 3000;
+
 initSocket(server);
 
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -60,8 +62,8 @@ sequelize
     .authenticate()
     .then(() => {
         console.log('Banco conectado');
-        server.listen(3000, () => {
-            console.log('Server running on port 3000');
+        server.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server running on port ${PORT}`);
         });
     })
     .catch(err => console.error('Erro ao conectar no banco:', err));
