@@ -95,6 +95,10 @@ export class SpotSearchService {
                     property: {
                         id: spot.propertyId,
                         name: spot.propertyName,
+                        coordinates: {
+                            lat: Number(spot.propertyLat),
+                            lng: Number(spot.propertyLng)
+                        },
                         image: Array.isArray(spot.propertyImages) && spot.propertyImages.length > 0
                             ? spot.propertyImages[0]
                             : null
