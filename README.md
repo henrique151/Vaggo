@@ -1,4 +1,4 @@
-# 🚀 Vaggo (Plataforma de compartilhamento de vagas de estacionamento) - Backend
+# Vaggo (Plataforma de compartilhamento de vagas de estacionamento) - Backend
 
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -19,13 +19,12 @@
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação e Execução](#instalação-e-execução)
 - [Scripts](#scripts)
-- [Testes Automatizados](#testes-automatizados)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Swagger](#swagger)
+- [Swagger](#documentação-e-testes-da-api)
 - [Rotas da API](#rotas-da-api)
 - [Autenticação](#autenticação)
 - [Estrutura de Pastas](#estrutura-de-pastas)
-- [Licença](#licença)
+- [Próximas Melhoria](#próximas-melhoria)
 - [Contribuindo](#contribuindo)
 
 ---
@@ -103,7 +102,7 @@ Request → Router → Middleware (Zod) → Controller → Service → Repositor
 
 ---
 
-## 📋 Pré-requisitos
+## Pré-requisitos
 
 - [Node.js](https://nodejs.org/) >= 18
 - [Docker](https://www.docker.com/) e Docker Compose
@@ -182,14 +181,6 @@ npm run build && npm start
 
 ---
 
-## Testes Automatizados
-
-Atualmente o backend não possui uma suíte automatizada configurada no `package.json`.
-
-Para evolução do projeto, recomenda-se adicionar testes unitários e de integração com ferramentas como **Jest** e **Supertest**, cobrindo principalmente autenticação, validação Zod, reservas, permissões administrativas e upload de imagens.
-
----
-
 ## Variáveis de Ambiente
 
 Copie o `.env.example` e preencha com suas credenciais:
@@ -228,13 +219,13 @@ TWILIO_AUTH_TOKEN=
 TWILIO_WHATSAPP_NUMBER=
 
 # Templates Twilio (WhatsApp)
+TWILIO_TEMPLATE_RENTAL_REJECTED=
+TWILIO_TEMPLATE_SPOT_APPROVED=
 TWILIO_TEMPLATE_EMAIL_VERIFICATION=
 TWILIO_TEMPLATE_OTP=
 TWILIO_TEMPLATE_RENTAL=
-TWILIO_TEMPLATE_RENTAL_REJECTED=
-TWILIO_TEMPLATE_SPOT_APPROVED=
-TWILIO_TEMPLATE_APPROVED=
 TWILIO_TEMPLATE_CHAT=
+TWILIO_TEMPLATE_APPROVED=
 
 # Api do Neon
 DATABASE_URL=
@@ -246,20 +237,42 @@ DATABASE_URL=
 
 ### Swagger (Interface Gráfica)
 
-A especificação da API foi desenvolvida em formato **YAML** (OpenAPI 3.0). Para visualizar as rotas, parâmetros e testar os endpoints pelo navegador:
+A especificação da API foi desenvolvida em formato **YAML** (OpenAPI 3.0). Você pode visualizar as rotas, parâmetros e testar os endpoints diretamente pelo navegador.
+
+**Documentação Online:**
+https://vaggo.onrender.com/api-docs/
+
+**Execução Local:**
 
 1. Inicie o servidor localmente (`npm run dev`).
 2. Acesse a URL: `http://localhost:3000/api-docs`
 
 ### Massa de Testes (Insomnia / Bruno / Postman)
 
-Disponibilizamos o arquivo de histórico de requisições da API em formato **.har** para facilitar os seus testes de integração.
+Disponibilizamos o arquivo de histórico de requisições da API em formato **.har** para facilitar os testes de integração.
 
 1. Na raiz do projeto, localize o arquivo: [`api_requests.har`](./api_requests.har)
 2. Abra o seu cliente de API favorito (**Insomnia**, **Postman** ou **Bruno**).
 3. Vá em **Importar (Import)** e selecione o arquivo `.har`.
 4. Todas as requisições de cadastro, login, rotas de administrador e proprietário serão carregadas automaticamente com os corpos (payloads) de teste prontos.
 
+---
+
+> **Importante**
+>
+> Para utilizar as funcionalidades de cadastro e autenticação via WhatsApp, é necessário registrar o número no ambiente de testes do Twilio.
+>
+> Envie uma mensagem para:
+>
+> **+1 (415) 523-8886**
+>
+> Com o texto:
+>
+> ```text
+> join driver-major
+> ```
+>
+> Após a confirmação do Twilio, você receberá uma mensagem de validação e poderá realizar o cadastro normalmente no sistema.
 ---
 
 ## Estrutura de Pastas
@@ -293,7 +306,7 @@ backend
 
 Base URL: `http://localhost:3000`
 
-### 🔐 Auth
+### Auth
 
 | Método | Rota                            | Descrição                                                | Auth |
 | ------ | ------------------------------- | -------------------------------------------------------- | ---- |
@@ -306,7 +319,7 @@ Base URL: `http://localhost:3000`
 | `POST` | `/auth/forgot-password/confirm` | Valida o código de recuperação de senha                  | —    |
 | `POST` | `/auth/forgot-password/reset`   | Redefine a senha com o token de reset                    | —    |
 
-### 👤 Usuários
+### Usuários
 
 | Método   | Rota         | Descrição                                                        | Auth |
 | -------- | ------------ | ---------------------------------------------------------------- | ---- |
@@ -315,7 +328,7 @@ Base URL: `http://localhost:3000`
 | `PUT`    | `/users/:id` | Atualizar perfil (`multipart/form-data`: name, phone, avatarUrl) | ✅   |
 | `DELETE` | `/users/:id` | Deletar conta                                                    | ✅   |
 
-### 🚗 Veículos
+### Veículos
 
 | Método   | Rota                    | Descrição                                       | Auth |
 | -------- | ----------------------- | ----------------------------------------------- | ---- |
@@ -327,14 +340,14 @@ Base URL: `http://localhost:3000`
 
 > **Body (POST/PUT):** `brand`, `model`, `color`, `licensePlate`, `manufactureYear`, `type` (`CARRO` \| `MOTO`), `size` (`PEQUENO` \| `MEDIO` \| `GRANDE`)
 
-### 📍 Localidades
+### Localidades
 
 | Método | Rota                                | Descrição                   | Auth |
 | ------ | ----------------------------------- | --------------------------- | ---- |
 | `GET`  | `/locations/states/`                | Listar todos os estados     | —    |
 | `GET`  | `/locations/states/:stateId/cities` | Listar cidades de um estado | —    |
 
-### 🏠 Propriedades
+### Propriedades
 
 | Método   | Rota                        | Descrição                                                               | Auth |
 | -------- | --------------------------- | ----------------------------------------------------------------------- | ---- |
@@ -346,7 +359,7 @@ Base URL: `http://localhost:3000`
 
 > **Body (POST):** `name`, `type`, `description`, `totalCapacity`, `zipCode`, `number`, `complement`, `images[]` (arquivos)
 
-### 🅿️ Vagas
+### Vagas
 
 | Método   | Rota                                          | Descrição                                                   | Auth |
 | -------- | --------------------------------------------- | ----------------------------------------------------------- | ---- |
@@ -358,7 +371,7 @@ Base URL: `http://localhost:3000`
 
 > **Body (POST):** `count`, `size`, `price`, `isCovered`, `prefix`, `allowedVehicles[]`, `files[]`, `availability` (JSON: `startDate`, `endDate`, `weekdays` (bitmask), `startTime`, `endTime`)
 
-### 📅 Reservas
+### Reservas
 
 | Método  | Rota                           | Descrição                                          | Auth |
 | ------- | ------------------------------ | -------------------------------------------------- | ---- |
@@ -373,7 +386,7 @@ Base URL: `http://localhost:3000`
 
 > **Body (POST):** `spotId`, `vehicleId`, `startDate`, `endDate`
 
-### 💬 Chat
+### Chat
 
 | Método   | Rota                                   | Descrição                                       | Auth |
 | -------- | -------------------------------------- | ----------------------------------------------- | ---- |
@@ -388,7 +401,7 @@ Base URL: `http://localhost:3000`
 | `POST`   | `/chats/block`                         | Bloquear usuário                                | ✅   |
 | `DELETE` | `/chats/block/:userId`                 | Desbloquear usuário                             | ✅   |
 
-### 🚩 Denúncias
+### Denúncias
 
 | Método  | Rota                      | Descrição                                       | Auth |
 | ------- | ------------------------- | ----------------------------------------------- | ---- |
@@ -398,7 +411,7 @@ Base URL: `http://localhost:3000`
 
 > **Body (POST):** `reportedUserId`, `targetType` (`CHAT` \| `SPOT`), `targetId`, `reason`, `images[]`
 
-### ⭐ Avaliações
+### Avaliações
 
 | Método   | Rota                      | Descrição                                       | Auth |
 | -------- | ------------------------- | ----------------------------------------------- | ---- |
@@ -413,7 +426,7 @@ Base URL: `http://localhost:3000`
 
 ---
 
-### 🛠️ Admin
+### Admin
 
 > Todas as rotas abaixo exigem autenticação com role `ADMIN` ou `MANAGER`.
 
@@ -504,11 +517,16 @@ O **refresh token** é armazenado via `httpOnly cookie` e utilizado na rota `/au
 
 ---
 
-## Licença
+## Próximas Melhorias
 
-Este projeto está licenciado sob a licença **ISC**, conforme definido no `package.json`.
+Atualmente o backend ainda não possui testes automatizados implementados. Como próximos passos para a evolução do projeto, estão previstas as seguintes melhorias:
 
-Copyright (c) Equipe Vaggo - FATEC Zona Leste.
+* Implementação de testes unitários e de integração para aumentar a confiabilidade da aplicação.
+* Substituição da integração com o Twilio pela API do WhatsApp da Meta.
+* Adição da validação de e-mail no processo de cadastro utilizando Gmail e EmailJS.
+* Ampliação das validações e regras de negócio relacionadas a reservas, vagas e permissões de usuários.
+
+Essas melhorias têm como objetivo tornar o sistema mais robusto, seguro e preparado para futuras evoluções.
 
 ---
 
