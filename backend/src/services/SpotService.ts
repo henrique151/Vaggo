@@ -23,6 +23,37 @@ export class SpotService {
         { model: SpotAvailability, as: 'availability', required: false }
     ];
 
+    private static toResponseSpot(spot: Spot | null) {
+        if (!spot) return spot;
+
+        const plainSpot = spot.get({ plain: true }) as any;
+
+        if (plainSpot.approvalStatus !== 'APROVADA') {
+            plainSpot.status = 'INDISPONIVEL';
+        }
+
+        return plainSpot;
+    }
+
+    private static toResponseSpots(spots: Spot[]) {
+        return spots.map((spot) => this.toResponseSpot(spot));
+    }
+
+    private static normalizeApprovalStatusFilter(status: string) {
+        const normalized = status.trim().toUpperCase();
+        const statusMap: Record<string, 'PENDENTE' | 'APROVADA' | 'RECUSADA'> = {
+            PENDING: 'PENDENTE',
+            PENDENTE: 'PENDENTE',
+            AVAILABLE: 'APROVADA',
+            APPROVED: 'APROVADA',
+            APROVADA: 'APROVADA',
+            REJECTED: 'RECUSADA',
+            RECUSADA: 'RECUSADA',
+        };
+
+        return statusMap[normalized] ?? normalized;
+    }
+
     static async generateSpots(propId: number, spotData: GenerateSpotsInput, authUserId: number, role?: Roles, files?: FileData[]) {
         const transaction = await sequelize.transaction();
         const uploadedPublicIds: string[] = [];
@@ -93,11 +124,13 @@ export class SpotService {
 
             await transaction.commit();
 
-            return Spot.findAll({
+            const spots = await Spot.findAll({
                 where: { id: createdSpots.map((spot) => spot.id) },
                 include: this.defaultInclude,
                 order: [['id', 'ASC']]
             });
+
+            return this.toResponseSpots(spots);
         } catch (error) {
             await transaction.rollback();
             await Promise.all(
@@ -169,21 +202,23 @@ export class SpotService {
     }
 
     static async getByProperty(propId: number) {
-        return Spot.findAll({
+        const spots = await Spot.findAll({
             where: { propertyId: propId, isActive: true },
             attributes: { exclude: ['PRO_INT_ID'] },
             include: this.defaultInclude,
             order: [['id', 'ASC']]
         });
+
+        return this.toResponseSpots(spots);
     }
 
     static async getAdminSpots(status?: string) {
         const where: any = { isActive: true };
         if (status) {
-            where.approvalStatus = status.toUpperCase();
+            where.approvalStatus = this.normalizeApprovalStatusFilter(status);
         }
 
-        return Spot.findAll({
+        const spots = await Spot.findAll({
             where,
             attributes: { exclude: ['PRO_INT_ID'] },
             include: [
@@ -192,6 +227,8 @@ export class SpotService {
             ],
             order: [['id', 'DESC']]
         });
+
+        return this.toResponseSpots(spots);
     }
 
     static async searchAdminSpots(filters: { id?: number, email?: string, status?: string }) {
@@ -201,7 +238,7 @@ export class SpotService {
         if (filters.id) where.id = filters.id;
 
         if (filters.status) {
-            where.approvalStatus = filters.status.toUpperCase();
+            where.approvalStatus = this.normalizeApprovalStatusFilter(filters.status);
         }
 
         if (filters.email) {
@@ -235,7 +272,7 @@ export class SpotService {
             ];
         }
 
-        return Spot.findAll({
+        const spots = await Spot.findAll({
             where,
             attributes: { exclude: ['PRO_INT_ID'] },
             include: [
@@ -244,6 +281,8 @@ export class SpotService {
             ],
             order: [['id', 'DESC']]
         });
+
+        return this.toResponseSpots(spots);
     }
 
     static async updateSpotData(spotId: number, updateData: UpdateSpotInput, authUserId: number, role?: Roles, file?: FileData) {
@@ -387,8 +426,10 @@ export class SpotService {
     }
 
     private static async getSpotWithAvailability(spotId: number) {
-        return Spot.findByPk(spotId, {
+        const spot = await Spot.findByPk(spotId, {
             include: this.defaultInclude
         });
+
+        return this.toResponseSpot(spot);
     }
 }

@@ -2,6 +2,7 @@ import sequelize from "../database";
 import User from "../models/User";
 import Person from "../models/Person";
 import Vehicle from "../models/Vehicle";
+import Reservation from "../models/Reservation";
 import { CreateVehicleInput, UpdateVehicleInput } from "../schemas/vehiclesSchema";
 import { Roles } from "../types/Roles";
 import { Op } from "sequelize";
@@ -88,14 +89,15 @@ export class VehicleService {
 
     static async getUserVehicles(authUserId: number) {
         return Vehicle.findAll({
-            where: { userId: authUserId },
+            where: { userId: authUserId, isActive: true },
             attributes: { exclude: ['USU_INT_ID'] }
         });
     }
 
     static async getVehicleById(vehicleId: number, authUserId: number, role?: Roles) {
-        const vehicle = await Vehicle.findByPk(vehicleId, {
-            attributes: { exclude: ['USU_INT_ID'] }
+        const vehicle = await Vehicle.findOne({
+            where: { id: vehicleId, isActive: true },
+            attributes: { exclude: ['USU_INT_ID'] },
         });
 
         if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
@@ -107,7 +109,10 @@ export class VehicleService {
     static async updateVehicle(id: number, updateData: UpdateVehicleInput, authUserId: number, role?: Roles) {
         const transaction = await sequelize.transaction();
         try {
-            const vehicle = await Vehicle.findByPk(id, { transaction });
+            const vehicle = await Vehicle.findOne({
+                where: { id, isActive: true },
+                transaction
+            });
             if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
 
             if (vehicle.userId !== authUserId && role !== Roles.ADMIN) throw new Error('FORBIDDEN');
@@ -133,11 +138,24 @@ export class VehicleService {
     static async deleteVehicle(id: number, authUserId: number, role?: Roles) {
         const transaction = await sequelize.transaction();
         try {
-            const vehicle = await Vehicle.findByPk(id, { transaction });
+            const vehicle = await Vehicle.findOne({
+                where: { id, isActive: true },
+                transaction
+            });
             if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
             if (vehicle.userId !== authUserId && role !== Roles.ADMIN) throw new Error('FORBIDDEN');
 
-            await vehicle.destroy({ transaction });
+            const reservationCount = await Reservation.count({
+                where: { vehicleId: id },
+                transaction
+            });
+
+            if (reservationCount > 0) {
+                await vehicle.update({ isActive: false }, { transaction });
+            } else {
+                await vehicle.destroy({ transaction });
+            }
+
             await transaction.commit();
             return true;
         } catch (error) {
