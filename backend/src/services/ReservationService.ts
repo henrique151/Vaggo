@@ -53,6 +53,7 @@ export class ReservationService {
 
             const vehicle = await Vehicle.findByPk(data.vehicleId, { transaction });
             if (!vehicle) throw new Error('VEHICLE_NOT_FOUND');
+            if (!vehicle.isActive) throw new Error('VEHICLE_NOT_FOUND');
             if (vehicle.userId !== data.userId) throw new Error('VEHICLE_NOT_YOURS');
 
             const allowedVehicles = (spot.allowedVehicles || []) as string[];
@@ -443,18 +444,17 @@ export class ReservationService {
         }
 
         const today = getCurrentDateString();
-        const activeReservations = await Reservation.count({
+        const blockingReservations = await Reservation.count({
             where: {
                 spotId,
                 status: { [Op.in]: ['PENDENTE', 'APROVADA'] },
-                startDate: { [Op.lte]: today },
                 endDate: { [Op.gte]: today }
             },
             transaction
         });
 
         const nextStatus =
-            activeReservations > 0
+            blockingReservations > 0
                 ? 'OCUPADA'
                 : spot.approvalStatus === 'APROVADA'
                     ? 'DISPONIVEL'
