@@ -21,10 +21,10 @@
 - [Scripts](#scripts)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
 - [Swagger](#documentação-e-testes-da-api)
+- [Estrutura de Pastas](#estrutura-de-pastas)
 - [Rotas da API](#rotas-da-api)
 - [Autenticação](#autenticação)
-- [Estrutura de Pastas](#estrutura-de-pastas)
-- [Próximas Melhoria](#próximas-melhoria)
+- [Próximas Melhoria](#próximas-melhorias)
 - [Contribuindo](#contribuindo)
 
 ---
