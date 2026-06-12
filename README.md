@@ -15,7 +15,6 @@
 - [Sobre o Projeto](#sobre-o-projeto)
 - [Tecnologias](#tecnologias)
 - [Equipe](#equipe)
-- [Arquitetura](#arquitetura)
 - [Pré-requisitos](#pré-requisitos)
 - [Instalação e Execução](#instalação-e-execução)
 - [Scripts](#scripts)
@@ -72,7 +71,8 @@ O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que
 
 ### Repositório do Frontend
 
-> Frontend: https://github.com/DiegoG784/vaggo-web
+> GitHub: https://github.com/DiegoG784/vaggo-web <br>
+> Site: https://vaggo-web.vercel.app
 
 ---
 
@@ -85,22 +85,6 @@ O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que
 | **Anthony Pires de Araujo**     | Desenvolvedor Full Stack                |
 | **Moises dos Santos Cruz**      | Desenvolvedor Full Stack e QA           |
 | **Guilherme Otavio dos Santos** | Documentação do projeto                 |
-
----
-
-## Arquitetura
-
-A API segue uma arquitetura em camadas com separação clara de responsabilidades:
-
-```
-Request → Router → Middleware (Zod) → Controller → Service → Repository → DB
-```
-
-- **Controllers** — finos, apenas orquestram request/response
-- **Services** — toda a lógica de negócio; erros retornados como string-keys
-- **Middleware de validação** — Zod v4 centralizado por rota
-- **Error handler global** — captura erros de serviço, Sequelize e runtime
-- **Ownership validation** — `userId` propagado via `res.locals` após autenticação JWT
 
 ---
 
@@ -239,7 +223,7 @@ DATABASE_URL=
 
 ### Swagger (Interface Gráfica)
 
-A especificação da API foi desenvolvida em formato **YAML** (OpenAPI 3.0). Você pode visualizar as rotas, parâmetros e testar os endpoints diretamente pelo navegador.
+A especificação da API foi desenvolvida em formato **YAML**. Você pode visualizar as rotas, parâmetros e testar os endpoints diretamente pelo navegador.
 
 **Documentação Online:**
 https://vaggo.onrender.com/api-docs/
@@ -247,7 +231,7 @@ https://vaggo.onrender.com/api-docs/
 **Execução Local:**
 
 1. Inicie o servidor localmente (`npm run dev`).
-2. Acesse a URL: `http://localhost:3000/api-docs`
+2. Acesse a URL: `http://localhost:3000`
 
 ### Massa de Testes (Insomnia / Bruno / Postman)
 
@@ -306,8 +290,6 @@ backend
 
 ## Rotas da API
 
-Base URL: `http://localhost:3000`
-
 ### Auth
 
 | Método | Rota                            | Descrição                                                | Auth |
@@ -355,6 +337,7 @@ Base URL: `http://localhost:3000`
 | -------- | --------------------------- | ----------------------------------------------------------------------- | ---- |
 | `POST`   | `/properties/`              | Cadastrar nova propriedade (`multipart/form-data`)                      | ✅   |
 | `GET`    | `/properties/`              | Listar todas as propriedades                                            | —    |
+| `GET`    | `/properties/:id`           | Listar uma propriedade pelo ID                                          | ✅   |
 | `GET`    | `/properties/my-properties` | Listar propriedades do usuário autenticado                              | ✅   |
 | `PUT`    | `/properties/:id`           | Atualizar propriedade (`multipart/form-data`, suporta `imagesToRemove`) | ✅   |
 | `DELETE` | `/properties/:id`           | Remover propriedade                                                     | ✅   |
