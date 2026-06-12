@@ -17,6 +17,7 @@ import { Roles } from '../types/Roles';
 import TwilioWhatsAppService from './TwilioWhatsAppService';
 import Person from '../models/Person';
 import User from '../models/User';
+import Reservation from '../models/Reservation';
 
 export class SpotService {
     private static readonly defaultInclude = [
@@ -349,10 +350,23 @@ export class SpotService {
                 ? ImageService.extractFolderPath(spot.imageUrl)
                 : null;
 
-            await spot.destroy({ transaction });
+            const reservationCount = await Reservation.count({
+                where: { spotId },
+                transaction
+            });
+
+            if (reservationCount > 0) {
+                await spot.update({
+                    isActive: false,
+                    status: 'INDISPONIVEL'
+                }, { transaction });
+            } else {
+                await spot.destroy({ transaction });
+            }
+
             await transaction.commit();
 
-            if (folderPath) {
+            if (reservationCount === 0 && folderPath) {
                 await ImageService.deleteFolder(folderPath).catch(console.error);
             }
 
