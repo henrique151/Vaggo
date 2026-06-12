@@ -34,14 +34,11 @@ export const getAllProperties = asyncHandler(async (req: Request, res: Response)
 
 /**
  * Consultar Propriedade
- * O dono pode consultar, assim como MANAGER e ADMIN.
+ * Qualquer usuario autenticado pode consultar pelo ID.
  */
 export const getPropertyById = asyncHandler(async (req: Request, res: Response) => {
-    const authReq = req as AuthRequest;
     const id = Number(req.params.id);
-    const userId = Number(authReq.user?.id);
-    const role = authReq.user?.role;
-    const data = await PropertyService.getPropertyById(id, userId, role);
+    const data = await PropertyService.getPropertyById(id);
     res.status(200).json({ success: true, data });
 })
 
