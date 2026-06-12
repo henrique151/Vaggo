@@ -74,6 +74,8 @@ O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que
 
 > Frontend: https://github.com/DiegoG784/vaggo-web
 
+---
+
 ### Equipe
 
 | Membro                          | Responsabilidades                       |
@@ -121,7 +123,7 @@ Request → Router → Middleware (Zod) → Controller → Service → Repositor
 
 ```bash
 git clone https://github.com/henrique151/Vaggo
-cd Vaggo
+cd Vaggo/backend
 ```
 
 ### 2. Instale as dependências
