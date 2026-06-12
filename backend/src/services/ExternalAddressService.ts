@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { GoogleMapsService } from './GoogleMapsService';
 
 type ViaCepResponse = {
@@ -17,6 +17,8 @@ interface CacheEntry {
 
 const CEP_CACHE = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 1000;
 
 export class ExternalAddressService {
     private static getCachedAddress(cep: string) {
@@ -35,6 +37,40 @@ export class ExternalAddressService {
         });
     }
 
+    private static sleep(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    private static getErrorDetails(error: any): { type: string; message: string; code?: string; status?: number } {
+        if (axios.isAxiosError(error)) {
+            const axiosError = error as AxiosError;
+
+            if (axiosError.code === 'ECONNABORTED') {
+                return { type: 'TIMEOUT', message: 'Timeout na requisicao ViaCep', code: axiosError.code };
+            }
+
+            if (axiosError.code === 'ENOTFOUND' || axiosError.code === 'ECONNREFUSED') {
+                return { type: 'NETWORK_ERROR', message: 'Falha de conexao com ViaCep', code: axiosError.code };
+            }
+
+            if (axiosError.response?.status === 429) {
+                return { type: 'RATE_LIMIT', message: 'ViaCep retornou 429', status: 429 };
+            }
+
+            if (axiosError.response?.status) {
+                return { type: 'HTTP_ERROR', message: `ViaCep retornou ${axiosError.response.status}`, status: axiosError.response.status };
+            }
+
+            return { type: 'AXIOS_ERROR', message: axiosError.message, code: axiosError.code };
+        }
+
+        if (error instanceof Error) {
+            return { type: 'ERROR', message: error.message };
+        }
+
+        return { type: 'UNKNOWN_ERROR', message: String(error) };
+    }
+
     static async getAddressByCep(cep: string) {
         const cleanCep = cep.replace(/\D/g, '');
         const cached = this.getCachedAddress(cleanCep);
@@ -43,50 +79,68 @@ export class ExternalAddressService {
             return cached;
         }
 
-        try {
-            // Validar CEP antes de fazer a requisição
-            if (cleanCep.length !== 8 || !/^\d+$/.test(cleanCep)) {
-                throw new Error('CEP_INVALID_FORMAT');
-            }
-
-            const { data } = await axios.get<ViaCepResponse>(
-                `https://viacep.com.br/ws/${cleanCep}/json/`,
-                { timeout: 5000 }
-            );
-
-            if (data.erro || !data.ibge || !data.uf || !data.localidade) {
-                throw new Error('CEP_NOT_FOUND');
-            }
-
-            const coordinates = await this.getCoordinatesFromCep(cleanCep, data);
-            const result = {
-                street: data.logradouro || '',
-                neighborhood: data.bairro || '',
-                cityName: data.localidade,
-                cityIbgeCode: Number(data.ibge),
-                stateUf: data.uf,
-                latitude: coordinates.lat,
-                longitude: coordinates.lng
-            };
-
-            this.setCacheAddress(cleanCep, result);
-            return result;
-        } catch (error) {
-            if (error instanceof Error && ['CEP_NOT_FOUND', 'GEOCODING_FAILED', 'CEP_INVALID_FORMAT'].includes(error.message)) {
-                throw error;
-            }
-
-            // Log detalhado do erro original
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error(`[ExternalAddressService] Erro ao buscar CEP ${cleanCep}:`, {
-                errorType: error instanceof Error ? error.constructor.name : typeof error,
-                message: errorMessage,
-                cep: cleanCep,
-                timestamp: new Date().toISOString()
-            });
-
-            throw new Error('EXTERNAL_API_FAILURE');
+        if (cleanCep.length !== 8 || !/^\d+$/.test(cleanCep)) {
+            throw new Error('CEP_INVALID_FORMAT');
         }
+
+        let lastError: any = null;
+
+        for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+            try {
+                const { data } = await axios.get<ViaCepResponse>(
+                    `https://viacep.com.br/ws/${cleanCep}/json/`,
+                    { timeout: 5000 }
+                );
+
+                if (data.erro || !data.ibge || !data.uf || !data.localidade) {
+                    throw new Error('CEP_NOT_FOUND');
+                }
+
+                const coordinates = await this.getCoordinatesFromCep(cleanCep, data);
+                const result = {
+                    street: data.logradouro || '',
+                    neighborhood: data.bairro || '',
+                    cityName: data.localidade,
+                    cityIbgeCode: Number(data.ibge),
+                    stateUf: data.uf,
+                    latitude: coordinates.lat,
+                    longitude: coordinates.lng
+                };
+
+                this.setCacheAddress(cleanCep, result);
+                return result;
+            } catch (error) {
+                lastError = error;
+
+                if (error instanceof Error && ['CEP_NOT_FOUND', 'GEOCODING_FAILED', 'CEP_INVALID_FORMAT'].includes(error.message)) {
+                    throw error;
+                }
+
+                const errorDetails = this.getErrorDetails(error);
+                console.warn('[ExternalAddressService] Falha ao consultar ViaCep', {
+                    cep: cleanCep,
+                    attempt,
+                    maxAttempts: MAX_RETRY_ATTEMPTS,
+                    errorType: errorDetails.type,
+                    errorMessage: errorDetails.message,
+                    errorCode: errorDetails.code || errorDetails.status
+                });
+
+                if (attempt < MAX_RETRY_ATTEMPTS) {
+                    await this.sleep(RETRY_DELAY_MS * attempt);
+                }
+            }
+        }
+
+        const errorDetails = this.getErrorDetails(lastError);
+        console.error('[ExternalAddressService] Falha final ao consultar CEP', {
+            cep: cleanCep,
+            errorType: errorDetails.type,
+            errorMessage: errorDetails.message,
+            errorCode: errorDetails.code || errorDetails.status
+        });
+
+        throw new Error('EXTERNAL_API_FAILURE');
     }
 
     private static async getCoordinatesFromCep(cep: string, data: ViaCepResponse) {
@@ -102,8 +156,13 @@ export class ExternalAddressService {
                     return coordinates;
                 }
             } catch (error) {
-                console.warn(`[ExternalAddressService] Falha ao geocodificar query "${query}":`, error instanceof Error ? error.message : String(error));
-                // Continua para a próxima query
+                const errorDetails = this.getErrorDetails(error);
+                console.warn('[ExternalAddressService] Falha ao geocodificar CEP', {
+                    cep,
+                    query,
+                    errorType: errorDetails.type,
+                    errorMessage: errorDetails.message
+                });
             }
         }
 

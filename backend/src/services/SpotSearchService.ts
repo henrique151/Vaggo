@@ -166,6 +166,21 @@ export class SpotSearchService {
             };
         }
 
+        const addressValue = params.address?.trim();
+        const addressAsCep = addressValue?.replace(/\D/g, '');
+        const isCepOnlyAddress = Boolean(addressValue && /^[\d.\-\s]+$/.test(addressValue));
+
+        if (isCepOnlyAddress && addressAsCep?.length === 8) {
+            const addressData = await ExternalAddressService.getAddressByCep(addressAsCep);
+
+            return {
+                lat: addressData.latitude,
+                lng: addressData.longitude,
+                query: addressAsCep,
+                source: 'cep'
+            };
+        }
+
         const coords = await GoogleMapsService.geocode(params.address!);
         if (!coords) throw new Error('ADDRESS_NOT_FOUND');
 

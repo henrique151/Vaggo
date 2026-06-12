@@ -406,7 +406,7 @@ export const swaggerDocument = {
   info: {
     title: "Vaggo API - Documentation",
     version: "1.0.0",
-    description: "OpenAPI documentation aligned with the current Express routes, Zod schemas, and Multer upload field names.",
+    description: "Documentation aligned with the current Express routes, Zod schemas, and Multer upload field names.",
   },
   servers: [
     { url: "/", description: "Current API host" },
@@ -603,6 +603,7 @@ export const swaggerDocument = {
       get: {
         tags: ["Properties"],
         summary: "Get property by ID",
+        description: "Authenticated endpoint. Any logged-in user can view the property details by ID; property membership is not required.",
         security: auth,
         parameters: [idParam()],
         responses: { 200: ok("Property found") },
@@ -628,6 +629,7 @@ export const swaggerDocument = {
       get: {
         tags: ["Spots"],
         summary: "List spots in a property",
+        description: "Authenticated endpoint. Any logged-in user can list active spots belonging to a property.",
         security: auth,
         parameters: [idParam("propId", "Property ID")],
         responses: { 200: ok("Spots listed") },
@@ -673,16 +675,21 @@ export const swaggerDocument = {
       get: {
         tags: ["Reservations"],
         summary: "Search spots by address, CEP, or coordinates",
+        description: "Use `cep` for CEP search. Numeric CEP values accidentally sent in `address` are also accepted for compatibility.",
         parameters: [
-          { name: "address", in: "query", schema: { type: "string", minLength: 3 } },
-          { name: "cep", in: "query", schema: { type: "string", minLength: 8, maxLength: 8 } },
+          { name: "cep", in: "query", description: "Brazilian CEP with or without punctuation.", schema: { type: "string", minLength: 8, maxLength: 9, example: "08210090" } },
+          { name: "address", in: "query", description: "Free-form address. CEP-only values are treated as CEP.", schema: { type: "string", minLength: 3, example: "Rua Guamirim, Vila Jacui, Sao Paulo" } },
           { name: "lat", in: "query", schema: { type: "number", minimum: -90, maximum: 90 } },
           { name: "lng", in: "query", schema: { type: "number", minimum: -180, maximum: 180 } },
           { name: "startDate", in: "query", schema: { type: "string", format: "date" } },
           { name: "endDate", in: "query", schema: { type: "string", format: "date" } },
           { name: "radius", in: "query", schema: { type: "number", minimum: 0, maximum: 50, default: 10 } },
         ],
-        responses: { 200: ok("Search results") },
+        responses: {
+          200: ok("Search results"),
+          400: ok("Invalid or not found address/CEP"),
+          503: ok("External CEP/geocoding service unavailable"),
+        },
       },
     },
     "/reservations": {
