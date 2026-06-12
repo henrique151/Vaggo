@@ -526,5 +526,5 @@ Essas melhorias têm como objetivo tornar o sistema mais robusto, seguro e prepa
 ---
 
 <p align="center">
-  Desenvolvido por <strong>Henrique Porto de Sousa</strong> — Projeto Integrador · FATEC Zona Leste · DSM
+  Projeto Integrador · FATEC Zona Leste · DSM
 </p>
