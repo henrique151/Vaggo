@@ -38,12 +38,21 @@ export class ExternalAddressService {
     static async getAddressByCep(cep: string) {
         const cleanCep = cep.replace(/\D/g, '');
         const cached = this.getCachedAddress(cleanCep);
+
         if (cached) {
             return cached;
         }
 
         try {
-            const { data } = await axios.get<ViaCepResponse>(`https://viacep.com.br/ws/${cleanCep}/json/`);
+            // Validar CEP antes de fazer a requisição
+            if (cleanCep.length !== 8 || !/^\d+$/.test(cleanCep)) {
+                throw new Error('CEP_INVALID_FORMAT');
+            }
+
+            const { data } = await axios.get<ViaCepResponse>(
+                `https://viacep.com.br/ws/${cleanCep}/json/`,
+                { timeout: 5000 }
+            );
 
             if (data.erro || !data.ibge || !data.uf || !data.localidade) {
                 throw new Error('CEP_NOT_FOUND');
@@ -63,9 +72,18 @@ export class ExternalAddressService {
             this.setCacheAddress(cleanCep, result);
             return result;
         } catch (error) {
-            if (error instanceof Error && ['CEP_NOT_FOUND', 'GEOCODING_FAILED'].includes(error.message)) {
+            if (error instanceof Error && ['CEP_NOT_FOUND', 'GEOCODING_FAILED', 'CEP_INVALID_FORMAT'].includes(error.message)) {
                 throw error;
             }
+
+            // Log detalhado do erro original
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error(`[ExternalAddressService] Erro ao buscar CEP ${cleanCep}:`, {
+                errorType: error instanceof Error ? error.constructor.name : typeof error,
+                message: errorMessage,
+                cep: cleanCep,
+                timestamp: new Date().toISOString()
+            });
 
             throw new Error('EXTERNAL_API_FAILURE');
         }
@@ -78,9 +96,14 @@ export class ExternalAddressService {
         ];
 
         for (const query of queries) {
-            const coordinates = await GoogleMapsService.geocode(query);
-            if (coordinates) {
-                return coordinates;
+            try {
+                const coordinates = await GoogleMapsService.geocode(query);
+                if (coordinates) {
+                    return coordinates;
+                }
+            } catch (error) {
+                console.warn(`[ExternalAddressService] Falha ao geocodificar query "${query}":`, error instanceof Error ? error.message : String(error));
+                // Continua para a próxima query
             }
         }
 
