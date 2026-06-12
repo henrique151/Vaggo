@@ -406,7 +406,7 @@ export const swaggerDocument = {
   info: {
     title: "Vaggo API - Documentation",
     version: "1.0.0",
-    description: "OpenAPI documentation aligned with the current Express routes, Zod schemas, and Multer upload field names.",
+    description: "Documentation aligned with the current Express routes, Zod schemas, and Multer upload field names.",
   },
   servers: [
     { url: "/", description: "Current API host" },

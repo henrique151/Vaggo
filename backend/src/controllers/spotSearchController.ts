@@ -10,6 +10,13 @@ export const searchByAddress = asyncHandler(async (req: Request, res: Response) 
         res.status(200).json(result);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        const requestId = req.headers['x-request-id'] || 'unknown';
+
+        console.warn(`[spotSearchController] Erro na busca por endereço - RequestID: ${requestId}:`, {
+            errorMessage,
+            query: req.query,
+            timestamp: new Date().toISOString()
+        });
 
         // Mapear erros específicos para respostas apropriadas
         if (errorMessage === 'CEP_NOT_FOUND') {
@@ -34,20 +41,26 @@ export const searchByAddress = asyncHandler(async (req: Request, res: Response) 
         }
 
         if (errorMessage === 'GEOCODING_FAILED') {
-            return res.status(400).json({
+            return res.status(503).json({
                 success: false,
-                message: 'Não foi possível localizar as coordenadas do CEP. Tente novamente.'
+                message: 'Não foi possível localizar as coordenadas do CEP. Consulte os logs do servidor para mais detalhes.'
             });
         }
 
         if (errorMessage === 'EXTERNAL_API_FAILURE') {
+            console.error(`[spotSearchController] EXTERNAL_API_FAILURE - RequestID: ${requestId}:`, {
+                query: req.query,
+                timestamp: new Date().toISOString(),
+                note: 'Verifique a conectividade com ViaCep (https://viacep.com.br) e o rate limit'
+            });
+            
             return res.status(503).json({
                 success: false,
-                message: 'Serviço de busca de CEP indisponível no momento. Tente novamente mais tarde.'
+                message: 'Serviço de busca de CEP indisponível no momento. Aguarde alguns minutos e tente novamente.',
+                requestId: String(requestId)
             });
         }
 
-        // Re-lançar outros erros para o manipulador de erros global
         throw error;
     }
 });
