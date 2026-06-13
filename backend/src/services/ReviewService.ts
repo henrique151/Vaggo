@@ -4,7 +4,7 @@ import Spot from '../models/Spot';
 import Property from '../models/Property';
 import User from '../models/User';
 import { CreateReviewInput, UpdateReviewInput, GetReviewsFilterInput } from '../schemas/reviewsSchema';
-import { getCurrentDateString } from '../utils/dateRange';
+
 import { Roles } from '../types/Roles';
 import { Op, WhereOptions } from 'sequelize';
 
@@ -35,8 +35,8 @@ export class ReviewService {
 
         if (!reservation) throw new Error('RESERVATION_NOT_FOUND');
         if (reservation.userId !== userId) throw new Error('FORBIDDEN');
-        if (reservation.status !== 'APROVADA' || reservation.endDate >= getCurrentDateString()) {
-            throw new Error('RESERVATION_NOT_COMPLETED');
+        if (reservation.status !== 'APROVADA') {
+            throw new Error('RESERVATION_NOT_APPROVED');
         }
         if (!reservation.spot) throw new Error('SPOT_NOT_FOUND');
 
