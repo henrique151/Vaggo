@@ -130,7 +130,16 @@ export class PropertyService {
     static async getPropertyById(id: number, authUserId?: number, role?: Roles) {
         const property = await Property.findByPk(id, {
             attributes: { exclude: ['END_INT_ID'] },
-            include: this.defaultInclude
+            include: [
+                ...this.defaultInclude,
+                {
+                    model: User,
+                    as: 'residentsAndOwners',
+                    attributes: ['id', 'email'],
+                    through: { attributes: ['role'] },
+                    required: false
+                }
+            ]
         });
 
         if (!property) throw new Error('PROPERTY_NOT_FOUND');
