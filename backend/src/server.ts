@@ -54,6 +54,10 @@ app.use('/admin', adminRoutes);
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
     customSiteTitle: "Veggo API - Documentation",
+    swaggerOptions: {
+        persistAuthorization: true,
+        withCredentials: true,
+    },
 }));
 
 app.use(errorHandler);

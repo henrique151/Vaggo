@@ -69,6 +69,10 @@ const BUSINESS_ERRORS: Record<string, number> = {
     OTP_NOT_REQUESTED: 400,
     OTP_EXPIRED: 401,
     INVALID_OTP: 401,
+    EMAILJS_SERVICE_ID_NOT_CONFIGURED: 500,
+    EMAILJS_TEMPLATE_ID_NOT_CONFIGURED: 500,
+    EMAILJS_PUBLIC_KEY_NOT_CONFIGURED: 500,
+    EMAILJS_PRIVATE_KEY_NOT_CONFIGURED: 500,
 };
 
 export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
@@ -163,6 +167,10 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
         OTP_NOT_REQUESTED: 'Solicite um codigo antes de confirmar.',
         OTP_EXPIRED: 'Codigo expirado. Solicite um novo codigo.',
         INVALID_OTP: 'Codigo invalido.',
+        EMAILJS_SERVICE_ID_NOT_CONFIGURED: 'EmailJS nao configurado: service id ausente.',
+        EMAILJS_TEMPLATE_ID_NOT_CONFIGURED: 'EmailJS nao configurado: template id ausente.',
+        EMAILJS_PUBLIC_KEY_NOT_CONFIGURED: 'EmailJS nao configurado: chave publica ausente.',
+        EMAILJS_PRIVATE_KEY_NOT_CONFIGURED: 'EmailJS nao configurado: chave privada ausente.',
     };
 
     const message = messageMap[err.message] ?? (status === 500 ? 'Erro interno do servidor' : err.message);
