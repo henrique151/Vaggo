@@ -18,7 +18,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
 
     res.status(201).json({
         success: true,
-        message: 'Usuário criado. Confirme o código enviado pelo WhatsApp.',
+        message: 'Usuário criado. Confirme o código enviado por e-mail.',
         data,
     });
 });

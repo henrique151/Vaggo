@@ -83,7 +83,7 @@ export const resendRegistrationCode = asyncHandler(async (req: Request, res: Res
 
     res.status(200).json({
         success: true,
-        message: 'Código de confirmação enviado pelo WhatsApp',
+        message: 'Código de confirmação enviado por e-mail',
         data,
     });
 });

@@ -1,4 +1,5 @@
 const auth = [{ BearerAuth: [] }];
+const refreshAuth = [{ CookieAuth: [] }, { BearerAuth: [] }];
 
 const idParam = (name = "id", description = "Numeric resource ID") => ({
   name,
@@ -75,6 +76,16 @@ const schemas = {
     type: "object",
     required: ["name", "cpf", "gender", "phone", "birthDate", "email", "password"],
     additionalProperties: false,
+    example: {
+      name: "Admin Swagger",
+      cpf: "12345678901",
+      gender: "M",
+      phone: "11988887777",
+      birthDate: "1995-05-20",
+      email: "admin.swagger@example.com",
+      password: "Password123!",
+      permissionLevel: "3",
+    },
     properties: {
       name: { type: "string", minLength: 3, maxLength: 100, example: "Guilherme Silva" },
       cpf: { type: "string", minLength: 11, maxLength: 11, pattern: "^\\d{11}$", example: "12345678901" },
@@ -83,8 +94,21 @@ const schemas = {
       birthDate: { type: "string", format: "date", example: "1995-05-20" },
       email: { type: "string", format: "email", example: "user@example.com" },
       password: { type: "string", minLength: 8, maxLength: 128, example: "Password123!" },
-      permissionLevel: { type: "string", enum: ["1", "2", "3"], default: "1" },
+      permissionLevel: { type: "string", enum: ["1", "2", "3"], default: "1", example: "3" },
       avatarUrl: { type: "string", format: "binary", description: "Accepted upload field for the profile image." },
+    },
+  },
+  AuthTokenResponse: {
+    type: "object",
+    properties: {
+      success: { type: "boolean", example: true },
+      data: {
+        type: "object",
+        properties: {
+          accessToken: { type: "string", example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+          expiresIn: { type: "integer", example: 7200 },
+        },
+      },
     },
   },
   UpdateUserMultipart: {
@@ -429,6 +453,7 @@ export const swaggerDocument = {
       post: {
         tags: ["Authentication"],
         summary: "Authenticate credentials",
+        description: "On success, this endpoint returns an access token and sets the httpOnly refreshToken cookie used by /auth/refresh.",
         requestBody: jsonBody({ $ref: "#/components/schemas/LoginRequest" }),
         responses: { 200: ok("Authenticated"), 401: ok("Invalid credentials") },
       },
@@ -436,7 +461,7 @@ export const swaggerDocument = {
     "/auth/register/resend": {
       post: {
         tags: ["Authentication"],
-        summary: "Resend registration confirmation code",
+        summary: "Resend registration confirmation code by e-mail",
         requestBody: jsonBody({ $ref: "#/components/schemas/IdentifierRequest" }),
         responses: { 200: ok("Code resent") },
       },
@@ -453,7 +478,31 @@ export const swaggerDocument = {
       post: {
         tags: ["Authentication"],
         summary: "Refresh access token using the refreshToken cookie",
-        responses: { 200: ok("Token refreshed"), 401: ok("Refresh token expired or missing") },
+        description: "Use /auth/login first in Swagger. The refreshToken is saved as an httpOnly cookie and this request sends it automatically. Authorization Bearer is optional.",
+        security: refreshAuth,
+        responses: {
+          200: {
+            description: "Token refreshed",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/AuthTokenResponse" },
+                examples: {
+                  refreshed: {
+                    summary: "New access token",
+                    value: {
+                      success: true,
+                      data: {
+                        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        expiresIn: 7200,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: ok("Refresh token expired or missing"),
+        },
       },
     },
     "/auth/forgot-password": {
@@ -493,6 +542,7 @@ export const swaggerDocument = {
       post: {
         tags: ["Users"],
         summary: "Create user account",
+        description: "Creates a pending account and sends a 6-digit OTP by EmailJS. To create an admin from Swagger, set permissionLevel to \"3\", then confirm the OTP with /auth/register/confirm.",
         requestBody: multipartBody({ $ref: "#/components/schemas/CreateUserMultipart" }),
         responses: { 201: created("User created") },
       },
@@ -1276,6 +1326,12 @@ export const swaggerDocument = {
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
+      },
+      CookieAuth: {
+        type: "apiKey",
+        in: "cookie",
+        name: "refreshToken",
+        description: "HttpOnly cookie set by /auth/login and sent automatically by Swagger when withCredentials is enabled.",
       },
     },
     schemas,

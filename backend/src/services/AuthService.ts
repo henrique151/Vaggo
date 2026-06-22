@@ -51,7 +51,9 @@ export class AuthService {
 
     static async refreshAccessTokenFromRequest(refreshToken: string, authorizationHeader?: string) {
         const userId = this.extractUserIdFromAuthorizationHeader(authorizationHeader);
-        if (!userId) throw new Error('USER_NOT_FOUND');
+        if (!userId) {
+            return this.refreshAccessTokenWithoutAuthorizationHeader(refreshToken);
+        }
 
         return this.refreshAccessToken(userId, refreshToken);
     }
@@ -199,6 +201,23 @@ export class AuthService {
             const decoded = jwt.decode(token) as { id: string } | null;
             return decoded ? Number(decoded.id) : undefined;
         }
+    }
+
+    private static async refreshAccessTokenWithoutAuthorizationHeader(refreshToken: string) {
+        const users = await User.findAll({
+            where: {
+                refreshTokenHash: { [Op.ne]: null },
+                refreshTokenExpiresAt: { [Op.gt]: new Date() },
+            },
+        });
+
+        for (const user of users) {
+            if (user.refreshTokenHash && await TokenUtils.verifyRefreshTokenHash(refreshToken, user.refreshTokenHash)) {
+                return this.refreshAccessToken(user.id, refreshToken);
+            }
+        }
+
+        throw new Error('INVALID_REFRESH_TOKEN');
     }
 
     private static async findUserByEmailOrPhone(identifier: string): Promise<{ user: User; person: Person }> {

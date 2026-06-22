@@ -8,7 +8,7 @@ import PropertyUser from '../models/PropertyUser';
 import Spot from '../models/Spot';
 import { CreateUserInput, UpdateUserInput, SearchUsersInput } from '../schemas/usersSchema';
 import { FileData, ImageService } from './ImageService';
-import TwilioWhatsAppService from './TwilioWhatsAppService';
+import EmailJSService from './EmailJSService';
 import { Roles } from '../types/Roles';
 import { Op } from 'sequelize';
 
@@ -70,15 +70,17 @@ export class UserService {
             otpExpiresAt: new Date(Date.now() + REGISTRATION_OTP_TTL_SECONDS * 1000),
         });
 
-        TwilioWhatsAppService.dispatchInBackground(() =>
-            TwilioWhatsAppService.sendEmailVerificationOtp(personData.phone, verificationCode)
+        this.logRegistrationOtpCode(verificationCode);
+
+        EmailJSService.dispatchInBackground(() =>
+            EmailJSService.sendRegistrationOtp(normalizedEmail, verificationCode, personData.name)
         );
 
         return {
             email: normalizedEmail,
             requiresOtpVerification: true,
             otpExpiresIn: REGISTRATION_OTP_TTL_SECONDS,
-            deliveryChannel: 'whatsapp',
+            deliveryChannel: 'email',
         };
     }
 
@@ -90,13 +92,15 @@ export class UserService {
         pendingRegistration.otpExpiresAt = new Date(Date.now() + REGISTRATION_OTP_TTL_SECONDS * 1000);
         pendingRegistrations.set(pendingRegistration.email, pendingRegistration);
 
-        TwilioWhatsAppService.dispatchInBackground(() =>
-            TwilioWhatsAppService.sendEmailVerificationOtp(pendingRegistration.phone, code)
+        this.logRegistrationOtpCode(code);
+
+        EmailJSService.dispatchInBackground(() =>
+            EmailJSService.sendRegistrationOtp(pendingRegistration.email, code, pendingRegistration.name)
         );
 
         return {
             expiresIn: REGISTRATION_OTP_TTL_SECONDS,
-            deliveryChannel: 'whatsapp',
+            deliveryChannel: 'email',
         };
     }
 
@@ -306,6 +310,10 @@ export class UserService {
 
     private static generateOtpCode(): string {
         return crypto.randomInt(100000, 1000000).toString();
+    }
+
+    private static logRegistrationOtpCode(code: string): void {
+        console.log(`Confirmar Cadastro\nDigite o codigo de 6 digitos enviado para seu e-mail.\nCodigo: ${code}`);
     }
 
     private static onlyDigits(value: string): string {
