@@ -56,9 +56,10 @@ O **Vaggo** é uma plataforma de compartilhamento de vagas de estacionamento que
 | **Cloudinary**               | Upload e gestão de imagens                     |
 | **Google Maps API**          | Geocodificação e busca geoespacial (Haversine) |
 | **Docker**                   | Containerização                                |
-| **Twilio (WhatsApp & SMS)**  | Envio de notificações via WhatsApp e SMS       |
+| **Twilio (WhatsApp & SMS)**  | Envio de notificações via WhatsApp             |
 | **Render**                   | Plataforma de deploy e hospedagem do backend   |
 | **Neon**                     | Banco de dados PostgreSQL serverless           |
+| **EmailJS**                  | Envio de e-mails transacionais                 |
 
 ### Frontend
 
