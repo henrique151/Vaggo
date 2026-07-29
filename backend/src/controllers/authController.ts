@@ -3,8 +3,8 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { AuthService } from '../services/AuthService';
 import {
-    ConfirmForgotPasswordInput,
     ConfirmRegistrationInput,
+    ResendRegistrationInput,
     ForgotPasswordInput,
     LoginInput,
     ResetForgotPasswordInput,
@@ -67,34 +67,23 @@ export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
 });
 
 export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
-    const { identifier } = req.body as ForgotPasswordInput;
-    const data = await AuthService.requestPasswordResetOtp(identifier);
+    const { email } = req.body as ForgotPasswordInput;
+    const data = await AuthService.requestPasswordReset(email);
 
     res.status(200).json({
         success: true,
-        message: 'Código de recuperação enviado pelo WhatsApp',
+        message: 'Instruções de recuperação enviadas por e-mail',
         data,
     });
 });
 
 export const resendRegistrationCode = asyncHandler(async (req: Request, res: Response) => {
-    const { identifier } = req.body as ForgotPasswordInput;
+    const { identifier } = req.body as ResendRegistrationInput;
     const data = await AuthService.resendRegistrationOtp(identifier);
 
     res.status(200).json({
         success: true,
         message: 'Código de confirmação enviado por e-mail',
-        data,
-    });
-});
-
-export const confirmForgotPassword = asyncHandler(async (req: Request, res: Response) => {
-    const { identifier, code } = req.body as ConfirmForgotPasswordInput;
-    const data = await AuthService.confirmPasswordResetOtp(identifier, code);
-
-    res.status(200).json({
-        success: true,
-        message: 'Código validado com sucesso',
         data,
     });
 });

@@ -45,14 +45,13 @@ export const loginSchema = z
 
 export const forgotPasswordSchema = z
     .object({
-        identifier: identifierSchema,
+        email: emailSchema,
     })
     .strict();
 
-export const confirmForgotPasswordSchema = z
+export const resendRegistrationSchema = z
     .object({
-        identifier: identifierSchema.optional(),
-        code: codeSchema,
+        identifier: identifierSchema,
     })
     .strict();
 
@@ -80,6 +79,6 @@ export const confirmRegistrationSchema = z
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-export type ConfirmForgotPasswordInput = z.infer<typeof confirmForgotPasswordSchema>;
+export type ResendRegistrationInput = z.infer<typeof resendRegistrationSchema>;
 export type ResetForgotPasswordInput = z.infer<typeof resetForgotPasswordSchema>;
 export type ConfirmRegistrationInput = z.infer<typeof confirmRegistrationSchema>;

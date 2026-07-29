@@ -40,6 +40,33 @@ class EmailJSService {
         };
     }
 
+    async sendPasswordResetToken(toEmail: string, resetLink: string, name?: string): Promise<EmailJSResult> {
+        const response = await axios.post(
+            'https://api.emailjs.com/api/v1.0/email/send',
+            {
+                service_id: this.getRequiredEnv('EMAILJS_SERVICE_ID'),
+                template_id: this.getRequiredEnv('EMAILJS_TEMPLATE_ID'),
+                user_id: this.getRequiredEnv('EMAILJS_PUBLIC_KEY'),
+                accessToken: this.getRequiredEnv('EMAILJS_PRIVATE_KEY'),
+                template_params: {
+                    reset_link: resetLink,
+                    to_email: toEmail,
+                    to_name: name ?? toEmail,
+                },
+            },
+            {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 10000,
+            }
+        );
+
+        return {
+            status: response.status,
+            text: typeof response.data === 'string' ? response.data : JSON.stringify(response.data),
+            to: toEmail,
+        };
+    }
+
     dispatchInBackground(sendEmail: () => Promise<EmailJSResult>): void {
         setImmediate(() => {
             void sendEmail()
