@@ -1,5 +1,4 @@
 services:
-  # Container da API Node.js (conecta ao Neon Cloud)
   api:
     build: .
     container_name: vaggo_api

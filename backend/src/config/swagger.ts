@@ -53,15 +53,7 @@ const schemas = {
       code: { type: "string", minLength: 6, maxLength: 6, example: "123456" },
     },
   },
-  ConfirmForgotPasswordRequest: {
-    type: "object",
-    required: ["code"],
-    additionalProperties: false,
-    properties: {
-      identifier: { type: "string", example: "user@example.com" },
-      code: { type: "string", minLength: 6, maxLength: 6, example: "123456" },
-    },
-  },
+
   ResetForgotPasswordRequest: {
     type: "object",
     required: ["resetToken", "newPassword", "confirmPassword"],
@@ -428,12 +420,12 @@ const schemas = {
 export const swaggerDocument = {
   openapi: "3.0.3",
   info: {
-    title: "Vaggo API - Documentation",
+    title: "API do Vaggo - Documentação",
     version: "1.0.0",
-    description: "Documentation aligned with the current Express routes, Zod schemas, and Multer upload field names.",
+    description: "Documentação alinhada com as rotas Express, schemas Zod e campos de upload do Multer.",
   },
   servers: [
-    { url: "/", description: "Current API host" },
+    { url: "/", description: "Host atual da API" },
   ],
   tags: [
     { name: "Authentication" },
@@ -508,25 +500,17 @@ export const swaggerDocument = {
     "/auth/forgot-password": {
       post: {
         tags: ["Authentication"],
-        summary: "Request password reset",
+        summary: "Solicitar recuperação de senha",
         requestBody: jsonBody({ $ref: "#/components/schemas/IdentifierRequest" }),
-        responses: { 200: ok("Reset code sent") },
-      },
-    },
-    "/auth/forgot-password/confirm": {
-      post: {
-        tags: ["Authentication"],
-        summary: "Confirm password reset code",
-        requestBody: jsonBody({ $ref: "#/components/schemas/ConfirmForgotPasswordRequest" }),
-        responses: { 200: ok("Code verified") },
+        responses: { 200: ok("Instruções de recuperação enviadas por e-mail") },
       },
     },
     "/auth/forgot-password/reset": {
       post: {
         tags: ["Authentication"],
-        summary: "Reset password",
+        summary: "Redefinir senha",
         requestBody: jsonBody({ $ref: "#/components/schemas/ResetForgotPasswordRequest" }),
-        responses: { 200: ok("Password reset") },
+        responses: { 200: ok("Senha redefinida") },
       },
     },
     "/auth/logout": {
@@ -1325,14 +1309,14 @@ export const swaggerDocument = {
       BearerAuth: {
         type: "http",
         scheme: "bearer",
-        bearerFormat: "JWT",
+        description: "Seção 1: Autenticação via Bearer Token (BearerAuth)\n1. Clique no botão **Authorize** no canto superior direito.\n2. No campo `BearerAuth (http, Bearer)`, insira o token JWT de acesso retornado pelo endpoint `/auth/login` (ex: `seu_token_jwt_aqui`).\n3. Clique em **Authorize** e depois em **Close**."
       },
       CookieAuth: {
         type: "apiKey",
         in: "cookie",
         name: "refreshToken",
-        description: "HttpOnly cookie set by /auth/login and sent automatically by Swagger when withCredentials is enabled.",
-      },
+        description: "Seção 2: Autenticação via Cookie (CookieAuth)\nCookie de segurança do tipo `HttpOnly` gerado e configurado automaticamente pelo endpoint `/auth/login`.\nO cookie `refreshToken` é enviado automaticamente pela interface da documentação em todas as requisições subsequentes quando a opção `withCredentials` estiver ativada no navegador/Swagger UI."
+      }
     },
     schemas,
   },

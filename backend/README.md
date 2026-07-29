@@ -213,6 +213,13 @@ TWILIO_TEMPLATE_RENTAL=
 TWILIO_TEMPLATE_CHAT=
 TWILIO_TEMPLATE_APPROVED=
 
+# EmailJS
+EMAILJS_SERVICE_ID=
+EMAILJS_TEMPLATE_ID=
+EMAILJS_PUBLIC_KEY=
+EMAILJS_PRIVATE_KEY=
+FRONTEND_URL=http://localhost:3001
+
 # Api do Neon
 DATABASE_URL=
 ```
@@ -522,6 +529,39 @@ Essas melhorias têm como objetivo tornar o sistema mais robusto, seguro e prepa
 3. Commit suas mudanças: `git commit -m "feat: minha feature"`
 4. Push para a branch: `git push origin feat/minha-feature`
 5. Abra um Pull Request
+
+### Git Branch & Pull Request Guidelines
+
+**Branch Naming Convention:**
+- `feat/feature-name` (New features)
+- `fix/bug-name` (Bug fixes)
+- `chore/task-name` (Maintenance, dependencies, etc.)
+- `docs/doc-name` (Documentation updates)
+
+**Pull Request Template:**
+When submitting a Pull Request, please copy and use the following template (in English):
+
+```markdown
+## Description
+<!-- Provide a brief description of the changes introduced by this PR. -->
+
+## Motivation and Context
+<!-- Why is this change required? What problem does it solve? -->
+
+## Types of changes
+<!-- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] Documentation update
+
+## Checklist:
+<!-- Go over all the following points, and put an `x` in all the boxes that apply. -->
+- [ ] My code follows the code style of this project.
+- [ ] My change requires a change to the documentation.
+- [ ] I have updated the documentation accordingly.
+- [ ] I have read the **CONTRIBUTING** document.
+```
 
 ---
 
